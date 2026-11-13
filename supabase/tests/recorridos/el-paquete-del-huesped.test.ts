@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { entrarComo, retirarEstancia, salir, servicio, supabase } from "./cliente";
 import {
   crearCorrespondencia,
   obtenerCorrespondencia,
@@ -30,6 +30,7 @@ const DOCUMENTO = "55501234";
 let tomasId = "";
 let lauraId = "";
 let fichaId = "";
+let estanciaPropia = "";
 const paquetes: string[] = [];
 
 const registrar = async (datos: { nombre?: string; documento?: string }) => {
@@ -68,17 +69,35 @@ beforeAll(async () => {
   lauraId = await entrarComo(LAURA);
   await salir();
 
-  // La estancia de hoy en la 102, la que haya.
-  const { data: v } = await servicio
+  /*
+    Una estancia propia en la 102, de hoy a mañana (11/11/2026). Antes se
+    usaba «la que haya»: desde que se vació la base el 29/10 no había ninguna
+    y el archivo no arrancaba. Se crea con la clave de servicio y se retira al
+    terminar; si una corrida murió a medias, la suya se quita antes.
+  */
+  const { data: viejas } = await servicio.from("visita").select("id").eq("anotaciones_ingreso", MARCA);
+  for (const vieja of viejas ?? []) await retirarEstancia(vieja.id);
+  const { data: hoy, error: errorHoy } = await servicio.rpc("hoy_en_el_edificio", {
+    p_condominio_id: CONDOMINIO,
+  });
+  if (errorHoy) throw new Error(errorHoy.message);
+  const manana = new Date(`${hoy}T12:00:00Z`);
+  manana.setUTCDate(manana.getUTCDate() + 1);
+  const { data: v, error: errorV } = await servicio
     .from("visita")
+    .insert({
+      condominio_id: CONDOMINIO,
+      unidad_id: U102,
+      tipo: "huesped_temporal",
+      estado: "programada",
+      fecha_desde: hoy,
+      fecha_hasta: manana.toISOString().slice(0, 10),
+      anotaciones_ingreso: MARCA,
+    })
     .select("id")
-    .eq("unidad_id", U102)
-    .eq("tipo", "huesped_temporal")
-    .is("deleted_at", null)
-    .lte("fecha_desde", new Date().toISOString().slice(0, 10))
-    .gte("fecha_hasta", new Date().toISOString().slice(0, 10))
-    .limit(1)
     .single();
+  if (errorV) throw new Error(`No se pudo crear la estancia: ${errorV.message}`);
+  estanciaPropia = v!.id;
 
   const { data: f, error } = await servicio
     .from("invitado")
@@ -107,6 +126,10 @@ afterAll(async () => {
   if (fichaId) {
     const { error } = await servicio.from("invitado").delete().eq("id", fichaId);
     if (error) throw new Error(error.message);
+  }
+  if (estanciaPropia) {
+    const { error } = await retirarEstancia(estanciaPropia);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
   }
 });
 

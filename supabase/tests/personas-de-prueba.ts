@@ -55,7 +55,9 @@ const PERSONAS: Persona[] = [
   },
   {
     correo: "residente@veciyo.test", nombre: "Rocío", apellido: "Residente",
-    unidades: [{ unidad_id: U102, nombre: "Rocío Residente", rol: "residente", es_residente: true }],
+    // En la 205 desde el 11/11/2026: la 102 se alquila por noches y desde el 29/10
+    // una vivienda así no puede tener residentes.
+    unidades: [{ unidad_id: U205, nombre: "Rocío Residente", rol: "residente", es_residente: true }],
   },
   {
     correo: "coadmin@veciyo.test", nombre: "Carla", apellido: "Coadmin",

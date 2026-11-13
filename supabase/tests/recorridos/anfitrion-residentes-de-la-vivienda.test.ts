@@ -25,6 +25,7 @@ import {
  */
 
 const U102 = "44444444-4444-4444-4444-444444444443";
+const U205 = "44444444-4444-4444-4444-444444444442";
 const ANFITRIONA = "vecino@veciyo.test"; // Sofía, propietaria de la 102
 const GUARDIA = "guardia@veciyo.test";
 const AJENO = "propietario@veciyo.test";
@@ -94,21 +95,34 @@ describe("los residentes de la vivienda", () => {
       Vivir en la vivienda y ser su dueño son cosas distintas, y de esa
       diferencia dependen los módulos que ve: quien no reside no tiene visitas
       ni zonas comunes.
+
+      En la 205, con Guillermo (11/11/2026): la 102 se alquila por noches y
+      desde el 29/10 (D-70) su dueña no puede declararse residente. Eso lo
+      comprueba el caso de abajo.
     */
-    await declararseResidente(U102, true);
-    let residentes = await obtenerResidentes(U102);
+    await salir();
+    await entrarComo(AJENO);
     const { data: sesion } = await supabase.auth.getUser();
-    expect(
-      residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
-    ).toBe(true);
+    try {
+      await declararseResidente(U205, false);
+      let residentes = await obtenerResidentes(U205);
+      expect(
+        residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
+      ).toBe(false);
 
-    await declararseResidente(U102, false);
-    residentes = await obtenerResidentes(U102);
-    expect(
-      residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
-    ).toBe(false);
+      await declararseResidente(U205, true);
+      residentes = await obtenerResidentes(U205);
+      expect(
+        residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
+      ).toBe(true);
+    } finally {
+      await salir();
+      await entrarComo(ANFITRIONA);
+    }
+  });
 
-    await declararseResidente(U102, true);
+  it("y en la vivienda que se alquila por noches, su dueña no puede (D-70)", async () => {
+    await expect(declararseResidente(U102, true)).rejects.toThrow(/no puede ser residente/i);
   });
 
   it("se designa anfitrión primario, y solo puede haber uno", async () => {

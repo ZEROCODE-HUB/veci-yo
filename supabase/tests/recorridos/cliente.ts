@@ -392,6 +392,7 @@ export async function retirarEstancia(
     if (ids.length > 0) {
       await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
       await servicio.from("reporte_legal").delete().in("invitado_id", ids);
+      await servicio.from("reporte_tra").delete().in("invitado_id", ids);
       await servicio.from("autorizacion_menor").delete().in("invitado_id", ids);
       await servicio.from("invitacion").delete().in("invitado_id", ids);
     }
@@ -440,5 +441,66 @@ export async function pagadaMientrasDure(cuotaId: string, unidadId: string): Pro
   return async () => {
     const { error: e } = await servicio.from("pago_cuota").delete().eq("id", data!.id);
     if (e) throw new Error(e.message);
+  };
+}
+
+/**
+ * Pone a un guardia de turno todo el día de hoy (hoy en el edificio) mientras
+ * dura la prueba, y devuelve cómo deshacerlo.
+ *
+ * Las llamadas a portería le suenan solo a quien está de turno, y el guardia
+ * de prueba trabaja unas horas sueltas de algunos días. El 11/11/2026, a las
+ * 02:00, cuatro recorridos de llamadas se pusieron rojos «sin motivo»: la regla
+ * estaba bien y el guardia estaba en casa. Igual que `sos.test.ts`, que ya lo
+ * hacía: una prueba que depende del reloj pasa o falla según el día.
+ *
+ * Si ya había un cambio de turno para hoy (`UNIQUE (membresia_id, fecha)`), se
+ * guarda la fila cruda y se devuelve tal cual al terminar.
+ */
+export async function deTurnoMientrasDure(
+  guardiaUsuarioId: string,
+  condominioId = "11111111-1111-1111-1111-111111111111",
+): Promise<() => Promise<void>> {
+  const { data: membresia, error: errorMembresia } = await servicio
+    .from("membresia_condominio")
+    .select("id")
+    .eq("usuario_id", guardiaUsuarioId)
+    .eq("condominio_id", condominioId)
+    .eq("rol", "guardia")
+    .single();
+  if (errorMembresia) throw new Error(`El guardia no es de ese edificio: ${errorMembresia.message}`);
+  const { data: hoy, error: errorHoy } = await servicio.rpc("hoy_en_el_edificio", {
+    p_condominio_id: condominioId,
+  });
+  if (errorHoy) throw new Error(errorHoy.message);
+
+  const { data: habia } = await servicio
+    .from("turno_override")
+    .select("*")
+    .eq("membresia_id", membresia.id)
+    .eq("fecha", hoy)
+    .maybeSingle();
+  if (habia) await servicio.from("turno_override").delete().eq("id", habia.id);
+
+  const { data: puesto, error } = await servicio
+    .from("turno_override")
+    .insert({
+      membresia_id: membresia.id,
+      fecha: hoy,
+      hora_inicio: "00:00",
+      hora_fin: "23:59:59",
+      motivo: "[prueba] de turno mientras dura la prueba",
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`No se pudo poner el turno: ${error.message}`);
+
+  return async () => {
+    const { error: errorBorrar } = await servicio.from("turno_override").delete().eq("id", puesto.id);
+    if (errorBorrar) throw new Error(`No se pudo quitar el turno: ${errorBorrar.message}`);
+    if (habia) {
+      const { error: errorDevolver } = await servicio.from("turno_override").insert(habia);
+      if (errorDevolver) throw new Error(`No se pudo devolver el turno de antes: ${errorDevolver.message}`);
+    }
   };
 }

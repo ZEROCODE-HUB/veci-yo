@@ -24,7 +24,7 @@ let sofiaId = "";
 let hoyDia = 0;
 let paraHoy = "";
 let paraOtroDia = "";
-let para205 = "";
+let para102 = "";
 const quien: Record<string, string> = {};
 
 async function avisosDe(entidad: string) {
@@ -80,15 +80,21 @@ beforeAll(async () => {
   const { data: creados, error } = await servicio
     .from("servicio_de_vivienda")
     .insert([
-      { unidad_id: U102, nombre: `${MARCA} hoy`, empresa: "Empresa de prueba", dia_primer_aviso: hoyDia },
-      { unidad_id: U102, nombre: `${MARCA} otro día`, dia_primer_aviso: otroDia, dia_segundo_aviso: otroDia },
-      { unidad_id: U205, nombre: `${MARCA} 205`, dia_primer_aviso: hoyDia },
+      /*
+        Desde el 11/11/2026 el que se paga hoy es de la 205, donde viven
+        Guillermo (propietario), Laura (inquilina líder) y Rocío (residente).
+        La 102 se alquila por noches desde el 29/10: Sofía no vive ahí y solo
+        hay huéspedes, así que su servicio no le avisa a nadie.
+      */
+      { unidad_id: U205, nombre: `${MARCA} hoy`, empresa: "Empresa de prueba", dia_primer_aviso: hoyDia },
+      { unidad_id: U205, nombre: `${MARCA} otro día`, dia_primer_aviso: otroDia, dia_segundo_aviso: otroDia },
+      { unidad_id: U102, nombre: `${MARCA} 102`, dia_primer_aviso: hoyDia },
     ])
     .select("id, nombre");
   if (error) throw new Error(error.message);
   paraHoy = creados!.find((s) => s.nombre.endsWith("hoy"))!.id;
   paraOtroDia = creados!.find((s) => s.nombre.endsWith("otro día"))!.id;
-  para205 = creados!.find((s) => s.nombre.endsWith("205"))!.id;
+  para102 = creados!.find((s) => s.nombre.endsWith("102"))!.id;
 });
 
 afterAll(async () => {
@@ -96,11 +102,11 @@ afterAll(async () => {
 });
 
 describe("el aviso de pago de un servicio", () => {
-  it("sale el día elegido, al propietario, una sola vez aunque la tarea corra dos", async () => {
+  it("sale el día elegido, al propietario que vive ahí, una sola vez aunque la tarea corra dos", async () => {
     await servicio.rpc("avisar_servicios_de_vivienda");
     await servicio.rpc("avisar_servicios_de_vivienda");
     const avisos = await avisosDe(paraHoy);
-    expect(avisos.filter((a) => a.usuario_id === sofiaId)).toHaveLength(1);
+    expect(avisos.filter((a) => a.usuario_id === quien["205:propietario"])).toHaveLength(1);
     expect(avisos[0].titulo).toMatch(/Recuerda pagar/);
     expect(avisos[0].mensaje).toMatch(/Empresa de prueba/);
   });
@@ -111,22 +117,23 @@ describe("el aviso de pago de un servicio", () => {
 
   /*
     Hueco 12 (21/10/2026): le llega a quien vive en la vivienda, no al
-    anfitrión. En la 102 viven Sofía (propietaria) y Rocío (residente), y
-    está alojada Yara (huésped). En la 205 vive Laura (inquilina líder); su
-    dueño, Guillermo, declaró que no reside.
+    anfitrión ni al huésped. El 09/11/2026 el propietario que no vive empezó a
+    recibir los avisos de paquetes y reservas (Correcciones, fila 10), pero no
+    los de servicios: esos siguen siendo de quien vive.
   */
-  it("le llega a quien vive: la residente sí, la huésped no", async () => {
+  it("le llega a quien vive: la inquilina líder y la residente sí", async () => {
     const avisos = await avisosDe(paraHoy);
     const a = new Set(avisos.map((x) => x.usuario_id));
-    expect(a.has(quien["102:residente"])).toBe(true);
-    expect(a.has(quien["102:propietario"])).toBe(true);
-    expect(a.has(quien["102:huesped_temporal"])).toBe(false);
+    expect(a.has(quien["205:inquilino_lider"])).toBe(true);
+    expect(a.has(quien["205:residente"])).toBe(true);
   });
 
-  it("y no al propietario que no vive en ella", async () => {
-    const avisos = await avisosDe(para205);
+  it("y no a la dueña que no vive en ella ni al huésped", async () => {
+    const avisos = await avisosDe(para102);
     const a = new Set(avisos.map((x) => x.usuario_id));
-    expect(a.has(quien["205:inquilino_lider"])).toBe(true);
-    expect(a.has(quien["205:propietario"])).toBe(false);
+    expect(a.has(quien["102:propietario"])).toBe(false);
+    expect(a.has(quien["102:huesped_temporal"])).toBe(false);
+    // El control: el aviso de la 205 sí salió, así que la tarea corrió.
+    expect((await avisosDe(paraHoy)).length).toBeGreaterThan(0);
   });
 });

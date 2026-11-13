@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio } from "./cliente";
+import { deTurnoMientrasDure, entrarComo, salir, servicio } from "./cliente";
 import {
   contestarLlamada,
   llamadasQueMeSuenan,
@@ -53,11 +53,15 @@ const leSuena = async (correo: string, llamada: string) => {
   return lista.some((l) => l.id === llamada);
 };
 
+/** El guardia, de turno mientras dura el archivo: ver `deTurnoMientrasDure`. */
+let quitarTurno: (() => Promise<void>) | null = null;
+
 beforeAll(async () => {
   for (const correo of [SOFIA, JUAN, MARCELA]) {
     ids[correo] = await entrarComo(correo);
     await salir();
   }
+  quitarTurno = await deTurnoMientrasDure(ids[JUAN]);
   const { data, error } = await servicio
     .from("membresia_condominio")
     .select("id, permisos")
@@ -68,6 +72,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (quitarTurno) await quitarTurno();
   await salir();
   for (const g of guardiasAntes) {
     await servicio.from("membresia_condominio").update({ permisos: g.permisos }).eq("id", g.id);

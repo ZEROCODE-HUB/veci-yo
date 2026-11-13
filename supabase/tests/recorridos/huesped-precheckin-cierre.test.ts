@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, isoEnDias, salir, servicio, supabase, ventanaDe } from "./cliente";
+import { enDias, entrarComo, isoEnDias, retirarEstancia, salir, servicio, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -161,7 +161,7 @@ afterAll(async () => {
       await servicio.from("verificacion_antecedentes").delete().in("invitado_id", ids);
     }
     await entrarComo(ANFITRIONA);
-    ({ error } = await supabase.from("visita").delete().eq("id", visitaId));
+    ({ error } = await retirarEstancia(visitaId));
     await salir();
     if (!error) break;
     await new Promise((r) => setTimeout(r, 5_000));

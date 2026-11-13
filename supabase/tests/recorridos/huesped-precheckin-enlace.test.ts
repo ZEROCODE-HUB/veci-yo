@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, isoEnDias, salir, supabase, ventanaDe } from "./cliente";
+import { enDias, entrarComo, isoEnDias, retirarEstancia, salir, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   abrirPrecheckin,
@@ -66,7 +66,11 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await entrarComo(ANFITRIONA);
-  await supabase.from("visita").delete().eq("id", visitaId);
+  // Comprobado: una limpieza que no mira si limpió deja basura (11/11/2026).
+  {
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
+  }
   await salir();
 });
 

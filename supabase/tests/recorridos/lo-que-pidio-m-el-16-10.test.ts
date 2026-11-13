@@ -27,9 +27,10 @@ const V = ventanaDe("lo-que-pidio-m-el-16-10");
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
-const U205 = "44444444-4444-4444-4444-444444444442";
+// La 206 desde el 11/11/2026: la 205 ya no se alquila por noches (vive Laura).
+const U206 = "44444444-4444-4444-4444-444444444445";
 const ANFITRIONA = "vecino@veciyo.test"; // Sofía, de la 102
-const DUENO_205 = "propietario@veciyo.test"; // Guillermo, de la 101 y la 205
+const DUENO_206 = "propietario@veciyo.test"; // Guillermo, de la 101, la 205 y la 206
 const GUARDIA = "guardia@veciyo.test";
 const HUESPED = "nuevo.inquilino@veciyo.test"; // Tomás, con cuenta
 
@@ -231,9 +232,9 @@ describe("la reserva dice de qué plataforma viene", () => {
 describe("cada reserva tiene su clave de puerta", () => {
   beforeAll(async () => {
     /*
-      Una estancia de hoy en la 205, de Guillermo, con Tomás enlazado: es la
+      Una estancia de hoy en la 206, de Guillermo, con Tomás enlazado: es la
       única forma de comprobar el lado bueno del huésped («dentro de sus
-      fechas»). La 205 no la usa nadie hoy; el recordatorio empieza mañana.
+      fechas»). La 206 no la usa nadie más a la vez; el recordatorio empieza mañana.
     */
     const tomas = await entrarComo(HUESPED);
     await salir();
@@ -257,7 +258,7 @@ describe("cada reserva tiene su clave de puerta", () => {
       .from("visita")
       .insert({
         condominio_id: CONDOMINIO,
-        unidad_id: U205,
+        unidad_id: U206,
         tipo: "huesped_temporal",
         estado: "programada",
         fecha_desde: hoy,
@@ -278,7 +279,7 @@ describe("cada reserva tiene su clave de puerta", () => {
   });
 
   it("el anfitrión la pone y la vuelve a leer", async () => {
-    await entrarComo(DUENO_205);
+    await entrarComo(DUENO_206);
     await guardarClavePuertaEstancia(deHoy, "4821#");
     expect(await obtenerClavePuertaEstancia(deHoy)).toBe("4821#");
   });
@@ -287,7 +288,7 @@ describe("cada reserva tiene su clave de puerta", () => {
     await salir();
     await entrarComo(HUESPED);
     expect(await obtenerClavePuertaEstancia(deHoy)).toBe("4821#");
-    const { data } = await supabase.rpc("clave_puerta_de_mi_estancia", { p_unidad_id: U205 });
+    const { data } = await supabase.rpc("clave_puerta_de_mi_estancia", { p_unidad_id: U206 });
     expect(data).toBe("4821#");
   });
 
@@ -303,7 +304,7 @@ describe("cada reserva tiene su clave de puerta", () => {
   it("y nadie más que el anfitrión la cambia", async () => {
     await expect(guardarClavePuertaEstancia(deHoy, "0000")).rejects.toThrow(/anfitrion/i);
     await salir();
-    await entrarComo(DUENO_205);
+    await entrarComo(DUENO_206);
     expect(await obtenerClavePuertaEstancia(deHoy)).toBe("4821#");
   });
 
@@ -334,13 +335,13 @@ describe("el historial de la estancia", () => {
       categoria: "convivencia",
       titulo: MARCA,
       descripcion: MARCA,
-      unidad_denunciada: U205,
+      unidad_denunciada: U206,
       visita_id: deHoy,
     });
     expect(error).toBeNull();
 
     await salir();
-    await entrarComo(DUENO_205);
+    await entrarComo(DUENO_206);
     const historial = await obtenerHistorialDeLaEstancia(deHoy);
     expect(historial.some((m) => m.tipo === "entrada")).toBe(true);
     expect(historial.some((m) => m.tipo === "pqrs" && m.titulo.includes(MARCA))).toBe(true);
@@ -409,7 +410,7 @@ describe("la portería sabe que falta el anfitrión, sin el motivo", () => {
       .eq("visita_id", deHoy)
       .single();
     // Una incapacidad declarada también pide la decisión del anfitrión, y no
-    // gasta verificaciones de la suscripción de la 205.
+    // gasta verificaciones de la suscripción de la 206.
     const { error } = await servicio
       .from("invitado")
       .update({

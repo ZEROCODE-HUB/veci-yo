@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { enDias, entrarComo, salir, supabase, ventanaDe } from "./cliente";
+import { enDias, entrarComo, retirarEstancia, salir, supabase, ventanaDe } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import { abrirPrecheckin } from "@/features/visitas/services/precheckin.repo";
 import { guardarFicha } from "../../../../veciyo-web/src/lib/precheckin";
@@ -73,7 +73,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await entrarComo(ANFITRIONA);
   for (const id of creadas) {
-    const { error } = await supabase.from("visita").delete().eq("id", id);
+    const { error } = await retirarEstancia(id);
     // Una limpieza que no comprueba si limpió no es una limpieza.
     if (error) throw new Error(`No se pudo retirar la visita ${id}: ${error.message}`);
   }

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio } from "./cliente";
+import { deTurnoMientrasDure, entrarComo, salir, servicio } from "./cliente";
 import {
   contestarLlamada,
   llamadasQueMeSuenan,
@@ -58,11 +58,15 @@ async function llamar(correo: string, datos: Parameters<typeof llamarPorInternet
   }
 }
 
+/** El guardia, de turno mientras dura el archivo: ver `deTurnoMientrasDure`. */
+let quitarTurno: (() => Promise<void>) | null = null;
+
 beforeAll(async () => {
   for (const correo of [SOFIA, JUAN, MARCELA, AJENO]) {
     ids[correo] = await entrarComo(correo);
     await salir();
   }
+  quitarTurno = await deTurnoMientrasDure(ids[JUAN]);
   const { data: admins, error } = await servicio
     .from("membresia_condominio")
     .select("usuario_id")
@@ -96,6 +100,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (quitarTurno) await quitarTurno();
   await salir();
   for (const [id, valor] of antes) await recibir(id, valor);
   await servicio

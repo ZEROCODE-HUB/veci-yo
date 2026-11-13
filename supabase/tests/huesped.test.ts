@@ -16,6 +16,61 @@ import {
   crearPqrsDePrueba,
 } from "./apoyo";
 
+/*
+  Lo que los controles positivos cuentan, traído por la prueba (11/11/2026):
+  un anuncio que no va a los huéspedes y una visita de la 102 registrada por
+  Sofía. Contaban con lo que hubiera en la base, y desde que se vació el 29/10
+  «existen y la administración los ve» se quedó sin nada que ver.
+*/
+const MARCA_HUESPED = "[prueba] lo del huésped";
+let anuncioPropio = "";
+let visitaPropia = "";
+
+beforeAll(async () => {
+  const marcela = await entrar(CUENTA.admin);
+  const sofia = await entrar(CUENTA.vecino);
+  const anuncio = await insertar(marcela, "publicacion?select=id", {
+    condominio_id: CONDOMINIO,
+    categoria: "administracion",
+    titulo: `${MARCA_HUESPED} anuncio solo para vecinos`,
+    tipo: "anuncio",
+    creada_por: marcela.usuarioId,
+    para_propietarios: true,
+    para_residentes: true,
+    para_huespedes: false,
+  });
+  if (fueRechazada(anuncio)) throw new Error(`No se pudo crear el anuncio: ${JSON.stringify(anuncio.datos)}`);
+  anuncioPropio = anuncio.datos[0].id;
+
+  const { data, error } = await servicio
+    .from("visita")
+    .insert({
+      condominio_id: CONDOMINIO,
+      unidad_id: UNIDAD.u102,
+      tipo: "amigos",
+      estado: "programada",
+      fecha_desde: fechaEnDias(300),
+      registrada_por: sofia.usuarioId,
+      anotaciones_ingreso: MARCA_HUESPED,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`No se pudo crear la visita: ${error.message}`);
+  visitaPropia = data.id;
+});
+
+afterAll(async () => {
+  if (visitaPropia) {
+    const { error } = await servicio.from("visita").delete().eq("id", visitaPropia);
+    if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
+  }
+  if (anuncioPropio) {
+    await servicio.from("notificacion").delete().eq("entidad_id", anuncioPropio);
+    const { error } = await servicio.from("publicacion").delete().eq("id", anuncioPropio);
+    if (error) throw new Error(`No se pudo retirar el anuncio: ${error.message}`);
+  }
+});
+
 /**
  * Huésped temporal.
  *

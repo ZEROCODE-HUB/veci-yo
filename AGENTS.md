@@ -197,7 +197,22 @@ Las dos lecciones, que son distintas:
   corre hoy; comprueba lo que **se ve**, no lo que se guarda.
 - `npm run test:rls` si se tocó una política, una función o una restricción.
   Va contra el Supabase real con las cuentas de prueba, así que comprueba lo
-  que la API devuelve de verdad.
+  que la API devuelve de verdad. Corre en el **edificio de pruebas** «Las
+  Barranqueras 246» (101, 102, 205, 206 y 301), que se siembra con
+  `supabase/herramientas/sembrar-edificio-de-pruebas.mjs` y
+  `edificio-de-pruebas.sql`. Desde el 11/11/2026 en la base hay edificios de
+  verdad: una prueba que elige «la primera zona que haya» con la clave de
+  servicio coge la de otro edificio. Se filtra siempre por el edificio de
+  prueba, y una limpieza nunca toca filas de otro.
+- `npm run test:e2e` (Playwright): la aplicación web exportada
+  (`npm run e2e:exportar`) recorrida en un navegador como una persona, contra
+  la base real y el edificio de pruebas. La sesión se abre por código (se deja
+  el token en el almacenamiento), nadie escribe contraseñas. Es la que habría
+  visto el calendario de «Amigos o familia» del 11/11/2026: la prueba del
+  componente le daba las fechas ya cargadas y el fallo estaba en la consulta.
+- `npm run verificar` junta typecheck, unitarias, componentes y recorridos en
+  el navegador, y **`npm run ota` la corre antes de publicar**: si falla, no
+  sale nada (`SIN_PRUEBAS=1` se la salta, solo para una urgencia).
 - Lo que cambia comportamiento visible se prueba **en el navegador**. El
   typecheck no detecta una pantalla que no navega ni un botón sin `onPress`;
   varios de los defectos de este proyecto solo aparecieron al recorrer el flujo

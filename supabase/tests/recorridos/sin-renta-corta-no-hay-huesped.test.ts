@@ -100,7 +100,8 @@ afterAll(async () => {
 describe("una vivienda sin renta corta", () => {
   it("no registra un huesped temporal", async () => {
     await entrarComo(DUENO);
-    await expect(unHuesped()).rejects.toThrow(/renta corta activa/i);
+    // El motivo cambió el 29/10/2026 (D-70): dice que se dio de baja.
+    await expect(unHuesped()).rejects.toThrow(/renta corta activa|Diste de baja la renta corta/i);
   });
 
   it("pero una visita corriente si: la regla es de los huespedes", async () => {
@@ -120,7 +121,7 @@ describe("una vivienda sin renta corta", () => {
 describe("activar la renta corta", () => {
   it("no la activa quien no responde por la vivienda", async () => {
     await entrarComo(VECINA_DE_OTRA);
-    await expect(activarSuscripcion(U101)).rejects.toThrow(/No puedes activar/i);
+    await expect(activarSuscripcion(U101)).rejects.toThrow(/No puedes activar|solo la activa el propietario/i);
   });
 
   it("su dueño si, y entonces el huesped entra", async () => {
@@ -153,7 +154,8 @@ describe("darla de baja", () => {
     const baja = await cancelarSuscripcion(U101);
     expect(baja.inmediata).toBe(true);
 
-    await expect(unHuesped()).rejects.toThrow(/renta corta activa/i);
+    // El motivo cambió el 29/10/2026 (D-70): dice que se dio de baja.
+    await expect(unHuesped()).rejects.toThrow(/renta corta activa|Diste de baja la renta corta/i);
   });
 
   it("las estancias que ya estaban, se quedan", async () => {
@@ -199,8 +201,13 @@ describe("darla de baja", () => {
     expect(baja.inmediata).toBe(false);
     expect(baja.terminaEn).toBe(iso(20));
 
-    // Y mientras dure, se siguen registrando huespedes.
-    const id = await unHuesped();
-    expect(id).toBeTruthy();
+    /*
+      Lo que pagó sigue a su nombre hasta ese día, pero **no entran reservas
+      nuevas**: desde el 29/10/2026 (D-70) la baja cierra la puerta en el acto,
+      para que la vivienda pueda volver a ser para vivir cuando terminen las
+      que había. Hasta entonces aquí decía lo contrario, de la decisión del
+      29/09, que D-70 reemplaza.
+    */
+    await expect(unHuesped()).rejects.toThrow(/Diste de baja la renta corta/i);
   });
 });

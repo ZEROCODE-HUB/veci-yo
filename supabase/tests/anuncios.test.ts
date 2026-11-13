@@ -9,6 +9,7 @@ import {
   leer,
   rpc,
   type Sesion,
+  UNIDAD,
 } from "./apoyo";
 
 /**
@@ -200,6 +201,8 @@ describe("el voto sigue a la publicación", () => {
       publicacion_id: encuesta,
       opcion_id: opcionId,
       usuario_id: laura.usuarioId,
+      // Desde el 29/10/2026 el voto va con la vivienda por la que se vota.
+      unidad_id: UNIDAD.u205,
     });
     expect(fueRechazada(deLaura)).toBe(true);
 
@@ -208,6 +211,8 @@ describe("el voto sigue a la publicación", () => {
       publicacion_id: encuesta,
       opcion_id: opcionId,
       usuario_id: guillermo.usuarioId,
+      // Desde el 29/10/2026 el voto va con la vivienda por la que se vota.
+      unidad_id: UNIDAD.u101,
     });
     expect(deGuillermo.estado).toBe(201);
   });
@@ -283,6 +288,8 @@ describe("el voto sigue a la publicación", () => {
       publicacion_id: encuesta,
       opcion_id: opcion.datos[0].id,
       usuario_id: tomas.usuarioId,
+      // Desde el 29/10/2026 el voto va con la vivienda por la que se vota.
+      unidad_id: UNIDAD.u102,
     });
     expect(fueRechazada(voto)).toBe(true);
   });

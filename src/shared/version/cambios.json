@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-13",
+    "puntos": [
+      "Panel de la plataforma: quedan solo «Edificios» y «Usuarios». Ajustes, Soporte y Más se ocultaron, y en la ficha de una cuenta ya no salen «Suspender la cuenta» ni «Enviar correo para poner contraseña»."
+    ]
+  },
+  {
     "fecha": "2026-11-10",
     "puntos": [
       "Nueva visita de «Amigos o familia»: las noches con huésped ya salen tachadas desde que se abre la pantalla. Antes solo aparecían después de pasar por «Huésped temporal»."

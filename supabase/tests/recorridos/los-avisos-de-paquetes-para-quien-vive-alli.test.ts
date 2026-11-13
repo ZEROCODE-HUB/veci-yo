@@ -101,11 +101,17 @@ describe("un paquete para la 205", () => {
     expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(1);
   });
 
-  it("con el dueño como no residente, a él no le llega (no puede abrir el módulo)", async () => {
+  /*
+    Hasta el 09/11/2026 al dueño que no vive ahí no le llegaba («no puede abrir
+    el módulo»). Ese día el cliente pidió lo contrario (Correcciones, fila 10):
+    el propietario no residente ve las secciones y recibe los avisos de
+    paquetes y reservas. El caso se dio la vuelta.
+  */
+  it("con el dueño como no residente, también le llega (09/11/2026)", async () => {
     await ponerResidente(false);
     const id = await registrarPaquete();
     expect(await avisos(lauraId, id, "correspondencia_recibida")).toBe(1);
-    expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(0);
+    expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(1);
   });
 
   it("una novedad que anota la portería le llega a quien vive allí, y no a la portería", async () => {
@@ -116,8 +122,8 @@ describe("un paquete para la 205", () => {
 
     expect(await avisos(lauraId, id, "correspondencia_incidencia")).toBe(1);
     expect(await avisos(guardiaId, id, "correspondencia_incidencia")).toBe(0);
-    // Guillermo sigue como no residente.
-    expect(await avisos(guillermoId, id, "correspondencia_incidencia")).toBe(0);
+    // Guillermo sigue como no residente, y desde el 09/11/2026 también se entera.
+    expect(await avisos(guillermoId, id, "correspondencia_incidencia")).toBe(1);
 
     const { data } = await servicio
       .from("notificacion")

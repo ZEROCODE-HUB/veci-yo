@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { retirarEstancia } from "./recorridos/cliente";
 import {
   api,
   CLAVE_SERVICIO,
@@ -37,13 +38,13 @@ let guardia: Sesion;
 let marcela: Sesion;
 
 /**
- * Una estancia de la 205, que es de Guillermo, con un invitado. **De hoy.**
+ * Una estancia de la 206 (la 205 hasta el 11/11/2026), que es de Guillermo, con un invitado. **De hoy.**
  *
  * Era de la 102 y de enero de 2027. Desde el 09/10/2026 la porteria solo ve
  * lo de hoy, lo de mañana y a quien esta dentro, asi que el caso «la porteria
  * si lo ve: es quien confirma el ingreso» dejo de cumplirse con una fecha
  * lejana --y con razon--. Y en la 102 una estancia de hoy chocaria con las
- * reservas que el cliente crea a mano para probar; en la 205 no hay ninguna.
+ * reservas que el cliente crea a mano para probar; en la 206 no hay ninguna.
  */
 let visitaId = "";
 let invitadoId = "";
@@ -77,7 +78,7 @@ beforeAll(async () => {
 
   const existente = await leer(
     guillermo,
-    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u205}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
+    `visita?select=id,invitados:invitado(id)&unidad_id=eq.${UNIDAD.u206}&anotaciones_ingreso=eq.${encodeURIComponent(MARCA_PRUEBA)}&limit=1`,
   );
 
   if (existente.datos.length && existente.datos[0].invitados?.length) {
@@ -88,7 +89,7 @@ beforeAll(async () => {
 
   const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
-    unidad_id: UNIDAD.u205,
+    unidad_id: UNIDAD.u206,
     tipo: "huesped_temporal",
     registrada_por: guillermo.usuarioId,
     fecha_desde: hoy,
@@ -107,10 +108,19 @@ beforeAll(async () => {
 });
 
 /*
-  No hay `afterAll` que borre la visita a propósito: no se puede, porque su
-  reporte la retiene, y se reutiliza en la corrida siguiente. Una sola visita
-  de prueba en la base en vez de una por ejecución.
+  Hasta el 11/11/2026 no había `afterAll` a propósito: el reporte retiene a la
+  visita, y se reutilizaba en la corrida siguiente. Pero esa visita, de hoy a
+  mañana, se quedaba ocupando la vivienda y chocaba con las demás pruebas que
+  abren una estancia de hoy en ella (dos estancias no se solapan). Ahora se
+  retira con la clave de servicio, que borra antes su reporte: es la única
+  que puede, y solo para limpiar.
 */
+afterAll(async () => {
+  if (visitaId) {
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
+  }
+});
 
 describe("quién lo emite", () => {
   it("el anfitrión lo crea", async () => {

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { entrarComo, isoEnDias, retirarEstancia, salir, servicio, supabase } from "./cliente";
 import { comprarPaqueteVerificaciones } from "@/features/visitas/services/visitas.repo";
 
 /**
@@ -14,7 +14,7 @@ import { comprarPaqueteVerificaciones } from "@/features/visitas/services/visita
  */
 
 const U102 = "44444444-4444-4444-4444-444444444443";
-const U301 = "44444444-4444-4444-4444-444444444444"; // Marcela, sin suscripción
+const U101 = "44444444-4444-4444-4444-444444444441"; // Guillermo, sin suscripción y sin nadie viviendo
 const ANFITRIONA = "vecino@veciyo.test"; // Sofía
 const MARCA = "[prueba] saldos solo por su funcion";
 
@@ -24,6 +24,7 @@ let cuota = 0;
 const CUOTA_POR_DEFECTO = 20;
 let verificacionId = "";
 let invitadoId = "";
+let estanciaPropia = "";
 const periodos: string[] = [];
 let suscripcionNueva = "";
 
@@ -38,24 +39,53 @@ beforeAll(async () => {
   suscripcionId = s!.id;
   cuota = s!.verificaciones_base;
 
-  const { data: v } = await servicio
-    .from("verificacion_antecedentes")
+  /*
+    Su estancia, su huésped con los términos sin aceptar y su verificación,
+    traídos por la prueba (11/11/2026). Antes tomaba «la primera que haya» de
+    la 102, y desde que se vació la base el 29/10 no había ninguna. Se crean
+    con la clave de servicio --lo que se comprueba es lo que la anfitriona
+    puede hacer después-- y se retiran al terminar.
+  */
+  const { data: viejas } = await servicio.from("visita").select("id").eq("anotaciones_ingreso", MARCA);
+  for (const vieja of viejas ?? []) await retirarEstancia(vieja.id);
+  const { data: e, error: errorE } = await servicio
+    .from("visita")
+    .insert({
+      condominio_id: "11111111-1111-1111-1111-111111111111",
+      unidad_id: U102,
+      tipo: "huesped_temporal",
+      estado: "programada",
+      fecha_desde: isoEnDias(250),
+      fecha_hasta: isoEnDias(252),
+      anotaciones_ingreso: MARCA,
+    })
     .select("id")
-    .eq("unidad_id", U102)
-    .limit(1)
     .single();
-  verificacionId = v!.id;
-
-  // Un huésped de la 102 con los términos sin aceptar.
-  const { data: visitas } = await servicio.from("visita").select("id").eq("unidad_id", U102);
-  const { data: i } = await servicio
+  if (errorE) throw new Error(`No se pudo crear la estancia: ${errorE.message}`);
+  estanciaPropia = e!.id;
+  const { data: i, error: errorI } = await servicio
     .from("invitado")
+    .insert({ visita_id: estanciaPropia, nombre: `${MARCA} huésped`, es_titular: true, terminos_aceptados: false })
     .select("id")
-    .in("visita_id", (visitas ?? []).map((x) => x.id))
-    .eq("terminos_aceptados", false)
+    .single();
+  if (errorI) throw new Error(`No se pudo crear el huésped: ${errorI.message}`);
+  invitadoId = i!.id;
+  // Del periodo de la suscripción: una verificación «de la cuota» va con él.
+  const { data: periodo, error: errorP } = await servicio
+    .from("periodo_suscripcion")
+    .select("id")
+    .eq("suscripcion_id", suscripcionId)
+    .order("desde", { ascending: false })
     .limit(1)
     .single();
-  invitadoId = i!.id;
+  if (errorP) throw new Error(`La 102 no tiene periodo: ${errorP.message}`);
+  const { data: v, error: errorV } = await servicio
+    .from("verificacion_antecedentes")
+    .insert({ invitado_id: invitadoId, unidad_id: U102, origen: "paquete_base", periodo_id: periodo.id, proveedor: MARCA })
+    .select("id")
+    .single();
+  if (errorV) throw new Error(`No se pudo crear la verificación: ${errorV.message}`);
+  verificacionId = v!.id;
 
   await servicio.from("paquete_verificaciones").delete().eq("referencia", MARCA);
   await entrarComo(ANFITRIONA);
@@ -64,6 +94,10 @@ beforeAll(async () => {
 afterAll(async () => {
   await salir();
   await servicio.from("paquete_verificaciones").delete().eq("referencia", MARCA);
+  if (estanciaPropia) {
+    const { error } = await retirarEstancia(estanciaPropia);
+    if (error) throw new Error(`No se pudo retirar la estancia: ${error.message}`);
+  }
   if (suscripcionNueva) {
     const { error } = await servicio.from("suscripcion_renta_corta").delete().eq("id", suscripcionNueva);
     if (error) throw new Error(error.message);
@@ -116,13 +150,16 @@ describe("la anfitriona, llamando a la API", () => {
   it("y una suscripción creada directo lleva la cuota por defecto, no la que mande", async () => {
     /*
       Crearla directo se permite --lo usan las pruebas de permisos--, pero la
-      cuota la pone la base. Con Marcela en su 301, que no tiene suscripción.
+      cuota la pone la base. Con Guillermo en su 101, que no tiene suscripción
+      y donde no vive nadie: era Marcela en su 301, pero ella vive ahí, y desde
+      el 29/10/2026 (D-70) quien vive en la vivienda no la alquila por noches.
     */
     await salir();
-    await entrarComo("admin@veciyo.test");
+    await entrarComo("propietario@veciyo.test");
+    await servicio.from("suscripcion_renta_corta").delete().eq("unidad_id", U101);
     const { data, error } = await supabase
       .from("suscripcion_renta_corta")
-      .insert({ unidad_id: U301, estado: "activa", verificaciones_base: 9999 })
+      .insert({ unidad_id: U101, estado: "activa", verificaciones_base: 9999 })
       .select("id, verificaciones_base")
       .single();
     await salir();

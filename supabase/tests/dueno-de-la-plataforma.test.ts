@@ -7,6 +7,7 @@ import {
   URL,
   api,
   crearDuenoDePrueba,
+  crearPqrsDePrueba,
   entrar,
   fueRechazada,
   leer,
@@ -59,6 +60,8 @@ function servicio(ruta: string, opciones: RequestInit = {}) {
   });
 }
 
+let pqrsDelEdificio: { id: string; retirar: () => Promise<void> } | null = null;
+
 beforeAll(async () => {
   cuentaDueno = await crearDuenoDePrueba("dueno-plataforma");
   [dueno, admin, vecino] = await Promise.all([
@@ -88,9 +91,14 @@ beforeAll(async () => {
     throw new Error(`No se pudo crear la PQRS de prueba: ${JSON.stringify(alta.datos)}`);
   }
   reclamoApp = alta.datos[0];
+
+  // Y una del edificio, sin resolver, para los dos casos de «no ve las del
+  // edificio» (11/11/2026: contaban con la primera que hubiera).
+  pqrsDelEdificio = await crearPqrsDePrueba(vecino);
 });
 
 afterAll(async () => {
+  if (pqrsDelEdificio) await pqrsDelEdificio.retirar();
   /*
     `reclamo` no tiene politica de baja --es constancia-- asi que se retira con
     la clave de servicio, por su id. Antes que la cuenta: resuelta por ella, la

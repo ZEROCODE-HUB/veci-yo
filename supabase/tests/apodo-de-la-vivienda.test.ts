@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  CLAVE_SERVICIO,
+  URL,
   CUENTA,
   actualizar,
   entrar,
@@ -81,18 +83,29 @@ afterAll(async () => {
   expect(deTomas.datos[0].apodo).toBe(laDeTomas.apodo);
 });
 
+/** `apodo_largo_maximo`, el tope que pone el panel. */
+async function topeDelApodo(): Promise<number> {
+  const r = await fetch(`${URL}/rest/v1/configuracion_plataforma?clave=eq.apodo_largo_maximo&select=valor`, {
+    headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
+  });
+  const [fila] = (await r.json()) as { valor: unknown }[];
+  const tope = Number(fila?.valor);
+  if (!Number.isInteger(tope) || tope < 1) throw new Error(`apodo_largo_maximo no sirve: ${JSON.stringify(fila)}`);
+  return tope;
+}
+
 describe("el apodo de una vivienda", () => {
   it("cada quien le pone nombre a la suya", async () => {
     const respuesta = await actualizar(
       sofia,
       `membresia_unidad?id=eq.${laDeSofia.id}`,
-      { apodo: "[prueba] La playa" },
+      { apodo: "[prueba] Playa" },
     );
 
     expect(respuesta.estado).toBe(200);
 
     const ahora = await mia(sofia);
-    expect(ahora.datos[0].apodo).toBe("[prueba] La playa");
+    expect(ahora.datos[0].apodo).toBe("[prueba] Playa");
   });
 
   it("y no al de otro, aunque sea su casa y pueda invitar a ella", async () => {
@@ -133,9 +146,11 @@ describe("el apodo de una vivienda", () => {
   it("en blanco no se guarda, y largo tampoco", async () => {
     /*
       Un apodo vacío dejaría en blanco el texto de la barra de arriba, que es
-      justo el que se pulsa para cambiar de vivienda. Y el tope de 40 es el
-      ancho de esa línea, que no se parte.
+      justo el que se pulsa para cambiar de vivienda. Y el tope es el ancho de
+      esa línea, que no se parte. Era 40 escrito aquí; desde que es el ajuste
+      `apodo_largo_maximo` del panel (16 el 11/11/2026), se lee de la base.
     */
+    const tope = await topeDelApodo();
     const vacio = await actualizar(
       sofia,
       `membresia_unidad?id=eq.${laDeSofia.id}`,
@@ -146,22 +161,22 @@ describe("el apodo de una vivienda", () => {
     const largo = await actualizar(
       sofia,
       `membresia_unidad?id=eq.${laDeSofia.id}`,
-      { apodo: "x".repeat(41) },
+      { apodo: "x".repeat(tope + 1) },
     );
     expect(fueRechazada(largo)).toBe(true);
 
-    // Y el borde de arriba sí entra: 40 justos.
+    // Y el borde de arriba sí entra: el tope justo.
     const justo = await actualizar(
       sofia,
       `membresia_unidad?id=eq.${laDeSofia.id}`,
-      { apodo: "x".repeat(40) },
+      { apodo: "x".repeat(tope) },
     );
     expect(justo.estado).toBe(200);
   });
 
   it("quitarlo es dejarlo nulo", async () => {
     await actualizar(sofia, `membresia_unidad?id=eq.${laDeSofia.id}`, {
-      apodo: "[prueba] La playa",
+      apodo: "[prueba] Playa",
     });
 
     const respuesta = await actualizar(

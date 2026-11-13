@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  api,
+  CLAVE_SERVICIO,
   CUENTA,
+  URL,
   UNIDAD,
   entrar,
   fechaEnDias,
@@ -29,17 +30,15 @@ const FECHA_DE_LA_RESERVA = fechaEnDias(8);
 
 let tomas: Sesion;   // huésped de la 102, estancia vigente hasta 2030
 let laura: Sesion;   // huésped de la misma 102: el control negativo
-let sofia: Sesion;   // la anfitriona, para limpiar
 let ramiro: Sesion;  // huésped de la 102 con la estancia ya vencida
 
 let zonaId = "";
 let reservaId = "";
 
 beforeAll(async () => {
-  [tomas, laura, sofia, ramiro] = await Promise.all([
+  [tomas, laura, ramiro] = await Promise.all([
     entrar(CUENTA.huesped),
     entrar(CUENTA.laura),
-    entrar(CUENTA.vecino),
     entrar(CUENTA.huespedVencido),
   ]);
 
@@ -64,32 +63,30 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  /*
+    Con la clave de servicio: la anfitriona ya no puede borrar la reserva de su
+    huésped, y el 11/11/2026 se vio que quedaba una por corrida ocupando el
+    único cupo de la piscina. Una limpieza que no comprueba si limpió no es una
+    limpieza.
+  */
   if (reservaId) {
-    await api(sofia, `/rest/v1/reserva_zona?id=eq.${reservaId}`, {
-      metodo: "DELETE",
+    const r = await fetch(`${URL}/rest/v1/reserva_zona?id=eq.${reservaId}`, {
+      method: "DELETE",
+      headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
     });
+    if (!r.ok) throw new Error(`No se pudo retirar la reserva: ${r.status} ${await r.text()}`);
   }
 });
 
 describe("los acompañantes de la reserva de un huésped", () => {
-  it("los apunta él mismo", async () => {
-    const alta = await insertar(tomas, "participante_reserva?select=id,nombre", {
-      reserva_id: reservaId,
-      nombre: "[prueba] acompañante",
-      tipo: "residente",
-    });
-    // Antes de la política esto devolvía 403 y la reserva quedaba a medias.
-    expect(alta.estado).toBe(201);
-  });
-
-  it("y los vuelve a leer", async () => {
-    const lista = await leer(
-      tomas,
-      `participante_reserva?select=id,nombre&reserva_id=eq.${reservaId}`,
-    );
-    expect(lista.datos.length).toBeGreaterThan(0);
-  });
-
+  /*
+    «Los apunta él mismo» y «los vuelve a leer» se fueron el 11/11/2026: desde
+    el 27/10 (hueco 42) un huésped solo apunta a la gente de su estancia, y
+    Tomás aquí no tiene ninguna, así que cualquier nombre se rechaza --que es
+    lo correcto--. El camino bueno, con una estancia y su acompañante, lo
+    recorre `recorridos/el-huesped-no-mete-gente-de-fuera.test.ts`. Aquí
+    queda lo que sigue valiendo: que otro huésped no se mete en la reserva.
+  */
   it("pero otro huésped de la misma vivienda no se mete en su reserva", async () => {
     /*
       El control negativo que importa: Laura es huésped de **esta misma

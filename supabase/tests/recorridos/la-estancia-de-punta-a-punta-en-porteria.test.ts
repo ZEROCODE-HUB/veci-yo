@@ -18,9 +18,9 @@ import {
  *   · salir todos antes del día de salida **no** termina la estancia
  *     («Opción B»); la termina el anfitrión, o su fecha.
  *
- * Va en la 205 (Guillermo). La estancia principal empieza mañana, para no pisar
- * la de hoy a mañana de `la-porteria-recibe-al-menor`; la portería ve hoy y
- * mañana, así que la tiene a la vista. Las otras dos son del pasado y se
+ * Va en la 206 (Guillermo). La estancia principal empieza hoy: desde el
+ * 09/11/2026 no se marca una llegada antes del día de la reserva. La de
+ * `la-porteria-recibe-al-menor`, que también es de hoy, va en la 102. Las otras dos son del pasado y se
  * siembran con la clave de servicio, porque nadie puede crear una estancia
  * que ya pasó.
  *
@@ -31,8 +31,9 @@ import {
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U205 = "44444444-4444-4444-4444-444444444442";
-const ANFITRION = "propietario@veciyo.test"; // Guillermo, de la 205
+// La 206 desde el 11/11/2026: la 205 ya no se alquila por noches (vive Laura).
+const U206 = "44444444-4444-4444-4444-444444444445";
+const ANFITRION = "propietario@veciyo.test"; // Guillermo, de la 206
 const GUARDIA = "guardia@veciyo.test";
 const MARCA = "[prueba] estancia de punta a punta";
 
@@ -90,7 +91,7 @@ async function sembrarEstanciaPasada(desde: string, hasta: string, guardiaId: st
     .from("visita")
     .insert({
       condominio_id: CONDOMINIO,
-      unidad_id: U205,
+      unidad_id: U206,
       tipo: "huesped_temporal",
       fecha_desde: desde,
       fecha_hasta: hasta,
@@ -128,16 +129,18 @@ beforeAll(async () => {
   const { data: viejas } = await servicio
     .from("visita")
     .select("id")
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .eq("anotaciones_ingreso", MARCA);
   for (const v of viejas ?? []) await borrarVisita(v.id);
 
   guillermoId = await entrarComo(ANFITRION);
   visitaId = await crearVisita({
     condominioId: CONDOMINIO,
-    unidadId: U205,
+    unidadId: U206,
     tipo: "huesped_temporal",
-    fechaDesde: diaDelFormulario(1),
+    // Desde hoy: desde el 09/11/2026 la portería no marca la llegada antes
+    // del día en que empieza la reserva.
+    fechaDesde: diaDelFormulario(0),
     fechaHasta: diaDelFormulario(4),
     anotacionesIngreso: MARCA,
     invitados: [

@@ -13,6 +13,7 @@ import {
   subirDocumento,
   UNIDAD,
   type Sesion,
+  hoyEnElCondominio,
 } from "./apoyo";
 
 /**
@@ -59,13 +60,15 @@ beforeAll(async () => {
   });
   reservaId = reserva.datos[0].id;
 
-  const visita = await insertar(guardia, "visita?select=id", {
+  // La anuncia Guillermo, el de la 101: desde el 02/11/2026 el guardia no da
+  // de alta visitas.
+  const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
     unidad_id: UNIDAD.u101,
     tipo: "amigos",
-    registrada_por: guardia.usuarioId,
-    fecha_desde: "2027-04-20",
-    fecha_hasta: "2027-04-20",
+    registrada_por: guillermo.usuarioId,
+    // De hoy: la portería sube la foto del documento y solo ve hoy y mañana.
+    fecha_desde: await hoyEnElCondominio(guillermo),
     anotaciones_ingreso: MARCA_PRUEBA,
   });
   visitaId = visita.datos[0].id;
@@ -110,14 +113,20 @@ describe("el comprobante de pago", () => {
     expect(bajada.estado).toBe(200);
   });
 
-  it("**la portería no**: lleva datos bancarios", async () => {
+  /*
+    Hasta el 29/10/2026 esto decía «**la portería no**: lleva datos
+    bancarios». Ese día el cliente pidió lo contrario: el guardia ve las
+    reservas del edificio **y sus comprobantes**, porque puede aprobarlas si la
+    administración se lo permite, y en una zona de pago no aprueba sin mirar el
+    comprobante (`20261029200000_porteria_y_reservas`). El caso se dio la vuelta.
+  */
+  it("la portería también, desde el 29/10/2026: puede tener que aprobarla", async () => {
     const bajada = await descargarArchivo(
       guardia,
       "reservas",
       `${reservaId}/comprobante.png`,
     );
-    expect(bajada.estado).toBeGreaterThanOrEqual(400);
-    expect(bajada.datos).not.toContain("1234-5678");
+    expect(bajada.estado).toBe(200);
   });
 
   it("y un vecino de otra vivienda tampoco", async () => {

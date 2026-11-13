@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { enDias, entrarComo, retirarEstancia, salir, supabase } from "./cliente";
 import { crearVisita } from "@/features/visitas/services/visitas.repo";
 import {
   asignarEstacionamiento,
@@ -23,7 +23,13 @@ import {
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U102 = "44444444-4444-4444-4444-444444444443";
+/*
+  La visita la anuncia la 205 (Guillermo vive ahí) y no la portería: desde el
+  02/11/2026 el guardia no da de alta visitas. Era la 102, que desde el 29/10 se
+  alquila por noches, y con fecha fija de octubre, que ya no se puede anunciar.
+*/
+const U205 = "44444444-4444-4444-4444-444444444442";
+const VIVIENDA = "propietario@veciyo.test";
 const GUARDIA = "guardia@veciyo.test";
 const MARCA = "[prueba] cupo que se queda tomado";
 
@@ -50,15 +56,18 @@ beforeAll(async () => {
     .limit(1)
     .single();
   cupoId = cupo!.id;
+  await salir();
 
+  await entrarComo(VIVIENDA);
   visitaId = await crearVisita({
     condominioId: CONDOMINIO,
-    unidadId: U102,
+    unidadId: U205,
     tipo: "amigos",
-    fechaDesde: "01/10/2026",
+    fechaDesde: enDias(0),
     anotacionesIngreso: MARCA,
     invitados: [{ nombre: `${MARCA} titular` }],
   });
+  await salir();
 });
 
 afterAll(async () => {
@@ -66,7 +75,11 @@ afterAll(async () => {
   // Se suelta antes de borrar la visita: si quedara tomado, el unico cupo de
   // visita del condominio se quedaria inutilizable para las demas pruebas.
   await liberarEstacionamiento(cupoId).catch(() => {});
-  await supabase.from("visita").delete().eq("id", visitaId);
+  // Comprobado: una limpieza que no mira si limpió deja basura (11/11/2026).
+  {
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
+  }
   await salir();
 });
 

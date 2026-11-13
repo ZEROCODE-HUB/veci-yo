@@ -38,6 +38,7 @@ const SOFIA = "vecino@veciyo.test"; // 102
 const U101 = "44444444-4444-4444-4444-444444444441";
 const U205 = "44444444-4444-4444-4444-444444444442";
 const U301 = "44444444-4444-4444-4444-444444444444";
+const U206 = "44444444-4444-4444-4444-444444444445";
 
 const MARCA = "[prueba] dos viviendas";
 
@@ -133,6 +134,13 @@ describe("una vivienda, un voto", () => {
     expect(new Set(mios.map((v) => v.opcionUuid)).size).toBe(2);
   });
 
+  it("y por la 206, la tercera (11/11/2026)", async () => {
+    // La 206 se sembró ese día para las estancias de prueba, y también es suya.
+    await votar(encuesta, opciones[0].id, U206);
+    const mios = await misVotos(encuesta);
+    expect(mios.map((v) => v.codigo).sort()).toEqual(["101", "205", "206"]);
+  });
+
   it("pero la misma vivienda no vota dos veces", async () => {
     await expect(votar(encuesta, opciones[1].id, U101)).rejects.toThrow(
       /vivienda ya voto|ya votó/i,
@@ -176,7 +184,8 @@ describe("quién falta por votar", () => {
   it("se cuenta por vivienda, no por persona", async () => {
     /*
       El defecto que el cliente destapó sin querer. Guillermo votó por sus dos
-      viviendas y Marcela por la suya, así que de las cuatro del edificio solo
+      viviendas (tres desde el 11/11/2026, con la 206) y Marcela por la suya,
+      así que de las cinco del edificio solo
       debería faltar la 102.
 
       Antes bastaba con que el propietario hubiera votado **una vez** para que
@@ -209,14 +218,14 @@ describe("quién falta por votar", () => {
     expect(faltan).toEqual([]);
   });
 
-  it("y el recuento son cuatro votos, uno por vivienda", async () => {
-    // Lo que no miente: contar. Cuatro viviendas, cuatro votos.
+  it("y el recuento son cinco votos, uno por vivienda", async () => {
+    // Lo que no miente: contar. Cinco viviendas, cinco votos.
     const { count } = await servicio
       .from("voto")
       .select("id", { count: "exact", head: true })
       .eq("publicacion_id", encuesta);
 
-    expect(count).toBe(4);
+    expect(count).toBe(5);
   });
 });
 

@@ -590,7 +590,13 @@ describe("la portería y su horario", () => {
       propietaria, y para ella las dos consultas devuelven lo mismo.
 
       Es la regla 8 entera en un caso: RLS es el techo, no el filtro.
+
+      Se trae lo que cuenta (11/11/2026): una visita en la 301 y otra en la
+      205, y una reserva de la 205. Contaba con las que hubiera, y desde que se
+      vació la base el 29/10 «el edificio tiene más de una vivienda con
+      visitas» no se cumplía.
     */
+    await sembrarRegla8();
     await salir();
     const marcelaId = await entrarComo(ADMIN);
 
@@ -637,5 +643,38 @@ describe("la portería y su horario", () => {
     expect(
       reservasSuyas.every((r) => codigosPropios.includes(r.depto)),
     ).toBe(true);
+    await quitarRegla8();
   });
 });
+
+const MARCA_REGLA_8 = "[prueba] regla 8 de la administradora";
+
+async function quitarRegla8() {
+  await servicio.from("reserva_zona").delete().eq("comentarios", MARCA_REGLA_8);
+  const { data } = await servicio.from("visita").select("id").eq("anotaciones_ingreso", MARCA_REGLA_8);
+  for (const v of data ?? []) {
+    await servicio.from("notificacion").delete().eq("entidad_id", v.id);
+    const { error } = await servicio.from("visita").delete().eq("id", v.id);
+    if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
+  }
+}
+
+async function sembrarRegla8() {
+  await quitarRegla8();
+  const lejos = new Date(Date.now() + 200 * 86400000).toISOString().slice(0, 10);
+  const base = { condominio_id: "11111111-1111-1111-1111-111111111111", tipo: "amigos", estado: "programada", fecha_desde: lejos, anotaciones_ingreso: MARCA_REGLA_8 };
+  const { error } = await servicio.from("visita").insert([
+    { ...base, unidad_id: "44444444-4444-4444-4444-444444444444" },
+    { ...base, unidad_id: "44444444-4444-4444-4444-444444444442" },
+  ]);
+  if (error) throw new Error(`No se pudieron sembrar las visitas: ${error.message}`);
+  const { error: errorR } = await servicio.from("reserva_zona").insert({
+    zona_id: "55555555-5555-5555-5555-555555555552",
+    unidad_id: "44444444-4444-4444-4444-444444444442",
+    fecha: lejos,
+    hora_inicio: "06:00",
+    hora_fin: "07:00",
+    comentarios: MARCA_REGLA_8,
+  });
+  if (errorR) throw new Error(`No se pudo sembrar la reserva: ${errorR.message}`);
+}
