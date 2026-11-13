@@ -1,6 +1,7 @@
 import { theme } from "@/config";
 import React, { useEffect, useState } from "react";
 import { AppState, Platform, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COMMIT } from "@/shared/version/version.generado";
 import { hayVersionNueva } from "@/shared/version/versionNueva";
 import {
@@ -27,6 +28,8 @@ const CADA_MS = 5 * 60_000;
 export function AvisoDeVersionNueva() {
   const [nueva, setNueva] = useState(false);
   const lista = useHayActualizacionLista();
+  // Lo alto de la barra de estado: el aviso va por debajo de ella.
+  const insetsArriba = useSafeAreaInsets().top;
 
   useEffect(() => {
     if (Platform.OS === "web") return;
@@ -66,8 +69,13 @@ export function AvisoDeVersionNueva() {
 
   return (
     <View
-      className="absolute left-0 right-0 top-0 z-50 flex-row items-center justify-between gap-3 px-4 py-2.5"
-      style={{ backgroundColor: theme.colors.secondaryDark }}
+      className="absolute left-0 right-0 top-0 z-50 flex-row items-center justify-between gap-3 px-4 pb-2.5"
+      /*
+        Por debajo de la barra de estado (13/11/2026): pegado arriba del todo,
+        el aviso quedaba encima de la hora y la batería, y el botón chocaba con
+        ellos. El área segura de arriba más el margen de siempre.
+      */
+      style={{ backgroundColor: theme.colors.secondaryDark, paddingTop: insetsArriba + 10 }}
     >
       <Text className="flex-1 text-sm font-semibold text-white">
         Hay una versión nueva de Veciyo.

@@ -7,7 +7,7 @@ const SHORT_LABELS: Record<string, string> = {
   "En Portería": "Portería",
   "No disponible": "No disp.",
   "No inscripto": "No inscr.",
-  "Amigos Familiares": "Amigos",
+  "Amigos - Familiares": "Amigos",
   "Profesional Temporal": "Prof. Temp.",
   "Profesional Permanente": "Prof. Perm.",
   "Huésped Temporal": "Huésped",

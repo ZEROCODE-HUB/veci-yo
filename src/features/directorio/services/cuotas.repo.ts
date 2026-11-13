@@ -323,6 +323,18 @@ export async function registrarAbono(params: { cuotaId: string; unidadId: string
   if (error) throw error;
 }
 
+/**
+ * Deshace lo registrado del mes para una vivienda: un pago marcado por error
+ * (13/11/2026). La vivienda vuelve a deber el mes entero. Solo la administración.
+ */
+export async function anularPagoDeCuota(params: { cuotaId: string; unidadId: string }) {
+  const { error } = await supabase.rpc("anular_pago_de_cuota", {
+    p_cuota_id: params.cuotaId,
+    p_unidad_id: params.unidadId,
+  });
+  if (error) throw error;
+}
+
 export interface ResultadoDeFila {
   codigo: string;
   registrado: boolean;

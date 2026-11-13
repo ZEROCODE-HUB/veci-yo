@@ -29,6 +29,9 @@ interface PagoDeUnidadFilaProps {
   onMarcarPagado: () => void;
   onCambiarImporte: () => void;
   onComite: (enComite: boolean) => void;
+  /** Deshace lo registrado del mes, para un pago marcado por error (13/11/2026). */
+  onDeshacerPago: () => void;
+  deshaciendo: boolean;
 }
 
 const COLOR: Record<PagoDeUnidadFilaProps["estado"], { fondo: string; texto: string }> = {
@@ -45,7 +48,11 @@ const COLOR: Record<PagoDeUnidadFilaProps["estado"], { fondo: string; texto: str
  * 09/11/2026 (Para Claude, «el checkbox debe estar directo en la lista»): la
  * casilla vuelve, al lado de «Registrar pago». Marcarla registra lo que falta
  * y la vivienda queda Pagado; un pago parcial sigue yendo por «Registrar
- * pago». Una vez pagado no se desmarca: el pago ya quedó registrado.
+ * pago».
+ *
+ * 13/11/2026 (tester: «si lo marco por error no me deja cancelarlo»): un pago
+ * registrado se puede deshacer con «Deshacer pago», que pide un segundo toque
+ * para confirmar y deja la vivienda en «No pagado».
  */
 export function PagoDeUnidadFila({
   codigo,
@@ -63,8 +70,11 @@ export function PagoDeUnidadFila({
   onMarcarPagado,
   onCambiarImporte,
   onComite,
+  onDeshacerPago,
+  deshaciendo,
 }: PagoDeUnidadFilaProps) {
   const color = COLOR[estado];
+  const [confirmandoDeshacer, setConfirmandoDeshacer] = React.useState(false);
   return (
     <View className="rounded-[20px] bg-white p-3" style={{ gap: 6, boxShadow: theme.shadows.card }}>
       <View className="flex-row items-start justify-between gap-3">
@@ -116,6 +126,31 @@ export function PagoDeUnidadFila({
           >
             <Text className="text-xs font-semibold text-white">
               {estado === "Pago parcial" ? "Registrar otro pago" : "Registrar pago"}
+            </Text>
+          </Pressable>
+        ) : null}
+        {estado !== "No pagado" ? (
+          <Pressable
+            onPress={() => {
+              if (!confirmandoDeshacer) {
+                setConfirmandoDeshacer(true);
+                return;
+              }
+              setConfirmandoDeshacer(false);
+              onDeshacerPago();
+            }}
+            disabled={sinMes || guardando || deshaciendo}
+            accessibilityRole="button"
+            accessibilityLabel={
+              confirmandoDeshacer
+                ? `Confirmar: deshacer el pago de ${codigo}`
+                : `Deshacer el pago de ${codigo}`
+            }
+            className={`rounded-full border px-2.5 py-1 active:opacity-70 ${confirmandoDeshacer ? "border-red-300 bg-red-50" : "border-gray-200"}`}
+            style={{ opacity: sinMes || guardando || deshaciendo ? 0.5 : 1 }}
+          >
+            <Text className={`text-xs ${confirmandoDeshacer ? "font-semibold text-red-700" : "text-gray-600"}`}>
+              {confirmandoDeshacer ? "Confirmar: volver a «No pagado»" : "Deshacer pago"}
             </Text>
           </Pressable>
         ) : null}

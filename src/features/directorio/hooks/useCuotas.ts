@@ -7,6 +7,7 @@ import {
   cambiarImporteDeCuota,
   obtenerEstadoDeCuotas,
   registrarAbono,
+  anularPagoDeCuota,
   registrarAbonosMasivos,
   crearCuotaDelMes,
   guardarCuotaDeUnidad,
@@ -137,6 +138,16 @@ export function useCuotas() {
     onError: avisar("No se pudo registrar el pago"),
   });
 
+  // Deshacer un pago marcado por error (13/11/2026).
+  const anular = useMutation({
+    mutationFn: (unidadId: string) => anularPagoDeCuota({ cuotaId, unidadId }),
+    onSuccess: () => {
+      invalidar();
+      addToast("Pago deshecho: la vivienda vuelve a «No pagado»", "success");
+    },
+    onError: avisar("No se pudo deshacer el pago"),
+  });
+
   const abonosMasivos = useMutation({
     mutationFn: (filas: { codigo: string; monto: string }[]) => registrarAbonosMasivos(cuotaId, filas),
     onSuccess: (resultado) => {
@@ -194,6 +205,8 @@ export function useCuotas() {
     guardandoImporteDelMes: importeDelMes.isPending,
     abonar: (unidadId: string, monto: number) => abonar.mutateAsync({ unidadId, monto }),
     abonando: abonar.isPending ? (abonar.variables?.unidadId ?? null) : null,
+    anularPago: (unidadId: string) => anular.mutateAsync(unidadId),
+    anulando: anular.isPending ? (anular.variables ?? null) : null,
     registrarDesdePlantilla: (filas: { codigo: string; monto: string }[]) => abonosMasivos.mutate(filas),
     cargandoPlantilla: abonosMasivos.isPending,
     periodos: periodos.data ?? [],

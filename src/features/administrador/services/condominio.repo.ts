@@ -79,17 +79,18 @@ export async function actualizarCondominio(
   const { error } = await supabase
     .from("condominio")
     .update({
+      /*
+        Solo lo que el formulario de Arquitectura enseña (13/11/2026). Ciudad,
+        país, moneda, zona horaria y policía los pone la plataforma al dar de
+        alta el edificio: si se escribieran aquí, un formulario abierto con
+        datos viejos los pisaría.
+      */
       nombre: valores.nombre,
       direccion: valores.direccion,
-      ciudad: valores.ciudad || null,
-      pais: valores.pais,
       identificacion_fiscal: valores.ruc || null,
       telefono: valores.telefono || null,
       codigo_pais: valores.codigoPais || null,
       email: valores.email || null,
-      telefono_policia: valores.telefonoPolicia.trim() || null,
-      moneda: valores.moneda,
-      zona_horaria: valores.zonaHoraria,
       horario_atencion: valores.horarioAtencion.trim() || null,
     })
     .eq("id", condominioId);

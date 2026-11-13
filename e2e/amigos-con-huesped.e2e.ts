@@ -69,7 +69,7 @@ test("al propietario se le tachan las noches del huésped al abrir «Amigos o fa
   await page.getByText("Registrar una visita").first().click();
   // La tarjeta del tipo abre la pantalla nueva con «Amigos» ya elegido: es el
   // camino que fallaba.
-  await page.getByText("Amigos Familiares").first().click();
+  await page.getByText("Amigos - Familiares").first().click();
 
   await irAlMes(page, LLEGA);
   const dia = (iso: string) => Number(iso.slice(8, 10));

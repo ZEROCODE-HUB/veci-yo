@@ -117,7 +117,7 @@ function DetalleDepartamento({
   vehiculos,
 }: {
   datos: Unidad;
-  depositos: number;
+  depositos: string[];
   vehiculos: VehiculoDelDirectorio[];
 }) {
   const estac = datos.codigosEstacionamiento ?? [];
@@ -133,7 +133,9 @@ function DetalleDepartamento({
           : "Sin estacionamiento"}
       </Dato>
       <Dato icono="cube-outline">
-        {depositos ? `Depósitos: ${depositos}` : "Sin depósito"}
+        {depositos.length
+          ? `${depositos.length === 1 ? "Depósito" : "Depósitos"}: ${depositos.join(", ")}`
+          : "Sin depósito"}
       </Dato>
       <Dato icono="car-sport-outline">
         {vehiculos.length
@@ -194,7 +196,7 @@ export function DirectorioDetalleModal({
           {detalle.tipo === "departamento" && (
             <DetalleDepartamento
               datos={detalle.datos}
-              depositos={detalle.depositos ?? 0}
+              depositos={detalle.depositos ?? []}
               vehiculos={detalle.vehiculos ?? []}
             />
           )}

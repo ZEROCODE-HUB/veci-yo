@@ -222,7 +222,7 @@ describe("la pantalla de visitas de un huésped", () => {
       huesped: eso es del dueño de la vivienda.
     */
     render(<VisitasHistorialScreen />);
-    expect(screen.getByText(textoCompleto("Amigos Familiares"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("Amigos - Familiares"))).toBeDefined();
     expect(screen.getByText(textoCompleto("Profesional Temporal"))).toBeDefined();
     expect(screen.queryByText(textoCompleto("Profesional Permanente"))).toBeNull();
     expect(screen.queryByText(textoCompleto("Huésped Temporal"))).toBeNull();
