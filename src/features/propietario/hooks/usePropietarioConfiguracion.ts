@@ -1,8 +1,10 @@
 
-import { residentesDeLaLista } from "../services/residentesActuales";import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { residentesDeLaLista } from "../services/residentesActuales";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadActiva } from "@/shared/hooks";
+import { estadoDe, juntarCargas } from "@/shared/components";
 import {
   cambiarPermisoDeVisitas,
   cambiarVisibilidad,
@@ -146,7 +148,36 @@ export function usePropietarioConfiguracion() {
       avisar(error, "No se pudo dar de baja a esa persona"),
   });
 
+  /*
+    Mientras llegan, los valores por defecto afirmaban cosas: «Residentes
+    actuales (0)», «No residente» con el interruptor apagado y la renta corta
+    «en marcha» (13/11/2026). La pantalla espera a tenerlos.
+  */
+  const cargaResidentes = estadoDe(query);
+  const cargaDelPropietario = juntarCargas(
+    cargaResidentes,
+    estadoDe(enMarcha),
+    estadoDe(enAlquiler),
+  );
+  const cargaDeLaLista = juntarCargas(cargaResidentes, estadoDe(alojamiento));
+
   return {
+    cargaDelPropietario,
+    cargaDeLaLista,
+    /**
+     * Qué control se está guardando, para que gire solo ese y no se pulse dos
+     * veces: «anfitrion:<membresía>», «administrador:<membresía>» o
+     * «visitas:<membresía>».
+     */
+    pendiente: designar.isPending
+      ? `${designar.variables?.cual}:${designar.variables?.membresiaId}`
+      : quitarAnfitrion.isPending
+        ? `anfitrion:${quitarAnfitrion.variables}`
+        : permisoVisitas.isPending
+          ? `visitas:${permisoVisitas.variables?.membresiaId}`
+          : null,
+    declarando: declarar.isPending,
+    quitando: quitar.isPending,
     apruebaHuespedPorHuesped,
     cambiarPermisoDeVisitas: (membresiaId: string, permitir: boolean) =>
       permisoVisitas.mutate({ membresiaId, permitir }),
@@ -174,12 +205,17 @@ export function usePropietarioConfiguracion() {
     setAdministradorPrimario: (membresiaId: string) =>
       designar.mutate({ membresiaId, cual: "administrador" }),
     /** Sobre uno mismo: nadie dice dónde vive su vecino. */
-    togglePropietarioResidente: (valor: boolean) => declarar.mutate(valor),
+    /*
+      Devuelven la promesa: la ventana de confirmación se queda abierta con el
+      botón girando hasta que se guardó, y si falla sigue ahí (el aviso del
+      error lo da el `onError`).
+    */
+    togglePropietarioResidente: (valor: boolean) => declarar.mutateAsync(valor),
     cambiarVisibilidad: (
       membresiaId: string,
       cambios: Parameters<typeof cambiarVisibilidad>[1],
     ) => visibilidad.mutate({ membresiaId, cambios }),
-    eliminarResidente: (membresiaId: string) => quitar.mutate(membresiaId),
+    eliminarResidente: (membresiaId: string) => quitar.mutateAsync(membresiaId),
     guardando:
       designar.isPending ||
       quitarAnfitrion.isPending ||

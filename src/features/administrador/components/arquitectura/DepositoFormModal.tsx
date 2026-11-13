@@ -13,7 +13,7 @@ type Props = {
   initial: DepositFormValues;
   units: Unidad[];
   onClose: () => void;
-  onSave: (form: DepositFormValues) => void;
+  onSave: (form: DepositFormValues) => unknown;
 };
 
 export function DepositoFormModal({
@@ -24,7 +24,14 @@ export function DepositoFormModal({
   onClose,
   onSave,
 }: Props) {
-  const { control, handleSubmit, reset, watch } = useForm<DepositFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
+    formState: { isSubmitting },
+  } = useForm<DepositFormValues>({
     resolver: zodResolver(depositSchema),
     defaultValues: initial,
   });
@@ -89,6 +96,7 @@ export function DepositoFormModal({
         />
         <Button
           fullWidth
+          loading={isSubmitting}
           disabled={!watch("codigo")}
           onPress={() => void handleSubmit(onSave)()}
         >

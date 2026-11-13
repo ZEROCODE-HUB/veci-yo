@@ -32,6 +32,7 @@ import {
   type ListaDelPanel,
 } from "../services/plataforma.repo";
 import { olvidarAjustesDeLaApp } from "@/shared/services/ajustesDeLaApp";
+import { estadoDe } from "@/shared/components/ui";
 import { PLATAFORMA_QUERY_KEY } from "./usePlataforma";
 
 /**
@@ -79,7 +80,8 @@ export function useHistorialDeAjuste(clave: string | null) {
     queryFn: () => historialDeParametro(clave ?? ""),
     enabled: puede && Boolean(clave),
   });
-  return { cambios: query.data ?? [], cargando: query.isLoading };
+  // `estado` para no decir «Sin cambios anotados» mientras llegan o si fallan (13/11/2026).
+  return { cambios: query.data ?? [], cargando: query.isLoading, estado: estadoDe(query) };
 }
 
 export function usePreciosDeLaApp() {
@@ -182,6 +184,8 @@ export function usePaisesDeLaApp() {
     monedas: monedas.data ?? [],
     cargando: query.isLoading,
     error: query.error,
+    /** Para no leer un fallo de la carga como «ese país no existe» (13/11/2026). */
+    estado: estadoDe(query),
     esDueno,
     cambiar,
     cambiarDocumento,
@@ -212,6 +216,8 @@ export function usePermisosDeRol(condominioId: string | null) {
     error: query.error,
     esDueno,
     guardando: cambiar.isPending,
+    /** Cuál se está guardando, para que gire solo ese y no todos (13/11/2026). */
+    enCurso: cambiar.isPending ? cambiar.variables : undefined,
     cambiar: cambiar.mutateAsync,
   };
 }

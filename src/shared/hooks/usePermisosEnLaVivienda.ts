@@ -22,6 +22,12 @@ export function usePermisosEnLaVivienda() {
   };
   const permisos = query.data ?? porDefecto;
   return {
+    /**
+     * Todavía no se sabe (13/11/2026). Mientras tanto `puede` responde lo de
+     * siempre, y una pantalla que enseña un formulario u otro según la
+     * respuesta lo enseñaba y después lo cambiaba: que espere a esto.
+     */
+    cargando: query.isLoading,
     rolEnLaVivienda: unidad?.rol ?? null,
     puede: (accion: AccionEnLaVivienda) => permisos[accion],
   };

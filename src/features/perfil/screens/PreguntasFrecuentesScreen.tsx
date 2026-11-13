@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import { Button, SearchBar, Tabs } from "@/shared/components";
+import { Button, SearchBar, SegunLaCarga, Tabs } from "@/shared/components";
 import {
   PreguntaFrecuenteFormModal,
   PreguntaFrecuenteItem,
@@ -10,7 +10,7 @@ import { usePreguntasFrecuentes } from "../hooks/useSoporte";
 import type { PreguntaFrecuente } from "../services";
 
 export function PreguntasFrecuentesScreen() {
-  const { preguntas, cargando, categorias, puedeEditar, guardar, eliminar } =
+  const { preguntas, carga, categorias, puedeEditar, guardar, eliminar } =
     usePreguntasFrecuentes();
   // `undefined` = cerrado; `null` = una nueva.
   const [editando, setEditando] = useState<PreguntaFrecuente | null | undefined>();
@@ -47,25 +47,31 @@ export function PreguntasFrecuentesScreen() {
         />
       )}
 
-      <View className="gap-2.5">
-        {filtered.map((item) => (
-          <PreguntaFrecuenteItem
-            key={item.id}
-            item={item}
-            open={expandedId === item.id}
-            onPress={() =>
-              setExpandedId(expandedId === item.id ? null : item.id)
-            }
-            onEdit={puedeEditar ? () => setEditando(item) : undefined}
-          />
-        ))}
-      </View>
+      {/*
+        Mientras carga, la silueta; si falla, el aviso con «Reintentar»: antes
+        un fallo se leía como «No hay preguntas frecuentes todavía».
+      */}
+      <SegunLaCarga estado={carga} texto="las preguntas frecuentes" enLinea>
+        <View className="gap-2.5">
+          {filtered.map((item) => (
+            <PreguntaFrecuenteItem
+              key={item.id}
+              item={item}
+              open={expandedId === item.id}
+              onPress={() =>
+                setExpandedId(expandedId === item.id ? null : item.id)
+              }
+              onEdit={puedeEditar ? () => setEditando(item) : undefined}
+            />
+          ))}
+        </View>
 
-      {!cargando && filtered.length === 0 && (
-        <Text className="text-center text-gray-400 py-8">
-          No hay preguntas frecuentes todavía.
-        </Text>
-      )}
+        {filtered.length === 0 && (
+          <Text className="text-center text-gray-400 py-8">
+            No hay preguntas frecuentes todavía.
+          </Text>
+        )}
+      </SegunLaCarga>
 
       <PreguntaFrecuenteFormModal
         visible={editando !== undefined}

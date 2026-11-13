@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { theme } from "@/config";
+import { Cargando, SegunLaCarga } from "@/shared/components";
 import { useAdjuntosReclamo } from "../../hooks/useAdjuntosReclamo";
 
 const iconAdjuntarDocumento = require("@/assets/icons/shared/adjuntar-documento.png");
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export function AdjuntosReclamo({ reclamoId, puedeEditar }: Props) {
-  const { adjuntos, agregarDocumento, agregarImagen, quitar, subiendo, abrir } =
+  const { adjuntos, carga, agregarDocumento, agregarImagen, quitar, quitandoId, subiendo, abrir } =
     useAdjuntosReclamo(reclamoId);
 
   const acciones = [
@@ -37,37 +38,46 @@ export function AdjuntosReclamo({ reclamoId, puedeEditar }: Props) {
         Adjuntos
       </Text>
 
-      {adjuntos.length === 0 && (
-        <Text className="text-sm text-gray-400">
-          {puedeEditar
-            ? "Todavía no adjuntaste nada."
-            : "No hay archivos adjuntos."}
-        </Text>
-      )}
-
-      {adjuntos.map((adjunto) => (
-        <View
-          key={adjunto.id}
-          className="flex-row items-center gap-2.5 py-2.5 px-3 rounded-xl"
-          style={{ backgroundColor: theme.colors.bgMuted }}
-        >
-          <Text style={{ fontSize: 18 }}>
-            {adjunto.tipoMime.startsWith("image/") ? "🖼️" : "📄"}
+      {/* «No hay archivos adjuntos» solo cuando la lista llegó. */}
+      <SegunLaCarga estado={carga} texto="los adjuntos" forma="filas" cuantos={2} enLinea>
+        {adjuntos.length === 0 && (
+          <Text className="text-sm text-gray-400">
+            {puedeEditar
+              ? "Todavía no adjuntaste nada."
+              : "No hay archivos adjuntos."}
           </Text>
-          <Pressable className="flex-1" onPress={() => abrir(adjunto)}>
-            <Text className="text-sm text-gray-900" numberOfLines={1}>
-              {adjunto.nombre}
+        )}
+
+        {adjuntos.map((adjunto) => (
+          <View
+            key={adjunto.id}
+            className="flex-row items-center gap-2.5 py-2.5 px-3 rounded-xl"
+            style={{ backgroundColor: theme.colors.bgMuted }}
+          >
+            <Text style={{ fontSize: 18 }}>
+              {adjunto.tipoMime.startsWith("image/") ? "🖼️" : "📄"}
             </Text>
-          </Pressable>
-          {puedeEditar && (
-            <Pressable
-              accessibilityLabel="Quitar este adjunto"
-              onPress={() => quitar(adjunto)} hitSlop={8}>
-              <Text style={{ color: theme.colors.danger, fontSize: 16 }}>✕</Text>
+            <Pressable className="flex-1" onPress={() => abrir(adjunto)}>
+              <Text className="text-sm text-gray-900" numberOfLines={1}>
+                {adjunto.nombre}
+              </Text>
             </Pressable>
-          )}
-        </View>
-      ))}
+            {puedeEditar && quitandoId === adjunto.id ? (
+              <Cargando variante="control" texto="quitando el adjunto" />
+            ) : puedeEditar ? (
+              <Pressable
+                accessibilityLabel="Quitar este adjunto"
+                onPress={() => quitar(adjunto)}
+                disabled={quitandoId !== undefined}
+                aria-disabled={quitandoId !== undefined}
+                hitSlop={8}
+              >
+                <Text style={{ color: theme.colors.danger, fontSize: 16 }}>✕</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ))}
+      </SegunLaCarga>
 
       {puedeEditar && (
         <View className="flex-row gap-6 justify-center mt-1">

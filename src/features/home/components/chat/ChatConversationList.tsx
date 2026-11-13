@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { cuandoFue } from "../../helpers/chatHelpers";
 import type { Conversation } from "@/shared/types";
 import { ANCHO_DEL_CHAT } from "./ChatThread";
+import { Cargando } from "@/shared/components";
 
 interface ChatConversationListProps {
   conversations: Conversation[];
@@ -12,6 +13,11 @@ interface ChatConversationListProps {
   emptyMessage: string;
   /** Silenciar y volver a oír. Pedido por el cliente el 02/10/2026. */
   onSilenciar?: (conv: Conversation) => void;
+  /**
+   * La conversación cuyo silencio está viajando. Su interruptor gira y no
+   * acepta otro toque: antes, pulsar dos veces mandaba otra vez el valor viejo.
+   */
+  silenciandoId?: string;
 }
 
 export function ChatConversationList({
@@ -19,6 +25,7 @@ export function ChatConversationList({
   onSelect,
   emptyMessage,
   onSilenciar,
+  silenciandoId,
 }: ChatConversationListProps) {
   if (conversations.length === 0) {
     return (
@@ -46,6 +53,7 @@ export function ChatConversationList({
     >
       {conversations.map((conv) => {
         const conNuevos = conv.noLeidos > 0 && !conv.silenciado;
+        const silenciando = silenciandoId === conv.id;
         return (
           <Pressable
             key={conv.id}
@@ -165,23 +173,33 @@ export function ChatConversationList({
                       a ningún atributo del DOM (documentado en `Checkbox.tsx`).
                     */
                     aria-checked={conv.silenciado ?? false}
-                    accessibilityState={{ checked: conv.silenciado ?? false }}
+                    accessibilityState={{
+                      checked: conv.silenciado ?? false,
+                      busy: silenciando,
+                      disabled: silenciando,
+                    }}
+                    aria-busy={silenciando}
+                    disabled={silenciando}
                     onPress={() => onSilenciar(conv)}
                     hitSlop={8}
                   >
-                    <Ionicons
-                      name={
-                        conv.silenciado
-                          ? "notifications-off"
-                          : "notifications-outline"
-                      }
-                      size={17}
-                      color={
-                        conv.silenciado
-                          ? theme.colors.textSecondary
-                          : theme.colors.textMuted
-                      }
-                    />
+                    {silenciando ? (
+                      <Cargando variante="control" texto="el silencio del chat" />
+                    ) : (
+                      <Ionicons
+                        name={
+                          conv.silenciado
+                            ? "notifications-off"
+                            : "notifications-outline"
+                        }
+                        size={17}
+                        color={
+                          conv.silenciado
+                            ? theme.colors.textSecondary
+                            : theme.colors.textMuted
+                        }
+                      />
+                    )}
                   </Pressable>
                 )}
               </View>

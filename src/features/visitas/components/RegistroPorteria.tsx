@@ -9,7 +9,8 @@ interface RegistroPorteriaProps {
   /** Solo cuando la visita pide anunciar; si solo pide notificar, no hay nada que marcar. */
   pideAnuncio: boolean;
   anunciado: boolean;
-  onToggleAnuncio?: () => void;
+  /** Si devuelve una promesa, el interruptor espera a que se guarde. */
+  onToggleAnuncio?: () => Promise<unknown> | void;
 
   llego: boolean;
   /** Por qué la entrada no se puede marcar todavía. Vacío: se puede. */
@@ -60,6 +61,20 @@ export function RegistroPorteria({
   // marcarla sin querer, y en una visita ya no se puede deshacer.
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
   const salidaCerrada = salidaDefinitiva && Boolean(horaSalida);
+  /*
+    «Anuncié al residente» no decía que estaba guardando y se podía pulsar
+    otra vez antes de que la base contestara (13/11/2026).
+  */
+  const [anunciando, setAnunciando] = useState(false);
+  const alternarAnuncio = async () => {
+    if (anunciando) return;
+    setAnunciando(true);
+    try {
+      await onToggleAnuncio?.();
+    } finally {
+      setAnunciando(false);
+    }
+  };
 
   return (
     <View
@@ -80,7 +95,8 @@ export function RegistroPorteria({
           */
           estado={anunciado ? "Anunciado" : "Todavía no"}
           activo={anunciado}
-          onChange={() => onToggleAnuncio?.()}
+          cargando={anunciando}
+          onChange={() => void alternarAnuncio()}
         />
       )}
 
@@ -132,6 +148,7 @@ function Fila({
   estado,
   activo,
   deshabilitado = false,
+  cargando = false,
   onChange,
   hora,
   onEditarHora,
@@ -140,6 +157,8 @@ function Fila({
   estado: string;
   activo: boolean;
   deshabilitado?: boolean;
+  /** Mientras se guarda: el interruptor gira y no se deja pulsar. */
+  cargando?: boolean;
   onChange: (valor: boolean) => void;
   hora?: string;
   onEditarHora?: () => void;
@@ -182,6 +201,7 @@ function Fila({
         value={activo}
         onChange={onChange}
         disabled={deshabilitado}
+        cargando={cargando}
         accessibilityLabel={etiqueta}
       />
     </View>

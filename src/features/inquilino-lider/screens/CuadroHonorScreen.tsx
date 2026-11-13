@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { theme } from "@/config";
-import { ModuloBloqueado, SearchBar } from "@/shared/components";
+import { Bloque, ErrorAlCargar, ModuloBloqueado, SearchBar, SegunLaCarga } from "@/shared/components";
 import { ESTANCIA_TERMINADA, HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 import { CarruselCuotas, ReconocimientoPopup } from "../components";
@@ -39,7 +39,17 @@ export function CuadroHonorScreen() {
     destinatario,
     handleOpenReconocimiento,
     cerrarReconocimiento,
+    carga,
+    cargaCarrusel,
+    cargaEstadoCuotas,
+    cargaGratitud,
+    gratitudSabida,
   } = useCuadroHonor();
+  /*
+    Solo se ofrece dar cuando se sabe que se puede (13/11/2026). Antes, con el
+    cero de relleno, «Gratitud» salía mientras cargaba y abría la ventana.
+  */
+  const puedeDarAhora = puedeParticipar && gratitudSabida && !yaDioEsteMes;
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -59,15 +69,37 @@ export function CuadroHonorScreen() {
         </View>
       ) : puedeVerPagina ? (
         <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-3.5">
-          <CarruselCuotas historial={cuotas} />
-          <EstadoDeCuotas
-            miCuota={miCuota}
-            detalle={detalleCuotas}
-            visibilidad={visibilidadCuotas}
-            esAdmin={esAdmin}
-          />
+          <SegunLaCarga estado={cargaCarrusel} texto="las cuotas" forma="tarjetas" cuantos={1} enLinea>
+            <CarruselCuotas historial={cuotas} />
+          </SegunLaCarga>
+          {/*
+            Sin esperar, se leía «Todavía nadie.» antes de saberlo, y la lista
+            saltaba de «solo el porcentaje» a lo publicado (13/11/2026).
+          */}
+          <SegunLaCarga estado={cargaEstadoCuotas} texto="el estado de las cuotas" forma="lineas" enLinea>
+            <EstadoDeCuotas
+              miCuota={miCuota}
+              detalle={detalleCuotas}
+              visibilidad={visibilidadCuotas}
+              esAdmin={esAdmin}
+            />
+          </SegunLaCarga>
 
-          {puedeParticipar && yaDioEsteMes && (
+          {puedeParticipar && cargaGratitud.cargando ? (
+            <View
+              accessibilityRole="progressbar"
+              aria-busy
+              role="status"
+              accessibilityLabel="Cargando tu reconocimiento"
+            >
+              <Bloque ancho="100%" alto={48} redondo={24} />
+            </View>
+          ) : null}
+          {puedeParticipar && cargaGratitud.fallo ? (
+            <ErrorAlCargar texto="tu reconocimiento" reintentar={cargaGratitud.reintentar} enLinea />
+          ) : null}
+
+          {puedeParticipar && gratitudSabida && yaDioEsteMes && (
             <View
               className="w-full py-3.5 px-4 rounded-full items-center justify-center"
               style={{ backgroundColor: theme.colors.borderLight }}
@@ -81,7 +113,7 @@ export function CuadroHonorScreen() {
             </View>
           )}
 
-          {puedeParticipar && !yaDioEsteMes && (
+          {puedeDarAhora && (
             <Pressable
               onPress={() => handleOpenReconocimiento()}
               className="w-full py-3.5 rounded-full bg-secondary items-center justify-center flex-row gap-2"
@@ -106,15 +138,18 @@ export function CuadroHonorScreen() {
             <SearchBar value={search} onChange={setSearch} />
           </View>
 
-          {filtered.map((departamento) => (
-            <DepartamentoHonorCard
-              key={departamento.id}
-              departamento={departamento}
-              puedeParticipar={puedeParticipar && !yaDioEsteMes}
-              esPropia={departamento.responsableUsuarioId === usuarioId}
-              onReconocer={handleOpenReconocimiento}
-            />
-          ))}
+          {/* La lista se quedaba en blanco mientras cargaba (13/11/2026). */}
+          <SegunLaCarga estado={carga} texto="el cuadro de honor" forma="lista" enLinea>
+            {filtered.map((departamento) => (
+              <DepartamentoHonorCard
+                key={departamento.id}
+                departamento={departamento}
+                puedeParticipar={puedeDarAhora}
+                esPropia={departamento.responsableUsuarioId === usuarioId}
+                onReconocer={handleOpenReconocimiento}
+              />
+            ))}
+          </SegunLaCarga>
 
           <View className="h-6" />
         </DesplazableConTeclado>
@@ -127,10 +162,11 @@ export function CuadroHonorScreen() {
       )}
 
       <ReconocimientoPopup
-        visible={showReconocimientoPopup && puedeParticipar && !yaDioEsteMes}
+        visible={showReconocimientoPopup && puedeDarAhora}
         onClose={cerrarReconocimiento}
         destinatarioPreseleccionado={destinatario}
         candidatos={candidatos}
+        cargaCandidatos={carga}
       />
     </View>
   );

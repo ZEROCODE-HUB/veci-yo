@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore } from "@/stores";
 import { formatDate } from "@/shared/utils";
+import { estadoDe } from "@/shared/components";
 
 /**
  * Consumo del paquete de verificaciones de antecedentes de una vivienda.
@@ -18,7 +19,7 @@ export function useConsumoVerificaciones() {
   // El consumo es por vivienda; se muestra el de la primera del usuario.
   const unidadId = unidades[0]?.unidadId ?? "";
 
-  const { data } = useQuery({
+  const consulta = useQuery({
     queryKey: ["visitas", "verificaciones", unidadId],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("consumo_verificaciones", {
@@ -45,6 +46,13 @@ export function useConsumoVerificaciones() {
     enabled: Boolean(unidadId),
   });
 
-  // Sin suscripcion de renta corta no hay paquete que mostrar.
-  return data ?? null;
+  return {
+    // Sin suscripcion de renta corta no hay paquete que mostrar.
+    datos: consulta.data ?? null,
+    /*
+      Sin esto, «Sin información de verificaciones» salía mientras cargaba y
+      para siempre si fallaba (13/11/2026).
+    */
+    estado: estadoDe(consulta),
+  };
 }

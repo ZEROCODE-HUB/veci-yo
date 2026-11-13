@@ -45,10 +45,15 @@ export function AmigosEnLaEstancia({
               size="sm"
               variant="secondary"
               loading={cancelando === v.visitaId}
+              disabled={cancelando !== null && cancelando !== v.visitaId}
               onPress={async () => {
                 setCancelando(v.visitaId);
-                await onCancelarVisita(v.visitaId);
-                setCancelando(null);
+                // `finally`: si falla, el botón no se queda girando para siempre.
+                try {
+                  await onCancelarVisita(v.visitaId);
+                } finally {
+                  setCancelando(null);
+                }
               }}
             >
               Cancelar visita

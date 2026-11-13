@@ -7,10 +7,13 @@ export function CancelarReservaDeZona({
   visible,
   onVolver,
   onCancelar,
+  cancelando = false,
 }: {
   visible: boolean;
   onVolver: () => void;
   onCancelar: () => void;
+  /** La ventana espera a la base: se cierra cuando la cancelación salió. */
+  cancelando?: boolean;
 }) {
   return (
     <Modal visible={visible} onClose={onVolver} title="Cancelar reserva">
@@ -26,12 +29,12 @@ export function CancelarReservaDeZona({
               hace el otro boton, y dos botones con la misma palabra y efectos
               opuestos es peor que la palabra mal puesta de antes.
             */}
-            <Button variant="secondary" onPress={onVolver}>
+            <Button variant="secondary" onPress={onVolver} disabled={cancelando}>
               Volver
             </Button>
           </View>
           <View className="flex-1">
-            <Button variant="danger" onPress={onCancelar}>
+            <Button variant="danger" onPress={onCancelar} loading={cancelando}>
               Cancelar reserva
             </Button>
           </View>

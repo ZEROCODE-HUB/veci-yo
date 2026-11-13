@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { Button, Input, Modal, Select, Cargando } from "@/shared/components";
+import { Button, Input, Modal, Select, Cargando, ErrorAlCargar } from "@/shared/components";
 import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
 import { RegistroDeAsistentes, ZonaBanner } from "@/features/zonas/components";
 import { useZonaDetalles } from "@/features/zonas/hooks/useZonaDetalles";
@@ -24,8 +24,11 @@ export function ZonaDetallesScreen() {
     zona,
     zonaConfig,
     cargando,
+    falloZonas,
+    reintentarZonas,
     codigosDe,
-    eliminarReserva,
+    eliminarReservaAsync,
+    cancelandoReserva,
     guardarAsistentes,
     guardandoAsistentes,
     deptoReservaOpen,
@@ -60,6 +63,9 @@ export function ZonaDetallesScreen() {
         */}
         {cargando ? (
           <Cargando texto="la zona" />
+        ) : falloZonas ? (
+          // Una red caída no es una zona borrada (13/11/2026).
+          <ErrorAlCargar texto="la zona" reintentar={reintentarZonas} />
         ) : (
           <Text className="text-center text-gray-500 py-10">
             Esta zona común ya no está disponible.
@@ -101,9 +107,17 @@ export function ZonaDetallesScreen() {
       <CancelarReservaDeZona
         visible={!!deleteItem}
         onVolver={() => setDeleteItem(null)}
+        cancelando={Boolean(cancelandoReserva)}
         onCancelar={() => {
-          if (deleteItem) eliminarReserva(deleteItem.uuid ?? "");
-          setDeleteItem(null);
+          if (!deleteItem) return;
+          /*
+            Se espera a la base: antes se cerraba al pulsar y, si fallaba, la
+            reserva seguía ahí sin que la ventana lo dijera. El motivo del
+            fallo lo avisa `useZonas`; aquí solo no se cierra.
+          */
+          eliminarReservaAsync(deleteItem.uuid ?? "")
+            .then(() => setDeleteItem(null))
+            .catch(() => {});
         }}
       />
       <Modal

@@ -6,6 +6,7 @@ import { useElegirVivienda } from "@/shared/hooks";
 import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 import { obtenerResumenDeMisViviendas } from "@/shared/services/viviendaActiva.repo";
 import { resumenEnFrases } from "../helpers/resumenDeVivienda";
+import { Bloque } from "@/shared/components";
 
 /**
  * Todas mis viviendas, de un vistazo, en el inicio.
@@ -31,11 +32,14 @@ export function MisViviendas() {
   );
   const hayVarias = viviendas.length > 1;
 
-  const { data: resumen = [] } = useQuery({
+  const consulta = useQuery({
     queryKey: ["home", "mis-viviendas"],
     queryFn: obtenerResumenDeMisViviendas,
     enabled: hayVarias,
   });
+  const resumen = consulta.data ?? [];
+  // Mientras llega, «Sin novedades hoy» no es verdad todavía (13/11/2026).
+  const cargando = consulta.isLoading;
 
   if (!hayVarias) return null;
 
@@ -70,9 +74,25 @@ export function MisViviendas() {
                 </Text>
               ) : null}
             </View>
-            <Text className="mt-1 text-xs text-gray-500">
-              {frases.length > 0 ? frases.join(" · ") : "Sin novedades hoy"}
-            </Text>
+            {cargando ? (
+              <View
+                className="mt-2"
+                accessibilityRole="progressbar"
+                aria-busy
+                role="status"
+                accessibilityLabel="Cargando lo que pasa hoy"
+              >
+                <Bloque ancho="60%" alto={12} />
+              </View>
+            ) : consulta.isError ? (
+              <Text className="mt-1 text-xs text-gray-500">
+                No se pudo cargar lo de hoy
+              </Text>
+            ) : (
+              <Text className="mt-1 text-xs text-gray-500">
+                {frases.length > 0 ? frases.join(" · ") : "Sin novedades hoy"}
+              </Text>
+            )}
           </Pressable>
         );
       })}

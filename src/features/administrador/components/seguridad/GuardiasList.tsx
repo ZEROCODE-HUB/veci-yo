@@ -14,12 +14,16 @@ export function GuardiasList({
   invitaciones = [],
   onMenu,
   onRevocar,
+  revocando,
 }: {
   guardias: Guardia[];
   /** Quienes fueron invitados y todavía no aceptaron. */
   invitaciones?: InvitacionDeGuardia[];
   onMenu: (guardia: Guardia) => void;
-  onRevocar?: (invitacionUuid: string) => void;
+  /** `false` si falló: la pregunta se queda abierta. */
+  onRevocar?: (invitacionUuid: string) => Promise<boolean>;
+  /** La invitación que se está revocando. */
+  revocando?: string;
 }) {
   // Revocar pregunta antes: actuaba al primer toque (27/10/2026).
   const [porRevocar, setPorRevocar] = useState<string | null>(null);
@@ -50,9 +54,12 @@ export function GuardiasList({
               pregunta={`¿Revocar la invitación de ${invitacion.nombre || invitacion.correo}? Su enlace dejará de valer y no podrá entrar con él.`}
               confirmar="Sí, revocar"
               onCancelar={() => setPorRevocar(null)}
+              // Espera a la base: un segundo toque mandaba otra revocación.
+              ocupado={revocando === invitacion.uuid}
               onConfirmar={() => {
-                setPorRevocar(null);
-                onRevocar(invitacion.uuid);
+                void onRevocar(invitacion.uuid).then(
+                  (ok) => ok && setPorRevocar(null),
+                );
               }}
             />
           ) : onRevocar ? (

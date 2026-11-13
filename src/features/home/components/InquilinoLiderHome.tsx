@@ -3,7 +3,14 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Modal } from "@/shared/components";
+import {
+  Bloque,
+  Button,
+  Modal,
+  SegunLaCarga,
+  estadoDe,
+  juntarCargas,
+} from "@/shared/components";
 import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
@@ -48,6 +55,10 @@ export function InquilinoLiderHome() {
     sourceData,
     diasParaGratitud,
     reputacionInsignias,
+    cargaIngresos,
+    cargaTrafico,
+    cargaGratitud,
+    cargaInsignias,
     visitas,
     HORAS_TURNO,
     COLOR_FAMILIARES,
@@ -73,12 +84,13 @@ export function InquilinoLiderHome() {
     sin entrar a otra pantalla.
   */
   const hoyIso = formatDateInput(ahora());
-  const { data: reservas = [] } = useQuery({
+  const consultaReservas = useQuery({
     queryKey: ["zonas", "reservas-de-hoy-en-inicio", hoyIso],
     queryFn: () => obtenerReservas({ ambito: "condominio", unidadIds: [] }),
     enabled: esGuardia || esAdmin,
     refetchInterval: 60_000,
   });
+  const reservas = consultaReservas.data ?? [];
   const reservasDeHoy = reservas
     .filter((r) => r.fechaIso === hoyIso && r.estado !== "Cancelado" && r.estado !== "Rechazado")
     .map((r) => {
@@ -158,25 +170,28 @@ export function InquilinoLiderHome() {
               tampoco contempla niveles.
             */}
           </View>
-          <View className="flex-row justify-between w-full mt-1">
-            {reputacionInsignias.map((ins) => (
-              <View key={ins.key} className="items-center gap-1.5 flex-1">
-                <View
-                  className="items-center justify-center rounded-full"
-                  style={{
-                    width: 38,
-                    height: 38,
-                    backgroundColor: theme.colors.warningLight,
-                  }}
-                >
-                  <Text style={{ fontSize: 17 }}>{ins.emoji}</Text>
+          {/* Mientras llegan, la fila de insignias salía vacía (13/11/2026). */}
+          <SegunLaCarga estado={cargaInsignias} texto="tus insignias" forma="lineas" cuantos={1} enLinea>
+            <View className="flex-row justify-between w-full mt-1">
+              {reputacionInsignias.map((ins) => (
+                <View key={ins.key} className="items-center gap-1.5 flex-1">
+                  <View
+                    className="items-center justify-center rounded-full"
+                    style={{
+                      width: 38,
+                      height: 38,
+                      backgroundColor: theme.colors.warningLight,
+                    }}
+                  >
+                    <Text style={{ fontSize: 17 }}>{ins.emoji}</Text>
+                  </View>
+                  <Text className="text-2xs text-gray-400 text-center">
+                    {ins.cantidad}
+                  </Text>
                 </View>
-                <Text className="text-2xs text-gray-400 text-center">
-                  {ins.cantidad}
-                </Text>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </SegunLaCarga>
         </View>
       )}
 
@@ -184,12 +199,21 @@ export function InquilinoLiderHome() {
         Gratitud: solo residentes (no huéspedes), y solo cuando puede dar uno.
         Después de dar, vuelve a los 30 días (16/10/2026).
       */}
+      {/*
+        Hasta saber cuántos días faltan no se pinta: con un cero de relleno
+        latía «puedes dar tu reconocimiento» a quien ya lo había dado
+        (13/11/2026).
+      */}
       {esResidente && !esHuesped && (
-        <GratitudCard
-          imagen={imagenGratitud}
-          diasParaGratitud={diasParaGratitud}
-          onPress={() => navigateToRoute(navigation, "CuadroHonor")}
-        />
+        <SegunLaCarga estado={cargaGratitud} texto="tu reconocimiento" enLinea>
+          {diasParaGratitud !== undefined ? (
+            <GratitudCard
+              imagen={imagenGratitud}
+              diasParaGratitud={diasParaGratitud}
+              onPress={() => navigateToRoute(navigation, "CuadroHonor")}
+            />
+          ) : null}
+        </SegunLaCarga>
       )}
 
       {/*
@@ -352,78 +376,80 @@ export function InquilinoLiderHome() {
             </View>
 
             {/* Bar chart — dual side-by-side bars per hour (matching web) */}
-            <View
-              className="flex-row items-end gap-1"
-              style={{ height: 130, paddingHorizontal: 2 }}
-              onLayout={(e) => setAnchoGrafico(e.nativeEvent.layout.width)}
-            >
-              {HORAS_TURNO.map((hora, i) => {
-                const fVal = usadoFamiliar[i] || 0;
-                const tVal = usadoTemporal[i] || 0;
-                const altF = maxVal > 0 ? (fVal / maxVal) * 100 : 0;
-                const altT = maxVal > 0 ? (tVal / maxVal) * 100 : 0;
-                return (
-                  <Pressable
-                    key={hora}
-                    onPress={() => {
-                      const tipo = modoIngreso ? "ingresos" : "salidas";
-                      setBarraPopup({
-                        hora,
-                        total: usadoPorHora[i] || 0,
-                        familiar: fVal,
-                        temporal: tVal,
-                        vehiculos: usadoVehiculos[i] || 0,
-                        tipo,
-                      });
-                    }}
-                    className="flex-1 items-center gap-0.5"
-                  >
-                    {/* Two bars side by side */}
-                    <View
-                      className="w-full flex-row items-end justify-center"
-                      style={{ height: 80, gap: 2 }}
+            <SegunLaCarga estado={cargaTrafico} texto="el gráfico de tráfico" forma="lineas" enLinea>
+              <View
+                className="flex-row items-end gap-1"
+                style={{ height: 130, paddingHorizontal: 2 }}
+                onLayout={(e) => setAnchoGrafico(e.nativeEvent.layout.width)}
+              >
+                {HORAS_TURNO.map((hora, i) => {
+                  const fVal = usadoFamiliar[i] || 0;
+                  const tVal = usadoTemporal[i] || 0;
+                  const altF = maxVal > 0 ? (fVal / maxVal) * 100 : 0;
+                  const altT = maxVal > 0 ? (tVal / maxVal) * 100 : 0;
+                  return (
+                    <Pressable
+                      key={hora}
+                      onPress={() => {
+                        const tipo = modoIngreso ? "ingresos" : "salidas";
+                        setBarraPopup({
+                          hora,
+                          total: usadoPorHora[i] || 0,
+                          familiar: fVal,
+                          temporal: tVal,
+                          vehiculos: usadoVehiculos[i] || 0,
+                          tipo,
+                        });
+                      }}
+                      className="flex-1 items-center gap-0.5"
                     >
+                      {/* Two bars side by side */}
                       <View
-                        style={{
-                          width: "40%",
-                          maxWidth: 12,
-                          height: Math.max(2, altF),
-                          borderRadius: 3,
-                          backgroundColor: COLOR_FAMILIARES,
-                          opacity: 0.85,
-                        }}
-                      />
-                      <View
-                        style={{
-                          width: "40%",
-                          maxWidth: 12,
-                          height: Math.max(2, altT),
-                          borderRadius: 3,
-                          backgroundColor: COLOR_TEMPORAL,
-                          opacity: 0.85,
-                        }}
-                      />
-                    </View>
-                    {/*
-                      Una hora de cada dos cuando la columna no da para «06:00»
-                      entera: en 320 y 360 salía «06:…» en todas (auditoría de
-                      responsividad, 25/10/2026). El hueco lleva un espacio duro
-                      --uno normal, en la web, no ocupa alto-- para que todas
-                      las barras queden a la misma altura.
-                    */}
-                    <Text
-                      className="text-2xs text-gray-400 text-center"
-                      numberOfLines={1}
-                      // Más ancha que su columna: se apoya en la de al lado,
-                      // que va vacía.
-                      style={horasAlternas ? { width: 40, maxWidth: 40, flexShrink: 0 } : undefined}
-                    >
-                      {horasAlternas && i % 2 === 1 ? "\u00a0" : hora}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+                        className="w-full flex-row items-end justify-center"
+                        style={{ height: 80, gap: 2 }}
+                      >
+                        <View
+                          style={{
+                            width: "40%",
+                            maxWidth: 12,
+                            height: Math.max(2, altF),
+                            borderRadius: 3,
+                            backgroundColor: COLOR_FAMILIARES,
+                            opacity: 0.85,
+                          }}
+                        />
+                        <View
+                          style={{
+                            width: "40%",
+                            maxWidth: 12,
+                            height: Math.max(2, altT),
+                            borderRadius: 3,
+                            backgroundColor: COLOR_TEMPORAL,
+                            opacity: 0.85,
+                          }}
+                        />
+                      </View>
+                      {/*
+                        Una hora de cada dos cuando la columna no da para «06:00»
+                        entera: en 320 y 360 salía «06:…» en todas (auditoría de
+                        responsividad, 25/10/2026). El hueco lleva un espacio duro
+                        --uno normal, en la web, no ocupa alto-- para que todas
+                        las barras queden a la misma altura.
+                      */}
+                      <Text
+                        className="text-2xs text-gray-400 text-center"
+                        numberOfLines={1}
+                        // Más ancha que su columna: se apoya en la de al lado,
+                        // que va vacía.
+                        style={horasAlternas ? { width: 40, maxWidth: 40, flexShrink: 0 } : undefined}
+                      >
+                        {horasAlternas && i % 2 === 1 ? "\u00a0" : hora}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </SegunLaCarga>
 
             <View className="flex-row gap-2.5">
               <View className="flex-row items-center gap-1">
@@ -655,12 +681,21 @@ export function InquilinoLiderHome() {
               </View>
             </View>
 
-            <IngresosSalidasTable
-              data={[...sourceData, ...reservasDeHoy].sort((a, b) =>
-                (a.horaIngreso ?? "").localeCompare(b.horaIngreso ?? ""),
-              )}
-              vacio="Hoy no hay ingresos, salidas ni reservas"
-            />
+            {/* Sin esto, mientras cargaba se leía «Hoy no hay ingresos…» (13/11/2026). */}
+            <SegunLaCarga
+              estado={juntarCargas(cargaIngresos, estadoDe(consultaReservas))}
+              texto="los ingresos y salidas"
+              forma="filas"
+              cuantos={3}
+              enLinea
+            >
+              <IngresosSalidasTable
+                data={[...sourceData, ...reservasDeHoy].sort((a, b) =>
+                  (a.horaIngreso ?? "").localeCompare(b.horaIngreso ?? ""),
+                )}
+                vacio="Hoy no hay ingresos, salidas ni reservas"
+              />
+            </SegunLaCarga>
           </View>
         </>
       )}
@@ -688,13 +723,30 @@ export function InquilinoLiderHome() {
               solo puede ser 1 o 0, y vale más decirlo con palabras que dejar
               un cero que se lee como un error.
             */}
-              <Text className="text-base text-gray-900">
-                {diasParaGratitud === 0
-                  ? "Puedes dar tu reconocimiento"
-                  : diasParaGratitud === 1
-                    ? "Mañana podrás dar un nuevo reconocimiento"
-                    : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
-              </Text>
+              {/* Hasta saberlo, un bloque gris y no un «Puedes dar…» de relleno. */}
+              {diasParaGratitud === undefined && cargaGratitud.fallo ? (
+                <Text className="flex-1 text-base text-gray-500">
+                  No se pudo saber si puedes dar tu reconocimiento
+                </Text>
+              ) : diasParaGratitud === undefined ? (
+                <View
+                  className="flex-1"
+                  accessibilityRole="progressbar"
+                  aria-busy={cargaGratitud.cargando}
+                  role="status"
+                  accessibilityLabel="Cargando tu reconocimiento"
+                >
+                  <Bloque ancho="70%" alto={16} />
+                </View>
+              ) : (
+                <Text className="text-base text-gray-900">
+                  {diasParaGratitud === 0
+                    ? "Puedes dar tu reconocimiento"
+                    : diasParaGratitud === 1
+                      ? "Mañana podrás dar un nuevo reconocimiento"
+                      : `En ${diasParaGratitud} días podrás dar un nuevo reconocimiento`}
+                </Text>
+              )}
               <View
                 className="items-center justify-center rounded-full overflow-hidden"
                 style={{

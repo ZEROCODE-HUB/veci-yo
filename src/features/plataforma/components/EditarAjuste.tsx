@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Input, Modal, Select, Toggle } from "@/shared/components/ui";
+import { Button, Input, Modal, SegunLaCarga, Select, Toggle } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { Parametro } from "../services/plataforma.repo";
@@ -53,7 +53,7 @@ interface Props {
 export function EditarAjuste({ parametro, onClose }: Props) {
   const addToast = useUIStore((s) => s.addToast);
   const { esDueno, cambiar } = useAjustesDeLaApp();
-  const { cambios } = useHistorialDeAjuste(parametro?.clave ?? null);
+  const { cambios, estado: estadoDelHistorial } = useHistorialDeAjuste(parametro?.clave ?? null);
   const [valor, setValor] = useState("");
   const [confirmando, setConfirmando] = useState(false);
 
@@ -142,15 +142,17 @@ export function EditarAjuste({ parametro, onClose }: Props) {
         ) : null}
 
         <Text className="mt-2 text-sm font-semibold text-gray-900">Últimos cambios</Text>
-        {cambios.length === 0 ? (
-          <Text className="text-xs text-gray-500">Sin cambios anotados.</Text>
-        ) : (
-          cambios.slice(0, 5).map((c) => (
-            <Text key={`${c.cuando}-${c.despues}`} className="text-xs text-gray-600">
-              {`${c.cuando} · ${c.antes ?? "—"} → ${c.despues ?? "—"} · ${c.quien}`}
-            </Text>
-          ))
-        )}
+        <SegunLaCarga estado={estadoDelHistorial} texto="los últimos cambios" forma="lineas" cuantos={3} enLinea>
+          {cambios.length === 0 ? (
+            <Text className="text-xs text-gray-500">Sin cambios anotados.</Text>
+          ) : (
+            cambios.slice(0, 5).map((c) => (
+              <Text key={`${c.cuando}-${c.despues}`} className="text-xs text-gray-600">
+                {`${c.cuando} · ${c.antes ?? "—"} → ${c.despues ?? "—"} · ${c.quien}`}
+              </Text>
+            ))
+          )}
+        </SegunLaCarga>
       </View>
     </Modal>
   );

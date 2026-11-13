@@ -54,6 +54,7 @@ beforeEach(() => {
     zona: { id: "z1", nombre: "Piscina" },
     zonaConfig: null,
     cargando: false,
+    estadoOcupacion: { cargando: false },
     // Los parámetros del edificio ya resueltos por el hook, con su valor de
     // hoy (`zona_dias_adelanto`, `zona_duracion_maxima_por_defecto`).
     diasAdelanto: 14,
@@ -138,5 +139,45 @@ describe("lo que ve la portería en una zona (15/10/2026)", () => {
 
     expect(screen.getByText(/\+ Reservar/)).toBeDefined();
     expect(screen.queryByText("Cancelada")).toBeNull();
+  });
+});
+
+describe("mientras llega la ocupación del día (13/11/2026)", () => {
+  const LIBRE = { hour: "10:00", reservations: [], ajenas: 0, libres: 1, cupos: 1 };
+
+  it("no ofrece franjas libres que quizá están llenas", () => {
+    estado = {
+      ...estado,
+      dayFilter: "hoy",
+      freeHours: [LIBRE],
+      menuItem: null,
+      estadoOcupacion: { cargando: true },
+    };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.queryByText(/\+ Reservar/)).toBeNull();
+    expect(screen.getByLabelText(/Cargando los horarios/)).toBeDefined();
+  });
+
+  it("y si no llega, lo dice en vez de pintarlas libres", () => {
+    estado = {
+      ...estado,
+      dayFilter: "hoy",
+      freeHours: [LIBRE],
+      menuItem: null,
+      estadoOcupacion: { cargando: false, fallo: true, reintentar: () => {} },
+    };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.queryByText(/\+ Reservar/)).toBeNull();
+    expect(screen.getByText(/No se pudo cargar los horarios/)).toBeDefined();
+  });
+
+  it("si la zona no se pudo cargar, no dice que ya no está", () => {
+    estado = { ...estado, zona: undefined, falloZonas: true, reintentarZonas: () => {} };
+    render(<ZonaDetallesScreen />);
+
+    expect(screen.queryByText(/ya no está disponible/)).toBeNull();
+    expect(screen.getByText("Reintentar")).toBeDefined();
   });
 });

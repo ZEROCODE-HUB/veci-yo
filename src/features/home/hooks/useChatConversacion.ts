@@ -12,6 +12,7 @@ import {
   retirarMensaje,
 } from "../services/chat.repo";
 import { CHAT_QUERY_KEY } from "./useChatConversations";
+import { estadoDe } from "@/shared/components";
 
 export function useChatConversacion(conversacionId: string) {
   const queryClient = useQueryClient();
@@ -103,6 +104,8 @@ export function useChatConversacion(conversacionId: string) {
   return {
     mensajes: query.data ?? [],
     cargando: query.isLoading,
+    /** Carga y fallo juntos, para no decir «Todavía no hay mensajes» antes de tiempo. */
+    carga: estadoDe(query),
     enviando: enviar.isPending,
     /** Se espera: quien llama borra lo escrito solo si se envió. */
     enviar: (texto: string, adjunto?: ArchivoElegido | null) =>

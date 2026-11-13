@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
+import { SegunLaCarga } from "@/shared/components";
 import { formatZonaDateParam, horasMaximas } from "../../helpers";
 import { FranjaHoraria } from "../FranjaHoraria";
 import type { DetalleDeZona } from "./tipos";
@@ -46,34 +47,43 @@ export function GrillaDeHorarios({
         </Text>
       ) : z.motivoCerrado ? (
         <Text className="text-xs text-gray-500">{z.motivoCerrado}</Text>
-      ) : z.freeHours.length === 0 ? (
-        <Text className="text-xs text-gray-500">Ya no quedan horas para reservar ese día.</Text>
       ) : (
-        z.freeHours.map(({ hour, reservations, ajenas, deTuVivienda, libres, cupos }) => (
-          <FranjaHoraria
-            key={hour}
-            hora={hour}
-            reservas={reservations}
-            esGestion={z.esGuardiaAdmin}
-            ajenas={ajenas}
-            deTuVivienda={deTuVivienda}
-            libres={libres}
-            cupos={cupos}
-            onSeleccionar={z.setMenuItem}
-            onReservar={() =>
-              z.abrirReserva(
-                hour,
-                /*
-                  El día que la grilla está pintando. Era `fechaDesde ||
-                  selectedDate || new Date()`, y con «mañana» elegido las dos
-                  primeras van vacías: se miraba la grilla de mañana y **se
-                  reservaba hoy** (13/10/2026).
-                */
-                formatZonaDateParam(z.diaDeLaGrilla),
-              )
-            }
-          />
-        ))
+        /*
+          Sin la ocupación del día, cada franja salía «libre»: se espera a que
+          llegue y, si falla, se dice en vez de ofrecer horas que quizá están
+          llenas (13/11/2026).
+        */
+        <SegunLaCarga estado={z.estadoOcupacion} texto="los horarios" forma="filas" enLinea>
+          {z.freeHours.length === 0 ? (
+            <Text className="text-xs text-gray-500">Ya no quedan horas para reservar ese día.</Text>
+          ) : (
+            z.freeHours.map(({ hour, reservations, ajenas, deTuVivienda, libres, cupos }) => (
+              <FranjaHoraria
+                key={hour}
+                hora={hour}
+                reservas={reservations}
+                esGestion={z.esGuardiaAdmin}
+                ajenas={ajenas}
+                deTuVivienda={deTuVivienda}
+                libres={libres}
+                cupos={cupos}
+                onSeleccionar={z.setMenuItem}
+                onReservar={() =>
+                  z.abrirReserva(
+                    hour,
+                    /*
+                      El día que la grilla está pintando. Era `fechaDesde ||
+                      selectedDate || new Date()`, y con «mañana» elegido las dos
+                      primeras van vacías: se miraba la grilla de mañana y **se
+                      reservaba hoy** (13/10/2026).
+                    */
+                    formatZonaDateParam(z.diaDeLaGrilla),
+                  )
+                }
+              />
+            ))
+          )}
+        </SegunLaCarga>
       )}
     </View>
   );

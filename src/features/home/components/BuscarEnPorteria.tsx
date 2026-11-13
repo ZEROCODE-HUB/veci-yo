@@ -3,7 +3,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { theme } from "@/config";
-import { Button, Input, Modal } from "@/shared/components";
+import { Button, Cargando, Input, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
@@ -121,13 +121,20 @@ export function BuscarEnPorteria() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Buscar"
-          disabled={!texto.trim()}
+          // Mientras busca un código, gira y no acepta otro toque (13/11/2026).
+          disabled={!texto.trim() || buscando}
+          accessibilityState={{ disabled: !texto.trim() || buscando, busy: buscando }}
+          aria-busy={buscando}
           onPress={buscar}
           hitSlop={6}
           className="h-9 w-9 items-center justify-center rounded-full bg-secondary"
           style={{ opacity: texto.trim() ? 1 : 0.4 }}
         >
-          <Ionicons name="arrow-forward" size={18} color={theme.colors.textInverse} />
+          {buscando ? (
+            <Cargando variante="control" texto="la búsqueda" />
+          ) : (
+            <Ionicons name="arrow-forward" size={18} color={theme.colors.textInverse} />
+          )}
         </Pressable>
         <Pressable
           accessibilityRole="button"

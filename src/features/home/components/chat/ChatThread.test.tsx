@@ -183,3 +183,22 @@ describe("retirar pregunta antes", () => {
     expect(screen.getByText("El sábado cortan el agua")).toBeTruthy();
   });
 });
+
+describe("mientras llegan los mensajes (13/11/2026)", () => {
+  it("no invita a escribir el primero antes de saber si hay", () => {
+    render(
+      <ChatThread conversation={conversacion} messages={[]} carga={{ cargando: true }} />,
+    );
+
+    expect(screen.getByLabelText(/Cargando los mensajes/)).toBeTruthy();
+    expect(screen.queryByText(/Todavía no hay mensajes/)).toBeNull();
+  });
+
+  it("y cuando ya lo sabe, lo dice", () => {
+    render(
+      <ChatThread conversation={conversacion} messages={[]} carga={{ cargando: false }} />,
+    );
+
+    expect(screen.getByText(/Todavía no hay mensajes/)).toBeTruthy();
+  });
+});

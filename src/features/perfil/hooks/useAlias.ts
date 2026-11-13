@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores";
+import { estadoDe, type EstadoDeLaCarga } from "@/shared/components";
 import { guardarAlias, obtenerAlias } from "../services";
 
 export function useAlias() {
@@ -17,13 +18,26 @@ export function useAlias() {
 
   const [alias, setAlias] = useState("");
   const [usaEnCuadroHonor, setUsaEnCuadroHonor] = useState(false);
+  const [cargado, setCargado] = useState(false);
 
   // El formulario arranca con lo guardado en cuanto llega.
   useEffect(() => {
     if (!query.data) return;
     setAlias(query.data.alias);
     setUsaEnCuadroHonor(query.data.usaEnCuadroHonor);
+    setCargado(true);
   }, [query.data]);
+
+  /*
+    El alias arranca vacío hasta que llega el guardado, y «Guardar» funcionaba
+    mientras tanto: se podía borrar el alias sin haberlo tocado (13/11/2026).
+    Se cuenta como cargando hasta que el formulario tiene lo guardado.
+  */
+  const estadoConsulta = estadoDe(query);
+  const carga: EstadoDeLaCarga = {
+    ...estadoConsulta,
+    cargando: estadoConsulta.cargando || (query.data !== undefined && !cargado),
+  };
 
   const guardar = useMutation({
     mutationFn: () =>
@@ -39,11 +53,17 @@ export function useAlias() {
   });
 
   return {
+    carga,
+    /** Si ya tiene lo guardado: sin eso, guardar escribiría el alias vacío. */
+    listo: cargado,
     alias,
     setAlias,
     usaEnCuadroHonor,
     setUsaEnCuadroHonor,
-    guardar: () => guardar.mutate(),
+    guardar: () => {
+      if (!cargado) return;
+      guardar.mutate();
+    },
     guardando: guardar.isPending,
   };
 }

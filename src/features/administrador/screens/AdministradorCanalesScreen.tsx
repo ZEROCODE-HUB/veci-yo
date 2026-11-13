@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { theme } from "@/config";
-import { Button, Modal, Cargando } from "@/shared/components";
+import { Button, Modal, Cargando, ErrorAlCargar } from "@/shared/components";
 import { useCanales } from "../hooks/useCanales";
 import { CanalForm } from "../components/canales/CanalForm";
 import {
@@ -27,7 +27,8 @@ import {
  * cascade, así que borrarlo se llevaría por delante todo lo que se dijo en él.
  */
 export function AdministradorCanalesScreen() {
-  const { canales, cargando, guardando, guardar, archivar } = useCanales();
+  const { canales, cargando, estado, guardando, guardar, archivar, archivando } =
+    useCanales();
   const [editando, setEditando] = useState<Canal | null>(null);
   const [abierto, setAbierto] = useState(false);
 
@@ -56,6 +57,8 @@ export function AdministradorCanalesScreen() {
 
         {cargando ? (
           <Cargando variante="enLinea" texto="los canales" />
+        ) : estado.fallo ? (
+          <ErrorAlCargar texto="los canales" reintentar={estado.reintentar} enLinea />
         ) : canales.length === 0 ? (
           <Text className="py-6 text-center text-sm text-gray-500">
             Este edificio no tiene canales todavía.
@@ -121,8 +124,16 @@ export function AdministradorCanalesScreen() {
                       ? `Recuperar ${canal.nombre}`
                       : `Archivar ${canal.nombre}`
                   }
+                  // Un segundo toque mientras se guarda lo deshacía (13/11/2026).
+                  disabled={archivando === canal.id}
+                  aria-busy={archivando === canal.id}
+                  accessibilityState={{ disabled: archivando === canal.id, busy: archivando === canal.id }}
                   onPress={() => archivar(canal)}
+                  className="flex-row items-center gap-1"
                 >
+                  {archivando === canal.id ? (
+                    <Cargando variante="control" texto="el canal" />
+                  ) : null}
                   <Text
                     className="text-xs font-semibold"
                     style={{
@@ -150,8 +161,7 @@ export function AdministradorCanalesScreen() {
           guardando={guardando}
           onCancelar={() => setAbierto(false)}
           onGuardar={(params) => {
-            guardar(params);
-            setAbierto(false);
+            void guardar(params).then((ok) => ok && setAbierto(false));
           }}
         />
       </Modal>

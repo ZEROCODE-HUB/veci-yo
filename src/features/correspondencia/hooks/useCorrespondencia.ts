@@ -18,6 +18,7 @@ import {
   type NuevaCorrespondencia,
 } from "../services/correspondencia.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe } from "@/shared/components";
 import type { ArchivoElegido } from "@/shared/services/archivos";
 import {
   filtrarCorrespondencia,
@@ -143,20 +144,37 @@ export function useCorrespondencia() {
     onError: alFallar,
   });
 
+  /*
+    Las acciones esperan a la base y dicen si salió (13/11/2026): antes se
+    lanzaban y se olvidaban, los modales se cerraban al pulsar y se podía
+    entregar o borrar dos veces. Nunca rechazan; el aviso del fallo ya lo da
+    `alFallar`.
+  */
+  const esperar = (promesa: Promise<unknown>): Promise<boolean> =>
+    promesa.then(
+      () => true,
+      () => false,
+    );
+
   return {
     items: query.data ?? [],
     cargando: query.isLoading,
     error: query.error,
+    /** Carga y fallo de la lista, para `SegunLaCarga`. */
+    estado: estadoDe(query),
     agregar: crear.mutate,
     creando: crear.isPending,
     actualizarEstado: (
       uuid: string,
       estado: CorrespondenciaItem["estado"],
       extras?: { entregadoA?: string },
-    ) => cambiarEstado.mutate({ uuid, estado, extras }),
-    notificarPorOtroMedio: (uuid: string) => notificar.mutate(uuid),
+    ) => esperar(cambiarEstado.mutateAsync({ uuid, estado, extras })),
+    cambiandoEstado: cambiarEstado.isPending,
+    notificarPorOtroMedio: (uuid: string) => esperar(notificar.mutateAsync(uuid)),
+    notificando: notificar.isPending,
     eliminar: (uuid: string, opciones?: { onSuccess?: () => void }) =>
-      borrar.mutate(uuid, opciones),
+      esperar(borrar.mutateAsync(uuid, opciones)),
+    eliminando: borrar.isPending,
     /*
       Con sus callbacks, como `agregar`: la pantalla anunciaba «Incidencia
       reportada» en cuanto se pulsaba, sin esperar a saber si se habia
@@ -176,7 +194,11 @@ export function usePermisosDeEntrega() {
     queryKey: ["correspondencia-permisos-de-entrega"],
     queryFn: obtenerPermisosDeEntrega,
   });
-  return query.data ?? [];
+  /*
+    Con su carga (13/11/2026): mientras no llegan, «no tiene autorizada la
+    entrega en puerta» no se puede afirmar.
+  */
+  return { permisos: query.data ?? [], estado: estadoDe(query) };
 }
 
 export function useCorrespondenciaFiltros(items: CorrespondenciaItem[]) {

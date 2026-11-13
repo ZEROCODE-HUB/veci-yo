@@ -6,7 +6,12 @@ import {
   useParametrosDeLaBase,
   useUnidadActiva,
 } from "@/shared/hooks";
-import { InfoButton, SuscripcionPagoModal } from "@/shared/components";
+import {
+  InfoButton,
+  SegunLaCarga,
+  SuscripcionPagoModal,
+  type EstadoDeLaCarga,
+} from "@/shared/components";
 import { useVerificacionDeDocumento } from "@/features/administrador/hooks/useVerificacionDeDocumento";
 import { VisitaDeleteModal } from "@/features/visitas/components";
 import type { VisitaItem } from "@/shared/types";
@@ -213,6 +218,18 @@ export function VisitasHistorialScreen() {
     demás, seguida como siempre. «Hoy» es el del teléfono: el de la portería
     está en el edificio.
   */
+  /*
+    Mientras la lista no ha llegado --o si no llega-- no se dice «No hay
+    visitas» ni «Mostrando 0 de 0» (13/11/2026): eso se leía como un edificio
+    sin visitas. La portería espera además a saber cuántos días mirar.
+  */
+  const cargaDeLaLista: EstadoDeLaCarga = {
+    cargando: cargandoVisitas || (esGuardia && !parametros.listo),
+    fallo: Boolean(visitas.error) && items.length === 0,
+    reintentar: () => visitas.refrescar?.(),
+  };
+  const listaLista = !cargaDeLaLista.cargando && !cargaDeLaLista.fallo;
+
   const filas: FilaDePorteria[] =
     vistaSub !== "lista"
       ? []
@@ -268,7 +285,8 @@ export function VisitasHistorialScreen() {
               navigation.navigate("VisitasNuevo", { tipoPreseleccionado: tipo });
             }}
             verificaciones={{
-              verificaciones: consumoVerificaciones,
+              verificaciones: consumoVerificaciones.datos,
+              estado: consumoVerificaciones.estado,
               suscripcionActiva,
               comprando: comprandoPaquete,
               onComprarPaquete: (cantidad) =>
@@ -278,7 +296,7 @@ export function VisitasHistorialScreen() {
           />
         }
         ListFooterComponent={
-          vistaSub === "lista" ? (
+          vistaSub === "lista" && listaLista ? (
             <View className="items-center mt-2">
               <Text className="text-xs text-gray-400">
                 Mostrando {filteredItems.length} de {items.length} visitas
@@ -287,14 +305,16 @@ export function VisitasHistorialScreen() {
           ) : null
         }
         ListEmptyComponent={
-          vistaSub === "calendario" ? (
-            <CalendarioVisitasComponent
-              items={filteredItems}
-              onSelect={(item) => setDetailItem(item)}
-            />
-          ) : (
-            <HistorialVacio buscando={Boolean(search)} />
-          )
+          <SegunLaCarga estado={cargaDeLaLista} texto="las visitas" forma="tarjetas" enLinea>
+            {vistaSub === "calendario" ? (
+              <CalendarioVisitasComponent
+                items={filteredItems}
+                onSelect={(item) => setDetailItem(item)}
+              />
+            ) : (
+              <HistorialVacio buscando={Boolean(search)} />
+            )}
+          </SegunLaCarga>
         }
         renderItem={({ item: fila }) =>
           fila.clase === "titulo" ? (

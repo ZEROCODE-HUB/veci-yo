@@ -23,17 +23,32 @@ beforeEach(() => {
     notificaciones: [],
     marcarLeida: () => {},
     marcarTodasLeidas: () => {},
-    isLoading: false,
+    carga: { cargando: false },
+    marcandoTodas: false,
   };
 });
 
 describe("la bandeja de notificaciones vacía", () => {
   it("mientras carga no afirma que no hay ninguna", () => {
-    estado.isLoading = true;
+    estado.carga = { cargando: true };
 
     render(<NotificacionesScreen />);
 
-    expect(screen.getByText("Buscando tus notificaciones...")).toBeDefined();
+    // Desde el 13/11/2026 la espera son bloques grises, con su nombre.
+    expect(screen.getByLabelText(/Cargando/)).toBeDefined();
+    expect(
+      screen.queryByText("No tienes notificaciones por el momento"),
+    ).toBeNull();
+  });
+
+  it("si la carga falla, lo dice y deja reintentar, sin afirmar que no hay", () => {
+    // Antes una red caída se leía «No tienes notificaciones» (13/11/2026).
+    estado.carga = { cargando: false, fallo: true, reintentar: () => {} };
+
+    render(<NotificacionesScreen />);
+
+    expect(screen.getByText(/No se pudo cargar tus notificaciones/)).toBeDefined();
+    expect(screen.getByRole("button", { name: "Reintentar" })).toBeDefined();
     expect(
       screen.queryByText("No tienes notificaciones por el momento"),
     ).toBeNull();

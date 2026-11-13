@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { SearchBar } from "@/shared/components";
+import { SearchBar, SegunLaCarga } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { ahora, formatDateShortMonth } from "@/shared/utils";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
@@ -33,7 +33,8 @@ const TIPOS: { valor: FiltroDeTipo; texto: string }[] = [
  * mañana), el mismo parámetro que la lista de la portería.
  */
 export function HoyDeMisViviendas() {
-  const { dia, setDia, tipo, setTipo, busqueda, setBusqueda, filas } = useHoyDeMisViviendas();
+  const { dia, setDia, tipo, setTipo, busqueda, setBusqueda, filas, carga } =
+    useHoyDeMisViviendas();
   const parametros = useParametrosDeLaBase();
 
   // Sin el parámetro no se sabe cuántos días ofrecer: se espera.
@@ -68,14 +69,17 @@ export function HoyDeMisViviendas() {
         ))}
       </View>
       <SearchBar value={busqueda} onChange={setBusqueda} placeholder="Buscar por nombre o vivienda" />
-      <IngresosSalidasTable
-        data={filas}
-        vacio={
-          dia <= 1
-            ? `${nombreDelDia(dia)} no entra nadie a tus viviendas`
-            : `El ${nombreDelDia(dia)} no entra nadie a tus viviendas`
-        }
-      />
+      {/* Sin esto, mientras cargaba se leía «Hoy no entra nadie» (13/11/2026). */}
+      <SegunLaCarga estado={carga} texto="quién entra a tus viviendas" forma="filas" cuantos={3} enLinea>
+        <IngresosSalidasTable
+          data={filas}
+          vacio={
+            dia <= 1
+              ? `${nombreDelDia(dia)} no entra nadie a tus viviendas`
+              : `El ${nombreDelDia(dia)} no entra nadie a tus viviendas`
+          }
+        />
+      </SegunLaCarga>
     </View>
   );
 }

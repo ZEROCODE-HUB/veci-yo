@@ -18,6 +18,9 @@ import type { VisitaItem } from "@/shared/types";
  */
 let rol = "huesped-temporal";
 let visitas: VisitaItem[] = [];
+/** Si la lista todavía no llegó, o si falló. */
+let cargandoVisitas = false;
+let errorDeVisitas: Error | null = null;
 
 /*
   React Query doblado entero: las fuentes de datos ya vienen dobladas por
@@ -117,7 +120,9 @@ vi.mock("@/features/visitas/hooks", async (original) => ({
   useVisitas: () => ({
     // La pantalla lo llama `items`, no `visitas`.
     items: visitas,
-    cargando: false,
+    cargando: cargandoVisitas,
+    error: errorDeVisitas,
+    refrescar: () => {},
     actualizarVisita: () => {},
     registrarAnuncio: () => {},
     eliminarVisita: async () => {},
@@ -155,6 +160,8 @@ const visita = (parcial: Partial<VisitaItem> = {}): VisitaItem =>
 beforeEach(() => {
   rol = "huesped-temporal";
   visitas = [];
+  cargandoVisitas = false;
+  errorDeVisitas = null;
 });
 
 describe("la pantalla de visitas de un huésped", () => {
@@ -301,5 +308,38 @@ describe("la lista de la portería", () => {
     expect(screen.queryAllByRole("heading")).toHaveLength(0);
     expect(screen.getByText(textoCompleto("Llega hoy"))).toBeDefined();
     vi.useRealTimers();
+  });
+});
+
+describe("mientras la lista no ha llegado (13/11/2026)", () => {
+  /*
+    El cliente: «en muchas pantallas no hay estados de carga». Aquí se veía
+    «No hay visitas» y «Mostrando 0 de 0» mientras cargaba, y para siempre si
+    fallaba: un edificio sin visitas y una lista que no llegó se pintaban igual.
+  */
+  it("no dice que no hay visitas: enseña la silueta", () => {
+    rol = "propietario";
+    cargandoVisitas = true;
+    render(<VisitasHistorialScreen />);
+
+    expect(screen.queryByText(textoCompleto("No hay visitas"))).toBeNull();
+    expect(screen.queryByText(/Mostrando 0 de 0/)).toBeNull();
+    expect(screen.getByLabelText(/Cargando las visitas/)).toBeDefined();
+  });
+
+  it("si falla, lo dice y deja reintentar", () => {
+    rol = "propietario";
+    errorDeVisitas = new Error("sin red");
+    render(<VisitasHistorialScreen />);
+
+    expect(screen.queryByText(textoCompleto("No hay visitas"))).toBeNull();
+    expect(screen.getByText(/No se pudo cargar las visitas/)).toBeDefined();
+    expect(screen.getByRole("button", { name: "Reintentar" })).toBeDefined();
+  });
+
+  it("y con la lista ya llegada y vacía, sí lo dice (control)", () => {
+    rol = "propietario";
+    render(<VisitasHistorialScreen />);
+    expect(screen.getByText(textoCompleto("No hay visitas"))).toBeDefined();
   });
 });

@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
-import { SearchBar, StatusTabs, Select, Cargando } from "@/shared/components";
+import { SearchBar, StatusTabs, Select, SegunLaCarga, estadoDe } from "@/shared/components";
 import { useLista } from "@/shared/hooks/useLista";
 import { ESTADOS } from "../services";
 import { tiposDelArea } from "../helpers/tiposDePqrs";
@@ -21,7 +21,8 @@ const TABS = ["Todos", ...Object.values(ESTADOS)];
 export function ReclamosScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo } = useAuthStore();
-  const { reclamos, isLoading } = useReclamos();
+  const consulta = useReclamos();
+  const { reclamos } = consulta;
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Todos");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -195,9 +196,8 @@ export function ReclamosScreen() {
             una que no tiene nada se ven igual y significan lo contrario. Ahora
             la espera es una espera.
           */}
-          {isLoading ? (
-            <Cargando variante="enLinea" texto="las solicitudes" />
-          ) : (
+          {/* Y si la carga falla, tampoco es «no has enviado ninguna» (13/11/2026). */}
+          <SegunLaCarga estado={estadoDe(consulta)} texto="las solicitudes" enLinea>
             <Text
               className="text-base text-center"
               style={{ color: theme.colors.textMuted }}
@@ -208,7 +208,7 @@ export function ReclamosScreen() {
                   : "Todavía no has enviado ninguna solicitud. Usa el botón ✉️ para escribir una."
                 : "Ninguna solicitud coincide con lo que buscas."}
             </Text>
-          )}
+          </SegunLaCarga>
         </View>
       )}
     </DesplazableConTeclado>

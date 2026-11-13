@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Button, InfoButton } from "@/shared/components";
+import { Button, InfoButton, SegunLaCarga } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import { useReglas } from "../hooks/useReglas";
 import {
@@ -139,15 +139,27 @@ export function ReglasScreen() {
             )}
           </>
         )}
-        {reglas.comoPersonal &&
-          reglas.filtered.map((item) => (
-            <ReglaDepartamentoCard
-              key={item.id}
-              departamento={item}
-              onActions={() => reglas.setActionsDepartment(item)}
-              onCompliance={() => reglas.setComplianceDepartment(item)}
-            />
-          ))}
+        {/*
+          Mientras llega, la lista salía vacía sin decir nada, y si fallaba se
+          quedaba así (13/11/2026).
+        */}
+        {reglas.comoPersonal ? (
+          <SegunLaCarga estado={reglas.estado} texto="los departamentos" forma="tarjetas" enLinea>
+            {reglas.filtered.length === 0 ? (
+              <Text className="py-4 text-sm text-center text-gray-500">
+                No hay departamentos que mostrar.
+              </Text>
+            ) : null}
+            {reglas.filtered.map((item) => (
+              <ReglaDepartamentoCard
+                key={item.id}
+                departamento={item}
+                onActions={() => reglas.setActionsDepartment(item)}
+                onCompliance={() => reglas.setComplianceDepartment(item)}
+              />
+            ))}
+          </SegunLaCarga>
+        ) : null}
         <View className="h-6" />
       </ScrollView>
       <ReglaAccionesModal

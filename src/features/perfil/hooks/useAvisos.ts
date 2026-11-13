@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
+import { estadoDe } from "@/shared/components";
 import {
   guardarPreferenciaDeAviso,
   obtenerPreferenciasDeAviso,
@@ -44,9 +45,15 @@ export function useAvisos() {
     onError: (error: Error) => addToast(error.message, "error"),
   });
 
+  const carga = estadoDe(query);
   return {
     avisos: query.data ?? [],
-    cargando: query.isLoading,
+    cargando: carga.cargando,
+    /** Si falló, la lista vacía no es «no hay avisos»: se dice y se ofrece reintentar. */
+    fallo: carga.fallo,
+    reintentar: carga.reintentar,
+    /** Lo que se está guardando, para que gire solo ese interruptor. */
+    pendiente: guardar.isPending ? guardar.variables : undefined,
     guardar: (aviso: PreferenciaDeAviso) => guardar.mutate(aviso),
   };
 }

@@ -1,7 +1,8 @@
 import { theme } from "@/config";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Cargando } from "@/shared/components";
 
 interface Props {
   /** Con quién: «Portería» o «Vivienda 102». */
@@ -11,8 +12,9 @@ interface Props {
   /** El tiempo de la llamada ya contestada, o nada mientras suena. */
   tiempo?: string;
   silencio: boolean;
-  onSilenciar: () => void;
-  onColgar: () => void;
+  /** Si devuelven una promesa, el botón espera y no se pulsa dos veces. */
+  onSilenciar: () => Promise<unknown> | void;
+  onColgar: () => Promise<unknown> | void;
 }
 
 /**
@@ -31,6 +33,26 @@ export function LlamadaEnCurso({
   onSilenciar,
   onColgar,
 }: Props) {
+  /*
+    Colgar y silenciar tardan lo que tarde la red, y no decían nada: se
+    pulsaban otra vez (13/11/2026). Mientras, el botón gira y no se deja.
+  */
+  const [silenciando, setSilenciando] = useState(false);
+  const [colgando, setColgando] = useState(false);
+  const esperar = async (
+    accion: () => Promise<unknown> | void,
+    marcar: (valor: boolean) => void,
+  ) => {
+    marcar(true);
+    try {
+      await accion();
+    } catch {
+      // El aviso del fallo, si lo hay, lo da quien llama.
+    } finally {
+      marcar(false);
+    }
+  };
+
   return (
     <View className="items-center gap-5 py-2">
       <View
@@ -67,11 +89,13 @@ export function LlamadaEnCurso({
       <View className="flex-row items-start justify-center gap-10 mt-1">
         <View className="items-center gap-1.5">
           <Pressable
-            onPress={onSilenciar}
+            onPress={() => void esperar(onSilenciar, setSilenciando)}
+            disabled={silenciando || colgando}
             accessibilityRole="button"
             accessibilityLabel={silencio ? "Activar micrófono" : "Silenciar"}
             aria-pressed={silencio}
-            accessibilityState={{ selected: silencio }}
+            aria-busy={silenciando}
+            accessibilityState={{ selected: silencio, busy: silenciando }}
             className="h-16 w-16 items-center justify-center rounded-full"
             /*
               Con los colores de `llamadaControl*` --pensados para fondo oscuro,
@@ -84,11 +108,15 @@ export function LlamadaEnCurso({
               borderColor: theme.colors.border,
             }}
           >
-            <Ionicons
-              name={silencio ? "mic-off" : "mic"}
-              size={28}
-              color={silencio ? theme.colors.textInverse : theme.colors.text}
-            />
+            {silenciando ? (
+              <Cargando variante="control" texto="el micrófono" />
+            ) : (
+              <Ionicons
+                name={silencio ? "mic-off" : "mic"}
+                size={28}
+                color={silencio ? theme.colors.textInverse : theme.colors.text}
+              />
+            )}
           </Pressable>
           <Text className="text-xs text-gray-600">
             {silencio ? "Micrófono apagado" : "Silenciar"}
@@ -97,20 +125,27 @@ export function LlamadaEnCurso({
 
         <View className="items-center gap-1.5">
           <Pressable
-            onPress={onColgar}
+            onPress={() => void esperar(onColgar, setColgando)}
+            disabled={colgando}
             accessibilityRole="button"
             accessibilityLabel="Colgar"
+            aria-busy={colgando}
+            accessibilityState={{ busy: colgando, disabled: colgando }}
             className="h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.colors.danger }}
+            style={{ backgroundColor: theme.colors.danger, opacity: colgando ? 0.6 : 1 }}
           >
-            <Ionicons
-              name="call"
-              size={28}
-              color={theme.colors.textInverse}
-              style={{ transform: [{ rotate: "135deg" }] }}
-            />
+            {colgando ? (
+              <Cargando variante="control" texto="la llamada" />
+            ) : (
+              <Ionicons
+                name="call"
+                size={28}
+                color={theme.colors.textInverse}
+                style={{ transform: [{ rotate: "135deg" }] }}
+              />
+            )}
           </Pressable>
-          <Text className="text-xs text-gray-600">Colgar</Text>
+          <Text className="text-xs text-gray-600">{colgando ? "Colgando…" : "Colgar"}</Text>
         </View>
       </View>
     </View>

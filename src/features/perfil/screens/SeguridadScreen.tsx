@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { theme } from "@/config";
 import { useUIStore } from "@/stores";
-import { Button, Input, Modal } from "@/shared/components";
+import { Button, Input, Modal, SegunLaCarga } from "@/shared/components";
 import { supabase } from "@/shared/services/supabase";
 import { solicitarRecuperacionRequest } from "@/features/onboarding/services";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -25,7 +25,7 @@ import { EliminarCuenta } from "../components/configuracion";
  */
 export function SeguridadScreen() {
   const { addToast } = useUIStore();
-  const { preferencias, escribir, guardarCampo } = useConfiguracion();
+  const { carga, preferencias, escribir, guardarCampo } = useConfiguracion();
   const [showCambiarPass, setShowCambiarPass] = useState(false);
   const [enviandoPass, setEnviandoPass] = useState(false);
 
@@ -72,14 +72,23 @@ export function SeguridadScreen() {
           <Text className="text-base font-bold text-gray-900 text-center mb-1.5">
             Información de contacto
           </Text>
-          <Input
-            label="Correo alternativo"
-            type="email"
-            value={preferencias.correoAlt}
-            onChangeText={(v) => escribir({ correoAlt: v })}
-            onBlur={() => guardarCampo("correoAlt")}
-            placeholder="correo@ejemplo.com"
-          />
+          {/* Vacía hasta que llega lo guardado: silueta mientras tanto. */}
+          <SegunLaCarga
+            estado={carga}
+            texto="tu correo alternativo"
+            forma="formulario"
+            cuantos={1}
+            enLinea
+          >
+            <Input
+              label="Correo alternativo"
+              type="email"
+              value={preferencias.correoAlt}
+              onChangeText={(v) => escribir({ correoAlt: v })}
+              onBlur={() => guardarCampo("correoAlt")}
+              placeholder="correo@ejemplo.com"
+            />
+          </SegunLaCarga>
           <Text className="text-xs text-gray-500">
             Es el mismo de Configuración: se guarda al salir del campo.
           </Text>

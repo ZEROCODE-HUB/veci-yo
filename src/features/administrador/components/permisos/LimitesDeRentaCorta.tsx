@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Input } from "@/shared/components/ui";
+import { Button, Input, SegunLaCarga, estadoDe } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils";
 import {
@@ -57,6 +57,11 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
       <Text className="text-sm font-semibold text-gray-900">
         Límites del edificio
       </Text>
+      {/*
+        Los campos esperan a lo guardado: vacíos mientras cargaba se leían como
+        «sin límite», y si la lectura fallaba no se decía (13/11/2026).
+      */}
+      <SegunLaCarga estado={estadoDe(guardados)} texto="los límites" forma="formulario" cuantos={2} enLinea>
       <View className="flex-row gap-2.5">
         <View className="flex-1">
           <Input
@@ -92,6 +97,7 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
       >
         Guardar límites
       </Button>
+      </SegunLaCarga>
     </View>
   );
 }

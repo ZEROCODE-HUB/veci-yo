@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { listaDe } from "@/shared/utils";
+import { estadoDe } from "@/shared/components";
 import { useQuery } from "@tanstack/react-query";
 import { pasaElFiltroDePorteria } from "./filtroDePorteria";
 import { useAuthStore } from "@/stores";
@@ -92,6 +93,11 @@ export function useChatConversations({
 
   return {
     ...query,
+    /*
+      Para no decir «No hay conversaciones» mientras todavía no han llegado, ni
+      cuando la consulta falló (13/11/2026, cliente: «no hay estados de carga»).
+    */
+    carga: estadoDe(query),
     conversations,
     convFiltradas,
     totalNoLeidos,

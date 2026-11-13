@@ -67,7 +67,7 @@ interface Props {
   onReportTraSire: (
     invitadoUuid: string,
     movimiento: "entrada" | "salida",
-  ) => void;
+  ) => Promise<unknown> | void;
   /** Marca los términos como aprobados por excepción del anfitrión. */
   onAcceptTerms: (invitadoUuid: string) => Promise<void> | void;
   /** Lo que decide el anfitrión cuando la verificación requiere revisión. */
@@ -85,7 +85,7 @@ interface Props {
   onCambiarExtras?: (cambios: { vehiculosPrevistos?: number | null; traeMascota?: boolean }) => Promise<void>;
   editandoEstancia?: boolean;
   /** Corrige cuántas personas vienen y cuántas son menores. */
-  onCambiarCuantos: (previstas: number, menores: number) => void;
+  onCambiarCuantos: (previstas: number, menores: number) => Promise<unknown> | void;
   cambiandoCuantos?: boolean;
 }
 
@@ -434,7 +434,11 @@ function InvitadoReservaCard({
   onResolverRevision: (aprobar: boolean, nota?: string) => Promise<void>;
   onAbrirInforme: () => Promise<string>;
   onReintentar: () => Promise<ResultadoDeReintento>;
-  onReportTraSire: (movimiento: "entrada" | "salida") => void;
+  /*
+    Devuelve la promesa para que «Ya hice TRA/SIRE» espere y no se pueda
+    pulsar dos veces: escribía dos reportes (13/11/2026).
+  */
+  onReportTraSire: (movimiento: "entrada" | "salida") => Promise<unknown> | void;
   /** Abre la confirmación de la TRA de esta persona (QA 23/10/2026). */
   onReportarTra: () => void;
 }) {
@@ -704,7 +708,7 @@ function SmallAction({
 }: {
   label: string;
   labelPendiente?: string;
-  onPress: () => Promise<void> | void;
+  onPress: () => Promise<unknown> | void;
   color?: string;
 }) {
   const [pendiente, setPendiente] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Input } from "@/shared/components";
+import { Button, Input, SegunLaCarga } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useClavePuertaEstancia } from "../hooks/useClavePuertaEstancia";
@@ -18,7 +18,7 @@ interface Props {
  */
 export function ClaveDePuertaDeLaReserva({ visitaId }: Props) {
   const { addToast } = useUIStore();
-  const { clave, cargando, guardar } = useClavePuertaEstancia(visitaId);
+  const { clave, estado, guardar } = useClavePuertaEstancia(visitaId);
   const [texto, setTexto] = useState("");
 
   useEffect(() => {
@@ -45,17 +45,22 @@ export function ClaveDePuertaDeLaReserva({ visitaId }: Props) {
         de llegada; nadie más la ve. Si la dejas en blanco, verá la clave
         general que pusiste en la configuración del alojamiento.
       </Text>
-      <Input
-        label="Clave de la puerta"
-        value={texto}
-        onChangeText={setTexto}
-        placeholder="Ej.: 4821#"
-        editable={!cargando}
-        showEditIcon={false}
-      />
-      <Button size="sm" disabled={!cambiada} loading={guardar.isPending} onPress={alGuardar}>
-        Guardar clave
-      </Button>
+      {/*
+        Mientras llega la clave, la silueta; si no llega, se dice. Un campo
+        vacío habría hecho creer que no había ninguna puesta.
+      */}
+      <SegunLaCarga estado={estado} texto="la clave" forma="formulario" cuantos={1} enLinea>
+        <Input
+          label="Clave de la puerta"
+          value={texto}
+          onChangeText={setTexto}
+          placeholder="Ej.: 4821#"
+          showEditIcon={false}
+        />
+        <Button size="sm" disabled={!cambiada} loading={guardar.isPending} onPress={alGuardar}>
+          Guardar clave
+        </Button>
+      </SegunLaCarga>
     </View>
   );
 }

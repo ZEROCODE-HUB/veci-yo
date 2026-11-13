@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Calendar } from "@/shared/components";
+import { Calendar, SegunLaCarga } from "@/shared/components";
 import { ahora, formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { SelectorDePlataforma } from "../PlataformaDeLaReserva";
@@ -15,6 +15,11 @@ import type { AltaDeVisita } from "./tipos";
  */
 export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
   const addToast = useUIStore((s) => s.addToast);
+  /*
+    Mientras llegan los días ya reservados, el calendario los pintaba libres y
+    dejaba elegirlos (13/11/2026): se espera a tenerlos.
+  */
+  const cargaDeOcupados = v.cargaDeOcupados ?? { cargando: false };
 
   if (v.esGuardia) {
     return (
@@ -45,42 +50,49 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
     */
     const entrada = v.llegadaElegida ? v.selectedDate : null;
     return (
-      <View className="gap-2">
-        <ResumenDeEstancia
-          entrada={entrada}
-          salida={v.salidaComoFecha}
-          minNoches={v.nochesMinimas}
-          maxNoches={v.nochesMaximas}
-          onBorrar={v.borrarFechas}
-        />
-        <Calendar
-          rango
-          minima={ahora()}
-          selected={entrada}
-          hasta={v.salidaComoFecha}
-          minNoches={v.nochesMinimas}
-          maxNoches={v.nochesMaximas}
-          onRango={v.alElegirRango}
-          onRangoCruzado={() =>
-            addToast("Hay una reserva en medio de esas fechas. Elige una salida anterior.", "error")
-          }
-          /*
-            Los dias que esta vivienda ya tiene reservados salen tachados. La
-            base rechaza una estancia solapada, y dejar elegir para decir que no
-            al guardar es hacer teclear para nada.
-          */
-          ocupados={v.diasOcupados}
-        />
-        <FechasEscritas
-          entrada={entrada}
-          salida={v.salidaComoFecha}
-          onRango={v.alElegirRango}
-          minNoches={v.nochesMinimas}
-          maxNoches={v.nochesMaximas}
-          ocupados={v.diasOcupados}
-        />
-        <SelectorDePlataforma valor={v.plataforma} onCambiar={v.setPlataforma} />
-      </View>
+      <SegunLaCarga
+        estado={cargaDeOcupados}
+        texto="los días reservados"
+        forma="ficha"
+        enLinea
+      >
+        <View className="gap-2">
+          <ResumenDeEstancia
+            entrada={entrada}
+            salida={v.salidaComoFecha}
+            minNoches={v.nochesMinimas}
+            maxNoches={v.nochesMaximas}
+            onBorrar={v.borrarFechas}
+          />
+          <Calendar
+            rango
+            minima={ahora()}
+            selected={entrada}
+            hasta={v.salidaComoFecha}
+            minNoches={v.nochesMinimas}
+            maxNoches={v.nochesMaximas}
+            onRango={v.alElegirRango}
+            onRangoCruzado={() =>
+              addToast("Hay una reserva en medio de esas fechas. Elige una salida anterior.", "error")
+            }
+            /*
+              Los dias que esta vivienda ya tiene reservados salen tachados. La
+              base rechaza una estancia solapada, y dejar elegir para decir que no
+              al guardar es hacer teclear para nada.
+            */
+            ocupados={v.diasOcupados}
+          />
+          <FechasEscritas
+            entrada={entrada}
+            salida={v.salidaComoFecha}
+            onRango={v.alElegirRango}
+            minNoches={v.nochesMinimas}
+            maxNoches={v.nochesMaximas}
+            ocupados={v.diasOcupados}
+          />
+          <SelectorDePlataforma valor={v.plataforma} onCambiar={v.setPlataforma} />
+        </View>
+      </SegunLaCarga>
     );
   }
 
@@ -93,23 +105,30 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
     v.tipoSeleccionado === "amigos" && !v.esGuardiaOAdmin && !v.esHuesped;
   const hayNochesTachadas = tacharNochesDelHuesped && (v.diasOcupados?.size ?? 0) > 0;
   return (
-    <View className="gap-2">
-      <Calendar
-        /*
-          Un vecino anuncia a quien va a venir: el pasado no se elige. La
-          administración sí anota lo que ya pasó.
-        */
-        minima={v.esGuardiaOAdmin ? undefined : ahora()}
-        selected={v.selectedDate}
-        onSelect={v.setSelectedDate}
-        ocupados={tacharNochesDelHuesped ? v.diasOcupados : undefined}
-      />
-      {hayNochesTachadas ? (
-        <Text className="text-xs text-gray-500">
-          En los días tachados hay un huésped alojado: las visitas de amigos o familia las anuncia
-          él. Si es un técnico o la limpieza, elige «Visita temporal».
-        </Text>
-      ) : null}
-    </View>
+    <SegunLaCarga
+      estado={tacharNochesDelHuesped ? cargaDeOcupados : { cargando: false }}
+      texto="los días reservados"
+      forma="ficha"
+      enLinea
+    >
+      <View className="gap-2">
+        <Calendar
+          /*
+            Un vecino anuncia a quien va a venir: el pasado no se elige. La
+            administración sí anota lo que ya pasó.
+          */
+          minima={v.esGuardiaOAdmin ? undefined : ahora()}
+          selected={v.selectedDate}
+          onSelect={v.setSelectedDate}
+          ocupados={tacharNochesDelHuesped ? v.diasOcupados : undefined}
+        />
+        {hayNochesTachadas ? (
+          <Text className="text-xs text-gray-500">
+            En los días tachados hay un huésped alojado: las visitas de amigos o familia las anuncia
+            él. Si es un técnico o la limpieza, elige «Visita temporal».
+          </Text>
+        ) : null}
+      </View>
+    </SegunLaCarga>
   );
 }

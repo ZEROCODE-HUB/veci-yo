@@ -3,6 +3,7 @@ import { mensajeDeError } from "@/shared/utils/error.util";
 import { supabase } from "@/shared/services/supabase";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
+import { estadoDe } from "@/shared/components";
 import {
   asignarEstacionamiento,
   liberarEstacionamiento,
@@ -128,11 +129,25 @@ export function useEstacionamientosVisita() {
       return mapa;
     }, {}),
     cargando: query.isLoading,
+    /** Carga y fallo de la lista: sin esto, un fallo se leía «no hay cupos». */
+    estado: estadoDe(query),
     asignando: asignar.isPending,
+    /*
+      Devuelven si se guardó (13/11/2026): el modal espera la respuesta en vez
+      de cerrarse antes. Nunca rechazan; el aviso del fallo ya sale arriba.
+    */
     asignar: (estacionamientoUuid: string, visitaUuid: string) =>
-      asignar.mutate({ estacionamientoUuid, visitaUuid }),
+      asignar.mutateAsync({ estacionamientoUuid, visitaUuid }).then(
+        () => true,
+        () => false,
+      ),
     liberando: liberar.isPending,
+    /** El cupo que se está soltando ahora, para que solo ese diga «Liberando…». */
+    liberandoUuid: liberar.isPending ? (liberar.variables ?? null) : null,
     liberar: (estacionamientoUuid: string) =>
-      liberar.mutate(estacionamientoUuid),
+      liberar.mutateAsync(estacionamientoUuid).then(
+        () => true,
+        () => false,
+      ),
   };
 }

@@ -9,7 +9,7 @@ import {
   type FieldPath,
 } from "react-hook-form";
 import { ahora, formatAmount } from "@/shared/utils";
-import { Button, Cargando, Checkbox, Input, Modal, Select } from "@/shared/components";
+import { Button, Cargando, Checkbox, Input, Modal, SegunLaCarga, Select } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useCamposApilados } from "@/shared/layouts";
 import type { ZonaComun } from "@/shared/types";
@@ -68,6 +68,7 @@ function FormularioDeReserva({
     errors,
     falta,
     numbers,
+    estadoPuestos,
     cantidadPersonas,
     participantTypes,
     hora,
@@ -240,12 +241,15 @@ function FormularioDeReserva({
         />
       ) : null}
       {fields.numero && (
-        <SelectField
-          control={control}
-          name="numero"
-          label={`Elige el N° de ${zona.nombre}`}
-          options={numbers}
-        />
+        // Sin la ocupación del día no se sabe qué puesto queda libre.
+        <SegunLaCarga estado={estadoPuestos} texto="los puestos libres" forma="lineas" cuantos={1} enLinea>
+          <SelectField
+            control={control}
+            name="numero"
+            label={`Elige el N° de ${zona.nombre}`}
+            options={numbers}
+          />
+        </SegunLaCarga>
       )}
 
       {fields.personas && (

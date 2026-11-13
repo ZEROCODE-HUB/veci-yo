@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { obtenerIngresosSalidas } from "../services/home.repo";
+import { estadoDe } from "@/shared/components";
 
 /**
  * Días desde hoy: 0 es hoy, 1 mañana. Cuántos se ofrecen lo dice el
@@ -33,11 +34,12 @@ export function useHoyDeMisViviendas() {
     return formatDateInput(d);
   }, [dia]);
 
-  const { data = [], isLoading } = useQuery({
+  const query = useQuery({
     queryKey: ["home", "ingresos-salidas", "mis-viviendas", fecha, propias.join(",")],
     queryFn: () => obtenerIngresosSalidas(fecha, propias),
     enabled: propias.length > 0,
   });
+  const data = useMemo(() => query.data ?? [], [query.data]);
 
   const filas = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -50,5 +52,15 @@ export function useHoyDeMisViviendas() {
     });
   }, [data, tipo, busqueda]);
 
-  return { dia, setDia, tipo, setTipo, busqueda, setBusqueda, filas, cargando: isLoading };
+  return {
+    dia,
+    setDia,
+    tipo,
+    setTipo,
+    busqueda,
+    setBusqueda,
+    filas,
+    cargando: query.isLoading,
+    carga: estadoDe(query),
+  };
 }

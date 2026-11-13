@@ -13,7 +13,10 @@ import { textoCompleto } from "@/pruebas/texto";
  */
 let rol = "propietario";
 let reservas: ReservaZona[] = [];
-const eliminarReserva = vi.fn();
+const eliminarReserva = vi.fn(() => Promise.resolve());
+let estadoReservas: { cargando: boolean; fallo?: boolean; reintentar?: () => void } = {
+  cargando: false,
+};
 
 vi.mock("@/stores", () => ({
   useAuthStore: (selector: (estado: unknown) => unknown) =>
@@ -22,7 +25,9 @@ vi.mock("@/stores", () => ({
 vi.mock("../hooks", () => ({
   useZonas: () => ({
     reservas,
-    eliminarReserva,
+    estadoReservas,
+    eliminarReservaAsync: eliminarReserva,
+    cancelandoReserva: undefined,
     zonasComunesConfig: {
       z1: { id: "z1", nombre: "Lavanderia", emoji: "🧺" },
     },
@@ -53,6 +58,7 @@ const reserva = (parcial: Partial<ReservaZona> = {}): ReservaZona =>
 beforeEach(() => {
   rol = "propietario";
   reservas = [];
+  estadoReservas = { cargando: false };
   eliminarReserva.mockClear();
 });
 
@@ -235,5 +241,19 @@ describe("mis reservas", () => {
     reservas = [reserva({ fecha: "29/09/2026", fechaIso: "2026-09-29" })];
     render(<MisReservas soloDeHoy hideIfEmpty />);
     expect(screen.getByText("Mis reservas")).toBeDefined();
+  });
+
+  it("mientras carga no dice que no tienes reservas (13/11/2026)", () => {
+    estadoReservas = { cargando: true };
+    render(<MisReservas />);
+    expect(screen.queryByText("No tienes reservas activas.")).toBeNull();
+    expect(screen.getByLabelText(/Cargando tus reservas/)).toBeDefined();
+  });
+
+  it("y si la lista no llega, lo dice y deja reintentar", () => {
+    estadoReservas = { cargando: false, fallo: true, reintentar: () => {} };
+    render(<MisReservas />);
+    expect(screen.queryByText("No tienes reservas activas.")).toBeNull();
+    expect(screen.getByText("Reintentar")).toBeDefined();
   });
 });

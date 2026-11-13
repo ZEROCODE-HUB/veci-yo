@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { estadoDe, type EstadoDeLaCarga } from "@/shared/components";
 import {
   guardarPreferencias,
   obtenerPreferencias,
@@ -40,10 +41,11 @@ export function useConfiguracion() {
   // El largo de un teléfono es el de la base, no uno escrito aquí.
   const parametros = useParametrosDeLaBase();
 
-  const { data } = useQuery({
+  const consulta = useQuery({
     queryKey: ["preferencias"],
     queryFn: obtenerPreferencias,
   });
+  const { data } = consulta;
 
   const [form, setForm] = useState<Preferencias>(preferenciasVacias);
   const [cargado, setCargado] = useState(false);
@@ -119,6 +121,12 @@ export function useConfiguracion() {
 
   /** Un interruptor no tiene "salir del campo": guarda al cambiar. */
   const cambiar = (cambios: Partial<Preferencias>) => {
+    /*
+      Antes de que llegue lo guardado, el formulario lleva los valores vacíos
+      (interruptores apagados): pulsar en ese momento escribía en la base un
+      valor decidido sobre un dato que no era el de la persona (13/11/2026).
+    */
+    if (!cargado) return;
     escribir(cambios);
     guardar.mutate(cambios);
   };
@@ -171,7 +179,22 @@ export function useConfiguracion() {
     return "";
   };
 
+  /*
+    Hasta que el formulario no tiene lo guardado se dice que se está cargando,
+    no solo hasta que llega la respuesta: entre las dos cosas hay un pintado
+    con los valores vacíos.
+  */
+  const estadoConsulta = estadoDe(consulta);
+  const carga: EstadoDeLaCarga = {
+    ...estadoConsulta,
+    cargando: estadoConsulta.cargando || (data !== undefined && !cargado),
+  };
+
   return {
+    carga,
+    /** Qué campo está guardando un interruptor, para que gire solo ese. */
+    guardandoCampo: (campo: keyof Preferencias) =>
+      guardar.isPending && Boolean(guardar.variables && campo in guardar.variables),
     preferencias: form,
     escribir,
     cambiar,
@@ -192,6 +215,7 @@ export function useConfiguracion() {
      * de React no se ha aplicado todavía—.
      */
     guardarCampo: (campo: keyof Preferencias, valor?: string) => {
+      if (!cargado) return;
       const nuevo = valor ?? form[campo];
       if (nuevo === data?.[campo]) return;
       if (typeof nuevo === "string") {

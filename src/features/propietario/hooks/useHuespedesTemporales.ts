@@ -4,6 +4,7 @@ import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore } from "@/stores";
 import { formatDateIso } from "@/shared/utils";
+import { estadoDe, type EstadoDeLaCarga } from "@/shared/components";
 import {
   useCondominioActivo,
   useParametrosDeLaBase,
@@ -51,11 +52,12 @@ export function useHuespedesTemporales() {
    * Ahora es la fila de `suscripcion_renta_corta`, que es lo que la base mira
    * para dejar o no dejar dar de alta un huesped.
    */
-  const { data: suscripcion } = useQuery({
+  const consultaSuscripcion = useQuery({
     queryKey: ["suscripcion", unidadId],
     queryFn: () => obtenerSuscripcion(unidadId),
     enabled: Boolean(unidadId),
   });
+  const { data: suscripcion } = consultaSuscripcion;
   /*
     No basta `estado === "activa"`: al darse de baja se respeta el mes pagado,
     asi que la suscripcion se queda activa con fecha de termino y deja de valer
@@ -112,30 +114,32 @@ export function useHuespedesTemporales() {
   };
 
   /** Lo que el edificio impone y lo que solo advierte (KT flujo 4.1 paso 5). */
-  const { data: limites } = useQuery({
+  const consultaLimites = useQuery({
     queryKey: ["limites-condominio", unidadId],
     queryFn: () => obtenerLimites(unidadId),
     enabled: Boolean(unidadId),
   });
+  const { data: limites } = consultaLimites;
 
   /** Lo ya configurado. Antes el formulario nacia siempre con los mismos
    *  valores inventados —"Departamento de 2 habitaciones, 1 cama queen" y un
    *  RNT de ejemplo— porque no habia nada que leer. */
-  const {
-    data: guardado,
-    isError: falloLaLectura,
-    isLoading: leyendoLoGuardado,
-  } = useQuery({
+  const consultaAlojamiento = useQuery({
     queryKey: ["alojamiento", unidadId],
     queryFn: () => obtenerAlojamiento(unidadId),
     enabled: Boolean(unidadId) && tieneSuscripcion,
   });
+  const {
+    data: guardado,
+    isError: falloLaLectura,
+    isLoading: leyendoLoGuardado,
+  } = consultaAlojamiento;
 
   /*
     Consulta aparte, como su guardado: el `select` del alojamiento ya rozaba el
     tope de longitud que admite `npm run lineas`, y partirlo rompe el tipado.
   */
-  const { data: recordatoriosGuardados } = useQuery({
+  const consultaRecordatorios = useQuery({
     queryKey: ["recordatorios-precheckin", unidadId],
     queryFn: () =>
       obtenerRecordatorios(
@@ -145,6 +149,7 @@ export function useHuespedesTemporales() {
     // Espera a los parámetros: sin nada guardado, los días son los suyos.
     enabled: Boolean(unidadId) && tieneSuscripcion && parametros.listo,
   });
+  const { data: recordatoriosGuardados } = consultaRecordatorios;
 
   /*
     La TRA. Va por su cuenta --no dentro del formulario grande-- por lo mismo
@@ -152,11 +157,12 @@ export function useHuespedesTemporales() {
     el reporte es una decision legal. Ninguna de las dos puede viajar dentro
     de un «Guardar» que tambien escribe la descripcion del piso y las fotos.
   */
-  const { data: estadoTra } = useQuery({
+  const consultaTra = useQuery({
     queryKey: ["tra", unidadId],
     queryFn: () => obtenerEstadoTra(unidadId),
     enabled: Boolean(unidadId) && tieneSuscripcion,
   });
+  const { data: estadoTra } = consultaTra;
 
   const refrescarTra = () =>
     void queryClient.invalidateQueries({ queryKey: ["tra", unidadId] });
@@ -577,8 +583,40 @@ export function useHuespedesTemporales() {
     enabled: Boolean(unidadId),
   });
 
+  /*
+    Lo que la pantalla tiene que esperar antes de afirmar nada (13/11/2026).
+    Mientras la suscripción no llegaba, `tieneSuscripcion` valía false y salía
+    «no tiene una suscripción activa» con su botón de suscribirse a quien sí
+    la tenía; y mientras no llegaba lo guardado, la pantalla quedaba en blanco
+    y los campos se llenaban solos un momento después.
+  */
+  const estadoAlojamiento = estadoDe(consultaAlojamiento);
+  const estadoRecordatorios = estadoDe(consultaRecordatorios);
+  const cargaDelFormulario: EstadoDeLaCarga = {
+    cargando:
+      !parametros.listo ||
+      estadoAlojamiento.cargando ||
+      estadoRecordatorios.cargando ||
+      // Llegó, pero el formulario todavía no tiene lo guardado.
+      (Boolean(guardado) && !rellenado) ||
+      (Boolean(recordatoriosGuardados) && !rellenadoAvisos),
+    fallo: estadoAlojamiento.fallo || estadoRecordatorios.fallo,
+    reintentar: () => {
+      void consultaAlojamiento.refetch();
+      void consultaRecordatorios.refetch();
+    },
+  };
+
   return {
     tieneSuscripcion,
+    /** La suscripción: hasta que llega no se sabe si la hay. */
+    cargaDeLaSuscripcion: estadoDe(consultaSuscripcion),
+    /** Lo guardado del alojamiento, ya puesto en el formulario. */
+    cargaDelFormulario,
+    /** Los límites del edificio: sin ellos no se dice «no ha fijado un mínimo». */
+    cargaDeLimites: estadoDe(consultaLimites),
+    /** El estado de la TRA: sin él no se dice «sin configurar». */
+    cargaDeLaTra: estadoDe(consultaTra),
     reservasPendientes: pendientes,
     limiteDeEntrada,
     darDeBaja: baja.mutate,

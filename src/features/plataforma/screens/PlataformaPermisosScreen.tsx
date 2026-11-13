@@ -39,7 +39,8 @@ export function PlataformaPermisosScreen() {
   const addToast = useUIStore((s) => s.addToast);
   const { edificios } = usePlataforma();
   const [condominioId, setCondominioId] = useState<string | null>(null);
-  const { permisos, cargando, error, esDueno, guardando, cambiar } = usePermisosDeRol(condominioId);
+  const { permisos, cargando, error, esDueno, guardando, enCurso, cambiar } = usePermisosDeRol(condominioId);
+  const esEste = (p: PermisoDeRol) => enCurso?.rol === p.rol && enCurso.accion === p.accion;
 
   const guardar = async (p: PermisoDeRol, permitido: boolean | null) => {
     try {
@@ -92,6 +93,7 @@ export function PlataformaPermisosScreen() {
                   value={p.permitido}
                   onChange={(v) => void guardar(p, v)}
                   disabled={!esDueno || guardando}
+                  cargando={esEste(p) && enCurso?.permitido !== null}
                   nombre={`${r.titulo}: ${ACCION[p.accion]}`}
                 />
                 {condominioId ? (
@@ -103,10 +105,18 @@ export function PlataformaPermisosScreen() {
                       {esDueno ? (
                         <Pressable
                           onPress={() => void guardar(p, null)}
+                          // Mientras se guarda cualquier permiso, no se manda otro encima.
+                          disabled={guardando}
                           accessibilityRole="button"
                           accessibilityLabel={`Volver a la regla general: ${ACCION[p.accion]}`}
+                          accessibilityState={{ disabled: guardando, busy: esEste(p) }}
+                          aria-disabled={guardando}
+                          aria-busy={esEste(p)}
                           hitSlop={8}
+                          className="flex-row items-center gap-1"
+                          style={{ opacity: guardando && !esEste(p) ? 0.5 : 1 }}
                         >
+                          {esEste(p) ? <Cargando variante="control" texto="la regla general" /> : null}
                           <Text className="text-xs font-semibold text-primary">Volver a la regla general</Text>
                         </Pressable>
                       ) : null}

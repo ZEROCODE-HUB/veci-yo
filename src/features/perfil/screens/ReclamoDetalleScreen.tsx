@@ -6,7 +6,15 @@ import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { useAuthStore, useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { Select, Input, Button, Modal } from "@/shared/components";
+import {
+  Select,
+  Input,
+  Button,
+  Modal,
+  Cargando,
+  SegunLaCarga,
+  estadoDe,
+} from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { useReclamos } from "../hooks/useReclamos";
 import { useLista } from "@/shared/hooks/useLista";
@@ -20,7 +28,8 @@ export function ReclamoDetalleScreen() {
   const route = useRoute<RouteProps>();
   const { id } = route.params;
   const { rolActivo } = useAuthStore();
-  const { reclamos, cambiarEstado, resolver } = useReclamos();
+  const consulta = useReclamos();
+  const { reclamos, cambiarEstado, resolver } = consulta;
   const addToast = useUIStore((estado) => estado.addToast);
   const areas = useLista("areas_de_pqrs");
   const tipos = useLista("tipos_de_pqrs");
@@ -54,10 +63,19 @@ export function ReclamoDetalleScreen() {
     }
   }, [esAdmin, reclamoId, reclamoEstado, marcarEnCurso]);
 
+  /*
+    El detalle sale de la lista: mientras llega, o si falla, decía «No se
+    encontró la PQRS» (13/11/2026). Solo se dice cuando la lista llegó y no
+    está.
+  */
   if (!reclamo) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center p-4">
-        <Text className="text-base text-gray-500">No se encontró la PQRS.</Text>
+      <View className="flex-1 bg-gray-50">
+        <SegunLaCarga estado={estadoDe(consulta)} texto="la PQRS" forma="ficha">
+          <View className="flex-1 items-center justify-center p-4">
+            <Text className="text-base text-gray-500">No se encontró la PQRS.</Text>
+          </View>
+        </SegunLaCarga>
       </View>
     );
   }
@@ -65,6 +83,8 @@ export function ReclamoDetalleScreen() {
   const handleEstadoChange = (estado: string) => {
     if (!estado) return;
     if (reclamo.estado === "Resuelto") return;
+    // Un cambio a la vez: el desplegable no se bloquea solo.
+    if (cambiarEstado.isPending) return;
     if (estado === "Resuelto") {
       setResolucionOpen(true);
       return;
@@ -179,7 +199,11 @@ export function ReclamoDetalleScreen() {
             onChange={(estado) => handleEstadoChange(String(estado))}
             placeholder="Seleccionar estado"
           />
-        ) : (
+        ) : null}
+        {esAdmin && cambiarEstado.isPending ? (
+          <Cargando variante="control" texto="el cambio de estado" />
+        ) : null}
+        {esAdmin ? null : (
           <View className="items-center gap-2">
             <Text className="text-sm font-bold text-gray-900 underline">
               ESTADO

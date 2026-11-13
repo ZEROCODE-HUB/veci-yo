@@ -51,6 +51,13 @@ export function useVerificacionDeDocumento() {
 
   return {
     verificar: query.data ?? true,
+    /*
+      Mientras llega, el `?? true` de arriba no es lo guardado: el interruptor
+      enseñaba «activo» y se podía tocar sobre ese valor (13/11/2026).
+    */
+    cargando: query.isLoading,
+    fallo: query.isError && query.data === undefined,
+    reintentar: () => void query.refetch(),
     guardando: guardar.isPending,
     setVerificar: guardar.mutate,
   };

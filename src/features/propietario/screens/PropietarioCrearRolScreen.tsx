@@ -49,6 +49,7 @@ export function PropietarioCrearRolScreen() {
         rol={form.watch("rol")}
         onSubmit={form.guardar}
         editando={form.esEdicion}
+        guardando={form.guardando}
       />
       <Modal
         visible={form.showSuccess}

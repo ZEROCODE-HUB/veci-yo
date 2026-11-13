@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Button, Modal, Cargando } from "@/shared/components";
+import { Button, Modal, Cargando, ErrorAlCargar } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore } from "@/stores";
 import { useZonas } from "../hooks";
@@ -26,7 +26,7 @@ export function ZonaReservarScreen() {
   // La administración y la portería reservan por una vivienda; su rol de
   // vivienda no cuenta aquí (huecos 9 y 14).
   const reservaPorSuVivienda = rol !== "administrador" && rol !== "guardia" && rol !== "huesped-temporal";
-  const { zonasComunesConfig, cargando } = useZonas();
+  const { zonasComunesConfig, cargando, estadoZonas } = useZonas();
   const zona = zonasComunesConfig[parametros.zonaId];
   const [successReservation, setSuccessReservation] =
     useState<SuccessReservation | null>(null);
@@ -49,11 +49,28 @@ export function ZonaReservarScreen() {
         */}
         {cargando ? (
           <Cargando texto="la zona" />
+        ) : estadoZonas.fallo ? (
+          // Una red caída no es una zona borrada (13/11/2026).
+          <ErrorAlCargar texto="la zona" reintentar={estadoZonas.reintentar} />
         ) : (
           <Text className="text-center text-gray-500 py-10">
             Esta zona común ya no está disponible.
           </Text>
         )}
+      </View>
+    );
+  }
+
+  /*
+    Mientras no se sabe si su rol puede reservar, `puede` responde «sí» por
+    defecto: se pintaba el formulario y, al llegar la respuesta, se cambiaba
+    por el aviso de que no puede (13/11/2026). Se espera.
+  */
+  if (reservaPorSuVivienda && permisos.cargando) {
+    return (
+      <View className="flex-1 bg-white">
+        <PageHeader title={`Reserva ${zona.nombre}`} />
+        <Cargando texto="la reserva" forma="formulario" />
       </View>
     );
   }

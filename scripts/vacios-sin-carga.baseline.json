@@ -1,0 +1,5 @@
+{
+  "permitidos": {
+    "src/features/perfil/components/perfil/AvisosEnEsteCelular.tsx": "«Todavía no tiene permiso para mostrar avisos» es el estado del permiso del propio celular, que se lee al momento y sin red; no es una lista que llega."
+  }
+}

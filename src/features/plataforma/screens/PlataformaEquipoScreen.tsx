@@ -128,9 +128,9 @@ export function PlataformaEquipoScreen() {
                     setPorQuitar(m.usuarioId);
                     return;
                   }
-                  setPorQuitar(null);
                   try {
                     await quitar.mutateAsync(m.usuarioId);
+                    setPorQuitar(null);
                     addToast(`${m.nombre} ya no opera la plataforma`, "success");
                   } catch (e) {
                     addToast(
@@ -139,6 +139,9 @@ export function PlataformaEquipoScreen() {
                     );
                   }
                 }}
+                // Gira esta fila mientras se quita; ninguna otra se pulsa a la vez (13/11/2026).
+                loading={quitar.isPending && quitar.variables === m.usuarioId}
+                disabled={quitar.isPending}
                 style={{ marginTop: 12, alignSelf: "flex-start" }}
               >
                 {porQuitar === m.usuarioId

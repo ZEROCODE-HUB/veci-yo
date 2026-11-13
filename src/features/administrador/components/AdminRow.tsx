@@ -15,7 +15,8 @@ export function AdminRow({
   subtitle?: string;
   status?: string;
   onPress?: () => void;
-  onDelete?: () => void;
+  /** Si devuelve `false`, falló: la confirmación se queda abierta. */
+  onDelete?: () => unknown;
 }) {
   /*
     La papelera pregunta antes. Borraba al primer toque --una vivienda, una
@@ -23,6 +24,15 @@ export function AdminRow({
     (13/10/2026).
   */
   const [confirmando, setConfirmando] = useState(false);
+  // Se espera al borrado: cerraba al pulsar y un fallo no se veía (13/11/2026).
+  const [borrando, setBorrando] = useState(false);
+  const borrar = async () => {
+    if (!onDelete) return;
+    setBorrando(true);
+    const resultado = await Promise.resolve(onDelete()).catch(() => false);
+    setBorrando(false);
+    if (resultado !== false) setConfirmando(false);
+  };
 
   return (
     <>
@@ -75,10 +85,8 @@ export function AdminRow({
             <Button
               variant="danger"
               fullWidth
-              onPress={() => {
-                setConfirmando(false);
-                onDelete();
-              }}
+              loading={borrando}
+              onPress={() => void borrar()}
             >
               <Text>Eliminar</Text>
             </Button>

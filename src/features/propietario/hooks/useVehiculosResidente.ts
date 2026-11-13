@@ -4,6 +4,7 @@ import { ahora, haciaLaBase } from "@/shared/utils/reloj.util";
 import { supabase } from "@/shared/services/supabase";
 import { useAuthStore, useUIStore } from "@/stores";
 import type { Database } from "@/shared/types/database.types";
+import { estadoDe, juntarCargas } from "@/shared/components";
 
 /**
  * Vehiculos declarados por una vivienda.
@@ -117,12 +118,20 @@ export function useVehiculosResidente(unidadId: string) {
   });
 
   return {
+    /**
+     * Los vehículos y las cocheras juntos: sin las dos, «0 de 0» y «no tiene
+     * cocheras asignadas» se decían mientras cargaba (13/11/2026).
+     */
+    carga: juntarCargas(estadoDe(query), estadoDe(cocheras)),
+    /** El vehículo que se está quitando: solo ese gira. */
+    quitandoId: quitar.isPending ? quitar.variables : undefined,
     /** Cuántos vehículos caben: las cocheras privadas de la vivienda. */
     cocheras: cocheras.data ?? 0,
     vehiculos: query.data ?? [],
     cargando: query.isLoading,
     guardando: agregar.isPending,
-    agregar: (datos: { placa: string; tipo: TipoVehiculo }) => agregar.mutate(datos),
+    // La promesa, para cerrar la ventana cuando se guardó y no antes.
+    agregar: (datos: { placa: string; tipo: TipoVehiculo }) => agregar.mutateAsync(datos),
     quitar: (uuid: string) => quitar.mutate(uuid),
   };
 }

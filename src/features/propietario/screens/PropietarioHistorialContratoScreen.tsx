@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import { ContratoAltaModal, ContratoCard } from "../components/contratos";
 import {
   useHistorialContrato,
@@ -27,7 +27,7 @@ import {
 export function PropietarioHistorialContratoScreen() {
   const {
     contratos,
-    cargando,
+    carga,
     terminosGenerales,
     candidatos,
     altaAbierta,
@@ -47,7 +47,21 @@ export function PropietarioHistorialContratoScreen() {
     />
   );
 
-  if (!cargando && contratos.length === 0) {
+  /*
+    Mientras carga, la silueta; si falla, «No se pudo cargar · Reintentar».
+    Un fallo decía «todavía no tiene ningún contrato registrado» (13/11/2026).
+  */
+  if (carga.cargando || carga.fallo) {
+    return (
+      <View className="flex-1 bg-gray-50">
+        <SegunLaCarga estado={carga} texto="los contratos" forma="tarjetas">
+          {null}
+        </SegunLaCarga>
+      </View>
+    );
+  }
+
+  if (contratos.length === 0) {
     return (
       <View className="flex-1 bg-gray-50 p-6 gap-4">
         <Text className="text-sm text-center text-gray-500">
@@ -75,12 +89,6 @@ export function PropietarioHistorialContratoScreen() {
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-3"
     >
-      {cargando && (
-        <Text className="text-sm text-center text-gray-500">
-          Buscando los contratos…
-        </Text>
-      )}
-
       {contratos.map((contrato) => (
         <ContratoCard
           key={contrato.id}

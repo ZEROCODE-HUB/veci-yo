@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import { useLayoutEffect, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -15,7 +15,7 @@ import { useAnuncios } from "../hooks/useAnuncios";
 import type { AnuncioFormValues } from "../types/anuncios";
 import type { NuevoAnuncio } from "../services/anuncios.repo";
 import type { ViviendaStackParamList } from "@/shared/types";
-import { InfoButton } from "@/shared/components";
+import { InfoButton, SegunLaCarga } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo } from "@/shared/hooks";
@@ -26,7 +26,7 @@ export function AnunciosScreen() {
   const navigation = useNavigation<Nav>();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const condominioId = useCondominioActivo() ?? "";
-  const { anuncios, filtros, updateFiltro, publicarAnuncio, publicando } =
+  const { anuncios, filtros, updateFiltro, publicarAnuncio, publicando, carga } =
     useAnuncios();
   const [crearOpen, setCrearOpen] = useState(false);
   const [exitoOpen, setExitoOpen] = useState(false);
@@ -115,13 +115,25 @@ export function AnunciosScreen() {
           rolActivo !== "guardia" && rolActivo !== "huesped-temporal"
         }
       />
-      <AnunciosList
-        anuncios={anuncios}
-        onPress={(anuncio) =>
-          // Se navega con el uuid real, no con el id numerico derivado.
-          navigation.navigate("AnuncioDetalle", { id: anuncio.uuid ?? "" })
-        }
-      />
+      {/*
+        No tenía espera ni vacío: mientras cargaba, y si no había ninguno, la
+        pantalla se quedaba en blanco debajo de los filtros (13/11/2026).
+      */}
+      <SegunLaCarga estado={carga} texto="los anuncios" forma="tarjetas" enLinea>
+        {anuncios.length === 0 ? (
+          <Text className="text-center text-sm text-gray-400 py-8">
+            No hay anuncios para mostrar.
+          </Text>
+        ) : (
+          <AnunciosList
+            anuncios={anuncios}
+            onPress={(anuncio) =>
+              // Se navega con el uuid real, no con el id numerico derivado.
+              navigation.navigate("AnuncioDetalle", { id: anuncio.uuid ?? "" })
+            }
+          />
+        )}
+      </SegunLaCarga>
       <View className="h-6" />
       <AnuncioFormModal
         visible={crearOpen}

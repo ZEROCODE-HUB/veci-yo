@@ -19,8 +19,11 @@ export function DeclaracionDeResidencia({
   residente,
   onClose,
   onConfirmar,
+  guardando = false,
 }: {
   visible: boolean;
+  /** Mientras se guarda: la ventana espera abierta, con el botón girando. */
+  guardando?: boolean;
   /** Lo que se va a declarar: residente o no residente. */
   residente: boolean;
   onClose: () => void;
@@ -50,7 +53,7 @@ export function DeclaracionDeResidencia({
             </Text>
           ))}
         </View>
-        <Button variant="primary" fullWidth onPress={onConfirmar}>
+        <Button variant="primary" fullWidth onPress={onConfirmar} loading={guardando}>
           Confirmar
         </Button>
       </View>

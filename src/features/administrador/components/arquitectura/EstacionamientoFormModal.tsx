@@ -16,7 +16,7 @@ type Props = {
   initial: EstacionamientoFormValues;
   units: Unidad[];
   onClose: () => void;
-  onSave: (form: EstacionamientoFormValues) => void;
+  onSave: (form: EstacionamientoFormValues) => unknown;
 };
 
 /**
@@ -39,7 +39,14 @@ export function EstacionamientoFormModal({
   onClose,
   onSave,
 }: Props) {
-  const { control, handleSubmit, reset, watch } =
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
+    formState: { isSubmitting },
+  } =
     useForm<EstacionamientoFormValues>({
       resolver: zodResolver(estacionamientoSchema),
       defaultValues: initial,
@@ -118,6 +125,7 @@ export function EstacionamientoFormModal({
         )}
         <Button
           fullWidth
+          loading={isSubmitting}
           disabled={!watch("codigo")}
           onPress={() => void handleSubmit(onSave)()}
         >

@@ -25,7 +25,7 @@ interface Props {
   item: VisitaItem;
   onBack: () => void;
   onAssignParking?: (guestIndex: number) => void;
-  onToggleInstruction?: () => void;
+  onToggleInstruction?: () => Promise<unknown> | void;
   onCallAnnounce?: () => void;
   onUpdateEntryNotes?: (notes: string) => void;
   onUpdateExitNotes?: (notes: string) => void;

@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 import { Button, Checkbox, Input, Modal } from "@/shared/components/ui";
-import { Select } from "@/shared/components";
+import { SegunLaCarga, Select } from "@/shared/components";
 import {
   ahora,
   formatDateInput,
@@ -199,88 +199,91 @@ export function DirectorioAdminPagos({
         ) : null}
       </View>
 
-      <View className="rounded-xl bg-gray-100 p-3">
-        <Text className="text-sm text-gray-700">
-          {`Pagados: ${totalPagados} / ${unidades.length} · Pago parcial: ${totalParciales} · No pagados: ${Math.max(unidades.length - totalPagados - totalParciales, 0)}`}
-        </Text>
-      </View>
+      <SegunLaCarga estado={cuotas.cargaEstados} texto="los pagos" forma="filas" enLinea>
+        <View className="rounded-xl bg-gray-100 p-3">
+          <Text className="text-sm text-gray-700">
+            {`Pagados: ${totalPagados} / ${unidades.length} · Pago parcial: ${totalParciales} · No pagados: ${Math.max(unidades.length - totalPagados - totalParciales, 0)}`}
+          </Text>
+        </View>
 
-      <View
-        className="rounded-[20px] bg-white p-3"
-        style={{ boxShadow: theme.shadows.card }}
-      >
-        <Text className="mb-2 text-sm font-semibold text-gray-900">
-          Carga masiva de pagos
-        </Text>
-        <Text className="mb-3 text-xs leading-5 text-gray-500">
-          Descarga la plantilla del mes, escribe lo que pagó cada departamento y
-          súbela. Cada pago se registra y su estado se calcula solo.
-        </Text>
-        <Button
-          fullWidth
-          disabled={!cuotas.cuotaId}
-          loading={cuotas.cargandoPlantilla}
-          onPress={() => setCargaAbierta(true)}
+        <View
+          className="rounded-[20px] bg-white p-3"
+          style={{ boxShadow: theme.shadows.card }}
         >
-          Cargar pagos con plantilla
-        </Button>
-      </View>
+          <Text className="mb-2 text-sm font-semibold text-gray-900">
+            Carga masiva de pagos
+          </Text>
+          <Text className="mb-3 text-xs leading-5 text-gray-500">
+            Descarga la plantilla del mes, escribe lo que pagó cada departamento y
+            súbela. Cada pago se registra y su estado se calcula solo.
+          </Text>
+          <Button
+            fullWidth
+            disabled={!cuotas.cuotaId}
+            loading={cuotas.cargandoPlantilla}
+            onPress={() => setCargaAbierta(true)}
+          >
+            Cargar pagos con plantilla
+          </Button>
+        </View>
 
-      {unidades.map((unidad) => {
-        const uuid = unidad.uuid ?? "";
-        const propio = uuid ? cuotas.importePropio(uuid) : null;
-        const paga = propio ?? general;
-        const comite = cuotas.comiteDe(uuid);
-        const estado = uuid ? cuotas.estadoDe(uuid) : null;
-        const resumen = estado && moneda
-          ? `Debe ${formatMoney(estado.total, moneda)}${estado.variables.length ? ` (mensual ${formatMoney(estado.mensual, moneda)} + variables)` : ""} · Pagado ${formatMoney(estado.abonado, moneda)} · Falta ${formatMoney(estado.saldo, moneda)}`
-          : paga !== null && moneda
-            ? `Paga ${formatMoney(paga, moneda)}`
-            : "";
+        {unidades.map((unidad) => {
+          const uuid = unidad.uuid ?? "";
+          const propio = uuid ? cuotas.importePropio(uuid) : null;
+          const paga = propio ?? general;
+          const comite = cuotas.comiteDe(uuid);
+          const estado = uuid ? cuotas.estadoDe(uuid) : null;
+          const resumen = estado && moneda
+            ? `Debe ${formatMoney(estado.total, moneda)}${estado.variables.length ? ` (mensual ${formatMoney(estado.mensual, moneda)} + variables)` : ""} · Pagado ${formatMoney(estado.abonado, moneda)} · Falta ${formatMoney(estado.saldo, moneda)}`
+            : paga !== null && moneda
+              ? `Paga ${formatMoney(paga, moneda)}`
+              : "";
 
-        return (
-          <PagoDeUnidadFila
-            key={unidad.id}
-            codigo={unidad.codigo}
-            propietario={propietarioDe(unidad)}
-            estado={estado?.estado ?? "No pagado"}
-            resumen={resumen}
-            importePropio={propio !== null || Boolean(estado?.variables.length)}
-            sinMes={!cuotas.cuotaId || !uuid}
-            guardando={cuotas.abonando === uuid}
-            enComite={comite.enComite}
-            propietarioConCuenta={comite.tieneCuenta}
-            cambiandoComite={cuotas.cambiandoComite === uuid}
-            onRegistrarPago={() => {
-              setPagoTexto("");
-              setErrorPago("");
-              setPagoCompleto(false);
-              setPagando(unidad);
-            }}
-            falta={estado && moneda && estado.saldo > 0 ? formatMoney(estado.saldo, moneda) : null}
-            onMarcarPagado={() => {
-              if (!uuid || !estado || estado.saldo <= 0) return;
-              // Igual que la casilla de la ventana: un abono por todo lo que falta.
-              void (async () => {
-                try {
-                  await cuotas.abonar(uuid, estado.saldo);
-                } catch {
+          return (
+            <PagoDeUnidadFila
+              key={unidad.id}
+              codigo={unidad.codigo}
+              propietario={propietarioDe(unidad)}
+              estado={estado?.estado ?? "No pagado"}
+              resumen={resumen}
+              importePropio={propio !== null || Boolean(estado?.variables.length)}
+              sinMes={!cuotas.cuotaId || !uuid}
+              guardando={cuotas.abonando === uuid}
+              enComite={comite.enComite}
+              propietarioConCuenta={comite.tieneCuenta}
+              cambiandoComite={cuotas.cambiandoComite === uuid}
+              comiteCargando={cuotas.comiteCargando}
+              onRegistrarPago={() => {
+                setPagoTexto("");
+                setErrorPago("");
+                setPagoCompleto(false);
+                setPagando(unidad);
+              }}
+              falta={estado && moneda && estado.saldo > 0 ? formatMoney(estado.saldo, moneda) : null}
+              onMarcarPagado={() => {
+                if (!uuid || !estado || estado.saldo <= 0) return;
+                // Igual que la casilla de la ventana: un abono por todo lo que falta.
+                void (async () => {
+                  try {
+                    await cuotas.abonar(uuid, estado.saldo);
+                  } catch {
+                    // El motivo ya salió en el aviso.
+                  }
+                })();
+              }}
+              onCambiarImporte={() => abrirImporte(unidad)}
+              onDeshacerPago={() => {
+                if (!uuid) return;
+                void cuotas.anularPago(uuid).catch(() => {
                   // El motivo ya salió en el aviso.
-                }
-              })();
-            }}
-            onCambiarImporte={() => abrirImporte(unidad)}
-            onDeshacerPago={() => {
-              if (!uuid) return;
-              void cuotas.anularPago(uuid).catch(() => {
-                // El motivo ya salió en el aviso.
-              });
-            }}
-            deshaciendo={cuotas.anulando === uuid}
-            onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
-          />
-        );
-      })}
+                });
+              }}
+              deshaciendo={cuotas.anulando === uuid}
+              onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
+            />
+          );
+        })}
+      </SegunLaCarga>
 
       <CargaMasivaDePagos
         visible={cargaAbierta}

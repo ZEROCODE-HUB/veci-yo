@@ -1,3 +1,4 @@
+import { estadoDe } from "@/shared/components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
@@ -69,14 +70,23 @@ export function useCanales() {
   return {
     canales: query.data ?? [],
     cargando: query.isLoading,
+    /** Sin esto, un fallo al leer se quedaba en «no hay canales». */
+    estado: estadoDe(query),
     guardando: guardar.isPending,
+    /*
+      Se espera (13/11/2026): la ventana se cerraba antes de guardar, y si la
+      base decía «Ese canal ya existe» lo escrito ya se había perdido.
+      `true` si salió; el motivo de un fallo lo enseña `onError`.
+    */
     guardar: (params: {
       nombre: string;
       rolesVivienda: RolUnidad[];
       rolesEdificio: RolCondominio[];
       canalId?: string;
-    }) => guardar.mutate(params),
+    }) => guardar.mutateAsync(params).then(() => true, () => false),
     archivar: (canal: Canal) =>
       archivar.mutate({ canalId: canal.id, archivar: !canal.archivado }),
+    /** El canal que se está archivando o recuperando. */
+    archivando: archivar.isPending ? archivar.variables?.canalId : undefined,
   };
 }

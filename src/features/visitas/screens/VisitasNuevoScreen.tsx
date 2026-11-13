@@ -50,6 +50,8 @@ export function VisitasNuevoScreen() {
     handleGuardar,
     tipoPreseleccionado,
     tieneSuscripcion,
+    cargandoSuscripcion,
+    cargandoReglas,
   } = alta;
 
   /*
@@ -113,7 +115,7 @@ export function VisitasNuevoScreen() {
         Solo si de verdad falta. Estaba escrito a fuego, asi que un anfitrion
         con la renta corta pagada leia que tiene que activarla.
       */}
-      {esHuespedTemporalSeleccionado && !tieneSuscripcion && (
+      {esHuespedTemporalSeleccionado && !cargandoSuscripcion && !tieneSuscripcion && (
         <AvisoSinRentaCorta conTarjeta={false} />
       )}
 
@@ -263,7 +265,7 @@ export function VisitasNuevoScreen() {
           ) : null}
           {/* Submit */}
           {/* Bloqueado y «cargando» mientras se crea: un segundo clic creaba otra visita. */}
-          <Button onPress={handleGuardar} loading={creando} disabled={creando}>
+          <Button onPress={handleGuardar} loading={creando} disabled={creando || cargandoReglas}>
             Aceptar
           </Button>
 

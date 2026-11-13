@@ -70,6 +70,12 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
       <Text className="text-lg font-bold text-gray-900 px-0.5">
         Cuota de administración por mes
       </Text>
+      {/* Sin meses, el carrusel se quedaba en blanco (13/11/2026). */}
+      {historial.length === 0 ? (
+        <Text className="text-sm text-gray-500 px-0.5">
+          Todavía no hay meses de cuota.
+        </Text>
+      ) : null}
 
       <ScrollView
         ref={scrollRef}

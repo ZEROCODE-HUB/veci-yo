@@ -65,6 +65,11 @@ export function Intercomunicador() {
   const [segundos, setSegundos] = useState(0);
   const [silencio, setSilencio] = useState(false);
   const [contestando, setContestando] = useState(false);
+  /*
+    Rechazar no decía nada mientras se guardaba, se podía pulsar a la vez que
+    Contestar, y si fallaba se callaba (13/11/2026).
+  */
+  const [rechazando, setRechazando] = useState(false);
   const yaSono = useRef<Set<string>>(new Set());
 
   const { data: entrantes = [] } = useQuery({
@@ -306,9 +311,18 @@ export function Intercomunicador() {
             <Button
               variant="danger"
               fullWidth
+              loading={rechazando}
+              disabled={contestando}
               onPress={async () => {
-                await rechazarLlamada(entrante.id).catch(() => {});
-                void cliente.invalidateQueries({ queryKey: ["intercom"] });
+                setRechazando(true);
+                try {
+                  await rechazarLlamada(entrante.id);
+                } catch (e) {
+                  addToast(mensajeDeError(e, "No se pudo rechazar la llamada"), "error");
+                } finally {
+                  setRechazando(false);
+                  void cliente.invalidateQueries({ queryKey: ["intercom"] });
+                }
               }}
             >
               Rechazar
@@ -318,6 +332,7 @@ export function Intercomunicador() {
             <Button
               fullWidth
               loading={contestando}
+              disabled={rechazando}
               onPress={async () => {
                 setContestando(true);
                 try {

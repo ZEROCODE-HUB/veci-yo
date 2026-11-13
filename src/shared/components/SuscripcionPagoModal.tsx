@@ -151,7 +151,8 @@ export function SuscripcionPagoModal({
             </View>
             <Button
               variant="primary"
-              disabled={procesando || !precio}
+              disabled={!precio}
+              loading={procesando}
               onPress={onConfirmarSimulado}
             >
               {procesando ? "Activando…" : "Activar sin cobro (pruebas)"}
@@ -166,7 +167,7 @@ export function SuscripcionPagoModal({
               El pago se completa en la web. Al terminar, vuelve a la aplicación
               y la suscripción quedará activa.
             </Text>
-            <Button variant="primary" disabled={procesando} onPress={onIrAlPago}>
+            <Button variant="primary" disabled={!precio} loading={procesando} onPress={onIrAlPago}>
               Ir al pago
             </Button>
           </>

@@ -1,5 +1,6 @@
 import React from "react";
-import { ImageUploadCard } from "@/shared/components";
+import { Text, View } from "react-native";
+import { Cargando, ImageUploadCard, SegunLaCarga } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { BloqueDeContactos } from "./BloqueDeContactos";
 import { useContactosDelCondominio } from "../../hooks/useContactosDelCondominio";
@@ -16,10 +17,12 @@ import { useParametrosDeLaBase } from "@/shared/hooks";
 export function ContactosYFotoDelCondominio() {
   const {
     contactos,
+    estadoContactos,
+    estadoFoto,
     fotoUrl,
     guardar,
-    guardando,
     retirar,
+    retirando,
     subirFoto,
     subiendoFoto,
   } = useContactosDelCondominio();
@@ -28,26 +31,43 @@ export function ContactosYFotoDelCondominio() {
   const parametros = useParametrosDeLaBase();
   const topeMb = parametros.listo ? parametros.numero("archivo_tamano_maximo_mb") : null;
   const FOTO_CONDOMINIO = useFormatoDeArchivo("foto_condominio");
+  /*
+    Cada bloque lleva su propio «guardando»: con uno solo para los tres, guardar
+    en el equipo hacía girar también los de seguridad y limpieza (13/11/2026).
+  */
   const comun = {
-    guardando,
     onGuardar: async (c: Parameters<typeof guardar>[0]) => {
       await guardar(c);
     },
     onRetirar: retirar,
+    retirando,
   };
 
   return (
     <>
       <AdminSectionCard title="Foto del condominio">
-        <ImageUploadCard
-          value={fotoUrl}
-          onChange={(uri) => subirFoto(uri)}
-          placeholder={subiendoFoto ? "Subiendo…" : "Tocar para agregar foto"}
-          helperText={`${FOTO_CONDOMINIO.extensiones}${topeMb ? `, hasta ${topeMb} MB` : ""}.`}
-          tiposAceptados={FOTO_CONDOMINIO.tiposMime}
-          height={120}
-        />
+        <SegunLaCarga estado={estadoFoto} texto="la foto" enLinea>
+          <ImageUploadCard
+            value={fotoUrl}
+            onChange={(uri) => subirFoto(uri)}
+            placeholder={subiendoFoto ? "Subiendo…" : "Tocar para agregar foto"}
+            helperText={`${FOTO_CONDOMINIO.extensiones}${topeMb ? `, hasta ${topeMb} MB` : ""}.`}
+            tiposAceptados={FOTO_CONDOMINIO.tiposMime}
+            height={120}
+          />
+        </SegunLaCarga>
+        {/*
+          Con una foto ya puesta, el «Subiendo…» del hueco no se ve: la subida
+          de una nueva no daba ninguna señal (13/11/2026).
+        */}
+        {subiendoFoto ? (
+          <View className="flex-row items-center justify-center gap-2" aria-busy>
+            <Cargando variante="control" texto="la foto" />
+            <Text className="text-xs text-gray-500">Subiendo la foto…</Text>
+          </View>
+        ) : null}
       </AdminSectionCard>
+      <SegunLaCarga estado={estadoContactos} texto="los contactos del edificio" forma="filas" enLinea>
       <BloqueDeContactos
         titulo="Equipo Administrativo"
         tipo="equipo"
@@ -69,6 +89,7 @@ export function ContactosYFotoDelCondominio() {
         textoAgregar="Agregar empresa de limpieza"
         {...comun}
       />
+      </SegunLaCarga>
     </>
   );
 }

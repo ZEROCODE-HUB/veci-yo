@@ -13,7 +13,7 @@ type Props = {
   editing: Porteria | null;
   initial: PorteriaFormValues;
   onClose: () => void;
-  onSave: (form: PorteriaFormValues) => void;
+  onSave: (form: PorteriaFormValues) => unknown;
 };
 
 export function PorteriaFormModal({
@@ -23,7 +23,15 @@ export function PorteriaFormModal({
   onClose,
   onSave,
 }: Props) {
-  const { control, handleSubmit, reset, watch, setValue } =
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
+    formState: { isSubmitting },
+  } =
     useForm<PorteriaFormValues>({
       resolver: zodResolver(porteriaSchema),
       defaultValues: initial,
@@ -114,6 +122,7 @@ export function PorteriaFormModal({
         />
         <Button
           fullWidth
+          loading={isSubmitting}
           disabled={!watch("nombre").trim()}
           onPress={() => void handleSubmit(onSave)()}
         >

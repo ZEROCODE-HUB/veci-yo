@@ -3,7 +3,7 @@ import { Image, Pressable, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
-import { Button, Cargando, Modal } from "@/shared/components";
+import { Button, Cargando, Modal, SegunLaCarga, estadoDe } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { urlFotoVisita } from "../services/visitas.repo";
@@ -111,21 +111,34 @@ export function AnotacionesDeLaVisita({ visitaUuid, invitadoUuid, anteriores = [
         </View>
       ))}
 
-      {lista.map((a) => (
-        <View key={a.id} className="gap-1 rounded-xl p-2.5" style={{ backgroundColor: theme.colors.bgMuted }}>
-          <Text className="text-2xs text-gray-500">
-            {`${a.fecha} ${a.hora}${a.autor ? ` · ${a.autor}` : ""}`}
-          </Text>
-          {a.texto ? <Text className="text-sm text-gray-900">{a.texto}</Text> : null}
-          {a.archivos.length ? (
-            <View className="flex-row flex-wrap gap-2">
-              {a.archivos.map((ruta) => (
-                <FotoGuardada key={ruta} ruta={ruta} onAbrir={setEnGrande} />
-              ))}
-            </View>
-          ) : null}
-        </View>
-      ))}
+      {/*
+        Mientras llegan, la silueta; si fallan, «No se pudo cargar» con
+        Reintentar. Antes no decía nada y una bitácora caída parecía vacía
+        (13/11/2026).
+      */}
+      <SegunLaCarga
+        estado={estadoDe(anotaciones)}
+        texto="las anotaciones"
+        forma="lineas"
+        cuantos={2}
+        enLinea
+      >
+        {lista.map((a) => (
+          <View key={a.id} className="gap-1 rounded-xl p-2.5" style={{ backgroundColor: theme.colors.bgMuted }}>
+            <Text className="text-2xs text-gray-500">
+              {`${a.fecha} ${a.hora}${a.autor ? ` · ${a.autor}` : ""}`}
+            </Text>
+            {a.texto ? <Text className="text-sm text-gray-900">{a.texto}</Text> : null}
+            {a.archivos.length ? (
+              <View className="flex-row flex-wrap gap-2">
+                {a.archivos.map((ruta) => (
+                  <FotoGuardada key={ruta} ruta={ruta} onAbrir={setEnGrande} />
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ))}
+      </SegunLaCarga>
 
       <TextInput
         value={texto}

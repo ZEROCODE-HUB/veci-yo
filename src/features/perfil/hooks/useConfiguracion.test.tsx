@@ -153,3 +153,25 @@ describe("las cajas que guardan al salir del campo", () => {
     expect(avisos).toEqual([]);
   });
 });
+
+describe("antes de que llegue lo guardado", () => {
+  it("dice que carga y un interruptor no escribe", async () => {
+    /*
+      13/11/2026: el formulario arranca con los interruptores apagados y, sin
+      esperar, pulsar uno escribía en la base un valor sobre un dato que no era
+      el de la persona. Se comprueba en el primer pintado, antes de la
+      respuesta, y se espera después: un `mutate` no corre en el mismo tick.
+    */
+    const { result } = renderHook(() => useConfiguracion(), {
+      wrapper: envoltura,
+    });
+    expect(result.current.carga.cargando).toBe(true);
+
+    act(() => result.current.cambiar({ avisosPush: false }));
+    await new Promise((listo) => setTimeout(listo, 50));
+    expect(guardado).not.toHaveBeenCalled();
+
+    // Y en cuanto llega, deja de cargar.
+    await waitFor(() => expect(result.current.carga.cargando).toBe(false));
+  });
+});
