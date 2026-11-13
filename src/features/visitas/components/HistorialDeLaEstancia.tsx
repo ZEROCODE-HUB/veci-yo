@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Cargando } from "@/shared/components";
+import { Button, SegunLaCarga, estadoDe } from "@/shared/components";
 import { useNavegacion } from "@/shared/hooks/useNavegacion";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { desdeLaBase, formatDateTime } from "@/shared/utils";
@@ -38,37 +38,42 @@ export function HistorialDeLaEstancia({
   conPqrs?: boolean;
 }) {
   const navigation = useNavegacion();
-  const { data = [], isLoading } = useQuery({
+  const consulta = useQuery({
     queryKey: ["visitas", "historial-estancia", visita.uuid],
     queryFn: () => obtenerHistorialDeLaEstancia(visita.uuid!),
     enabled: Boolean(visita.uuid),
   });
+  const data = consulta.data ?? [];
 
   return (
     <View className="rounded-2xl bg-white p-4 gap-2 shadow-sm">
       <Text className="text-base font-bold text-gray-900">
         Historial de registros de esta reserva
       </Text>
-      {isLoading ? (
-        <Cargando texto="el historial" variante="enLinea" />
-      ) : data.length === 0 ? (
-        <Text className="text-xs text-gray-500">
-          Todavía no ha pasado nada en la vivienda durante esta estancia.
-        </Text>
-      ) : (
-        data.map((m, i) => (
-          <View key={`${m.momento}-${i}`} className="flex-row gap-2">
-            <Text style={{ fontSize: 14 }}>{ICONO[m.tipo] ?? "•"}</Text>
-            <View className="flex-1">
-              <Text className="text-sm text-gray-900">{m.titulo}</Text>
-              <Text className="text-2xs text-gray-500">
-                {formatDateTime(desdeLaBase(m.momento))}
-                {m.detalle ? ` · ${m.detalle}` : ""}
-              </Text>
+      {/*
+        Si la consulta falla no se dice «Todavía no ha pasado nada»: se dice
+        que no se pudo cargar, con Reintentar (13/11/2026).
+      */}
+      <SegunLaCarga estado={estadoDe(consulta)} texto="el historial" forma="lineas" enLinea>
+        {data.length === 0 ? (
+          <Text className="text-xs text-gray-500">
+            Todavía no ha pasado nada en la vivienda durante esta estancia.
+          </Text>
+        ) : (
+          data.map((m, i) => (
+            <View key={`${m.momento}-${i}`} className="flex-row gap-2">
+              <Text style={{ fontSize: 14 }}>{ICONO[m.tipo] ?? "•"}</Text>
+              <View className="flex-1">
+                <Text className="text-sm text-gray-900">{m.titulo}</Text>
+                <Text className="text-2xs text-gray-500">
+                  {formatDateTime(desdeLaBase(m.momento))}
+                  {m.detalle ? ` · ${m.detalle}` : ""}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))
-      )}
+          ))
+        )}
+      </SegunLaCarga>
       {conPqrs ? (
         <Button
           size="sm"

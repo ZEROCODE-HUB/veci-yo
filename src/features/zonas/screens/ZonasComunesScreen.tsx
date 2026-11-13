@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text } from "react-native";
-import { Button, Modal, Cargando } from "@/shared/components";
+import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { MisReservas, ZonaCard } from "@/features/zonas/components";
@@ -22,7 +22,7 @@ export function ZonasComunesScreen() {
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const esHuesped = rol === "huesped-temporal";
   const accesoBloqueado = rol === "propietario" && ubicaciones.length === 0;
-  const { zonasComunesConfig, gestionZonas, cargando } = useZonas();
+  const { zonasComunesConfig, gestionZonas, estadoZonas } = useZonas();
   // Las zonas salen de la base: el prototipo las traia de una constante y
   // mostraba ocho areas que no existen en ningun condominio real.
   // Una zona apagada no se ofrece a quien reserva; la administracion la sigue
@@ -69,8 +69,12 @@ export function ZonasComunesScreen() {
         )}
       </View>
       <View className="p-4">
-        {cargando && <Cargando variante="enLinea" texto="las zonas" />}
-        {!cargando && zonas.length === 0 && (
+        {/*
+          Si la carga falla, se dice: antes se leía «Todavía no hay zonas
+          comunes» con la red caída (13/11/2026).
+        */}
+        <SegunLaCarga estado={estadoZonas} texto="las zonas" forma="tarjetas" enLinea>
+        {zonas.length === 0 && (
           <Text className="text-sm text-gray-500">
             Todavia no hay zonas comunes configuradas en tu edificio.
           </Text>
@@ -90,6 +94,7 @@ export function ZonasComunesScreen() {
             </View>
           ))}
         </View>
+        </SegunLaCarga>
       </View>
 
       <Modal

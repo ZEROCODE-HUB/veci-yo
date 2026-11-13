@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { CampoFecha, Input } from "@/shared/components";
+import { CampoFecha, Input, SegunLaCarga } from "@/shared/components";
 import { formatDateIso } from "@/shared/utils";
 import { ConexionTra } from "../../ConexionTra";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
@@ -53,13 +53,19 @@ export function CumplimientoLegal({ renta: r, esDueno }: { renta: RentaCorta; es
         existía desde el 02/10/2026 y **no lo llamaba nadie**: no había dónde
         poner el token. Lo preguntó el cliente el 09/10.
       */}
-      <ConexionTra
-        estado={r.estadoTra}
-        onGuardarToken={r.guardarTokenTra}
-        guardando={r.guardandoTokenTra}
-        onArmar={r.armarTra}
-        armando={r.armandoTra}
-      />
+      {/*
+        Hasta que llega el estado de verdad, el de respaldo decía «SIN
+        CONFIGURAR» y pedía el token a quien ya lo tenía puesto (13/11/2026).
+      */}
+      <SegunLaCarga estado={r.cargaDeLaTra} texto="la conexión con la TRA" forma="formulario" cuantos={1} enLinea>
+        <ConexionTra
+          estado={r.estadoTra}
+          onGuardarToken={r.guardarTokenTra}
+          guardando={r.guardandoTokenTra}
+          onArmar={r.armarTra}
+          armando={r.armandoTra}
+        />
+      </SegunLaCarga>
     </SeccionDeConfiguracion>
   );
 }

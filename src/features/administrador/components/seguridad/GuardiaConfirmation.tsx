@@ -8,10 +8,13 @@ export function GuardiaConfirmation({
   form,
   onBack,
   onConfirm,
+  guardando = false,
 }: {
   form: GuardiaFormValues;
   onBack: () => void;
   onConfirm: () => void;
+  /** Mientras se guarda: el botón gira y no deja confirmar dos veces. */
+  guardando?: boolean;
 }) {
   return (
     <View className="flex-1 bg-bg-app">
@@ -42,7 +45,7 @@ export function GuardiaConfirmation({
             Llamadas: {form.permisoLlamadas ? "Permitidas" : "No permitidas"}
           </Text>
         </View>
-        <Button fullWidth onPress={onConfirm}>
+        <Button fullWidth onPress={onConfirm} loading={guardando}>
           Aceptar y guardar
         </Button>
       </ScrollView>

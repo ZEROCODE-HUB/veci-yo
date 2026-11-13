@@ -62,7 +62,21 @@ export function MenuDeReservaDeZona({ zona: z }: { zona: DetalleDeZona }) {
             */}
             {item.estado === "Pendiente" && item.uuid && comprobantesEnZonas ? (
               <BottomSheetOption
-                label={item.comprobante ? "Cambiar el comprobante de pago" : "Enviar comprobante de pago"}
+                /*
+                  Mientras sube, la opción lo dice y no se puede volver a
+                  pulsar: dos toques mandaban dos archivos (13/11/2026). La
+                  hoja se cierra antes de abrir el selector de archivos, que en
+                  el teléfono no se abre encima de otra ventana; lo que pasa
+                  después lo cuentan los avisos de `useZonas`.
+                */
+                label={
+                  z.enviandoComprobante
+                    ? "Subiendo el comprobante…"
+                    : item.comprobante
+                      ? "Cambiar el comprobante de pago"
+                      : "Enviar comprobante de pago"
+                }
+                disabled={z.enviandoComprobante}
                 onPress={() => {
                   const reservaUuid = item.uuid!;
                   cerrar();

@@ -47,6 +47,19 @@ export function PlataformaResumenScreen() {
     id: string;
     nombre: string;
   } | null>(null);
+  /*
+    Estaba escrito `refreshing={false}`: al tirar hacia abajo no se veía que se
+    estuviera recargando nada (13/11/2026).
+  */
+  const [refrescando, setRefrescando] = useState(false);
+  const alTirar = async () => {
+    setRefrescando(true);
+    try {
+      await refrescar();
+    } finally {
+      setRefrescando(false);
+    }
+  };
 
   const invitarAdministracion = async (datos: {
     nombre: string;
@@ -87,7 +100,7 @@ export function PlataformaResumenScreen() {
       className="flex-1 bg-gray-50"
       contentContainerClassName="p-4 gap-4"
       refreshControl={
-        <RefreshControl refreshing={false} onRefresh={refrescar} />
+        <RefreshControl refreshing={refrescando} onRefresh={() => void alTirar()} />
       }
     >
       {error ? (

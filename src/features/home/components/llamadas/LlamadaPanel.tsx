@@ -21,6 +21,11 @@ interface LlamadaPanelProps {
   numero?: string;
   onLlamarPorLaApp: () => void;
   onLlamarPorTelefono: () => void;
+  /**
+   * La llamada por teléfono se está anotando en el historial: el botón espera
+   * y no acepta otro toque, que dejaba dos llamadas anotadas (13/11/2026).
+   */
+  anotando?: boolean;
 }
 
 /**
@@ -43,6 +48,7 @@ export function LlamadaPanel({
   numero = "",
   onLlamarPorLaApp,
   onLlamarPorTelefono,
+  anotando = false,
 }: LlamadaPanelProps) {
   const citofono = useNombreDelCitofono();
   const listo = Boolean(aQuien) && !buscando && !motivo;
@@ -100,6 +106,7 @@ export function LlamadaPanel({
         <Button
           variant={porInternet ? "secondary" : "primary"}
           fullWidth
+          loading={anotando}
           onPress={onLlamarPorTelefono}
         >
           ☎️ Llamar por teléfono

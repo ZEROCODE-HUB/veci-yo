@@ -1,5 +1,5 @@
 import { ScrollView, Text, View } from "react-native";
-import { Button, Card } from "@/shared/components";
+import { Button, Card, SegunLaCarga } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import { theme } from "@/config";
 import { telefonoInternacional } from "@/shared/constants";
@@ -47,70 +47,79 @@ export function PropietarioAgregarServicioScreen() {
         </Card>
       )}
 
-      {form.servicios.length > 0 && (
-        <Card className="gap-3 p-4">
-          <Text className="text-base font-semibold text-gray-900">
-            Servicios de esta vivienda
-          </Text>
-          {form.servicios.map((servicio) => (
-            <View
-              key={servicio.id}
-              className="gap-1 border-t border-gray-200 pt-3"
-            >
-              <View className="flex-row items-center justify-between gap-3">
-                <Text className="flex-1 text-sm font-semibold text-gray-900">
-                  {servicio.nombre}
-                  {Boolean(servicio.empresa) && ` · ${servicio.empresa}`}
-                </Text>
-                <Button
-                  variant="secondary"
-                  loading={form.borrar.isPending}
-                  onPress={() => form.borrar.mutate(servicio.id)}
-                >
-                  <Text>Eliminar</Text>
-                </Button>
+      {/*
+        Mientras llega la lista, la silueta; si falla, se dice y se ofrece
+        reintentar. Antes un fallo dejaba la pantalla como si no hubiera
+        ningún servicio (13/11/2026).
+      */}
+      <SegunLaCarga estado={form.carga} texto="los servicios" forma="tarjetas" cuantos={1} enLinea>
+        {form.servicios.length > 0 && (
+          <Card className="gap-3 p-4">
+            <Text className="text-base font-semibold text-gray-900">
+              Servicios de esta vivienda
+            </Text>
+            {form.servicios.map((servicio) => (
+              <View
+                key={servicio.id}
+                className="gap-1 border-t border-gray-200 pt-3"
+              >
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text className="flex-1 text-sm font-semibold text-gray-900">
+                    {servicio.nombre}
+                    {Boolean(servicio.empresa) && ` · ${servicio.empresa}`}
+                  </Text>
+                  {/* Gira solo el que se borra; los demás esperan. */}
+                  <Button
+                    variant="secondary"
+                    loading={form.borrar.isPending && form.borrar.variables === servicio.id}
+                    disabled={form.borrar.isPending}
+                    onPress={() => form.borrar.mutate(servicio.id)}
+                  >
+                    <Text>Eliminar</Text>
+                  </Button>
+                </View>
+
+                {Boolean(servicio.numeroCliente) && (
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    Cliente {servicio.numeroCliente}
+                    {Boolean(servicio.numeroMedidor) &&
+                      ` · medidor ${servicio.numeroMedidor}`}
+                  </Text>
+                )}
+
+                {/*
+                  Los dos días juntos en una frase, y solo si los hay. Antes
+                  serían dos cajas vacías que no dicen nada.
+                */}
+                {servicio.diaPrimerAviso !== null && (
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    {/*
+                      Es el día del aviso, no el del vencimiento; y desde el
+                      25/10/2026 el aviso sale de verdad (antes no lo mandaba
+                      nada).
+                    */}
+                    Te avisamos el {servicio.diaPrimerAviso} de cada mes
+                    {servicio.diaSegundoAviso !== null &&
+                      ` y otra vez el ${servicio.diaSegundoAviso}`}
+                  </Text>
+                )}
+
+                {Boolean(telefonoInternacional(servicio.codigoPais, servicio.telefono)) && (
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    {telefonoInternacional(servicio.codigoPais, servicio.telefono)}
+                  </Text>
+                )}
+
+                {Boolean(servicio.correoFactura) && (
+                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                    Factura a {servicio.correoFactura}
+                  </Text>
+                )}
               </View>
-
-              {Boolean(servicio.numeroCliente) && (
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  Cliente {servicio.numeroCliente}
-                  {Boolean(servicio.numeroMedidor) &&
-                    ` · medidor ${servicio.numeroMedidor}`}
-                </Text>
-              )}
-
-              {/*
-                Los dos días juntos en una frase, y solo si los hay. Antes
-                serían dos cajas vacías que no dicen nada.
-              */}
-              {servicio.diaPrimerAviso !== null && (
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  {/*
-                    Es el día del aviso, no el del vencimiento; y desde el
-                    25/10/2026 el aviso sale de verdad (antes no lo mandaba
-                    nada).
-                  */}
-                  Te avisamos el {servicio.diaPrimerAviso} de cada mes
-                  {servicio.diaSegundoAviso !== null &&
-                    ` y otra vez el ${servicio.diaSegundoAviso}`}
-                </Text>
-              )}
-
-              {Boolean(telefonoInternacional(servicio.codigoPais, servicio.telefono)) && (
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  {telefonoInternacional(servicio.codigoPais, servicio.telefono)}
-                </Text>
-              )}
-
-              {Boolean(servicio.correoFactura) && (
-                <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  Factura a {servicio.correoFactura}
-                </Text>
-              )}
-            </View>
-          ))}
-        </Card>
-      )}
+            ))}
+          </Card>
+        )}
+      </SegunLaCarga>
 
       <Card className="gap-3 p-4">
         <Text className="text-base font-semibold text-gray-900">

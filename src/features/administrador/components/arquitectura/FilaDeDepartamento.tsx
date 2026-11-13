@@ -24,10 +24,19 @@ export function FilaDeDepartamento({
   estado?: string;
   onEditar: () => void;
   onVerDetalle: () => void;
-  onEliminar: () => void;
+  /** Si devuelve `false`, falló: la confirmación se queda abierta. */
+  onEliminar: () => unknown;
 }) {
   const [menu, setMenu] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  // Se espera al borrado: cerraba al pulsar y un fallo no se veía (13/11/2026).
+  const [borrando, setBorrando] = useState(false);
+  const borrar = async () => {
+    setBorrando(true);
+    const resultado = await Promise.resolve(onEliminar()).catch(() => false);
+    setBorrando(false);
+    if (resultado !== false) setConfirmando(false);
+  };
 
   return (
     <>
@@ -94,10 +103,8 @@ export function FilaDeDepartamento({
           <Button
             variant="danger"
             fullWidth
-            onPress={() => {
-              setConfirmando(false);
-              onEliminar();
-            }}
+            loading={borrando}
+            onPress={() => void borrar()}
           >
             <Text>Eliminar</Text>
           </Button>

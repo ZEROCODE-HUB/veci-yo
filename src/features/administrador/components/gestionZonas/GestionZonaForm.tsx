@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollView, Text, View } from "react-native";
@@ -162,7 +162,6 @@ export function GestionZonaForm({
   const {
     control,
     handleSubmit,
-    reset,
     watch,
     setValue,
     formState: { errors, isSubmitting },
@@ -184,7 +183,12 @@ export function GestionZonaForm({
       (zonaIcons as Record<string, number>)[tipoId]
     : undefined;
 
-  useEffect(() => reset(initial), [initial, reset]);
+  /*
+    Sin `reset(initial)` en cada cambio (13/11/2026): la URL de la foto o la
+    moneda llegaban después, `initial` cambiaba y el formulario volvía a
+    empezar, borrando lo que ya se había escrito. La pantalla monta el
+    formulario cuando ya tiene todo, así que `defaultValues` basta.
+  */
 
   const errorMessages = useMemo(() => {
     const messages: string[] = [];

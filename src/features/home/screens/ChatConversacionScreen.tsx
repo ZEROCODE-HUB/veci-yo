@@ -23,7 +23,7 @@ export function ChatConversacionScreen() {
   const [texto, setTexto] = useState("");
   const addToast = useUIStore((s) => s.addToast);
 
-  const { conversations } = useChatConversations({
+  const { conversations, carga: cargaDeLaLista } = useChatConversations({
     soloNoLeidos: false,
     filtroChat: "todos",
     tabActiva: "torres",
@@ -31,7 +31,7 @@ export function ChatConversacionScreen() {
     filtroDepto: "",
   });
 
-  const { mensajes, enviar, enviando, puedeModerar, retirando, retirar } =
+  const { mensajes, carga, enviar, enviando, puedeModerar, retirando, retirar } =
     useChatConversacion(conversacionId);
 
   const conversation = useMemo<Conversation>(
@@ -49,9 +49,14 @@ export function ChatConversacionScreen() {
     [conversations, conversacionId],
   );
 
+  /*
+    Mientras llega la lista, el título se queda en blanco: antes decía
+    «Conversación» y saltaba al nombre de verdad (13/11/2026).
+  */
+  const titulo = cargaDeLaLista.cargando ? "" : conversation.nombre;
   useLayoutEffect(() => {
-    navigation.setOptions({ title: conversation.nombre });
-  }, [conversation.nombre, navigation]);
+    navigation.setOptions({ title: titulo });
+  }, [titulo, navigation]);
 
   /** Una foto o un PDF elegido para mandar con el mensaje (hueco 8). */
   const [adjunto, setAdjunto] = useState<ArchivoElegido | null>(null);
@@ -98,6 +103,7 @@ export function ChatConversacionScreen() {
           puedeModerar={puedeModerar}
           retirando={retirando}
           onRetirar={retirar}
+          carga={carga}
         />
         {conversation.archivado ? (
           /*

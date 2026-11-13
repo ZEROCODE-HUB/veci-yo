@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuthStore } from "@/stores";
-import { Button } from "@/shared/components";
+import { Button, SegunLaCarga } from "@/shared/components";
 import type { PerfilStackParamList } from "@/shared/types";
 import { usePerfil } from "../hooks/usePerfil";
 import { useAlias } from "../hooks/useAlias";
@@ -140,16 +140,22 @@ export function PerfilScreen() {
       )}
 
       {/* Alias / Anonimato — oculto para guardia */}
+      {/*
+        Hasta que llega el alias guardado, la caja sale vacía y «Guardar»
+        borraba el alias de verdad (13/11/2026): silueta mientras tanto.
+      */}
       {!esGuardia && (
-        <PerfilAliasCard
-          alias={aliasForm.alias}
-          usaCuadroHonor={aliasForm.usaEnCuadroHonor}
-          guardando={aliasForm.guardando}
-          onAliasChange={aliasForm.setAlias}
-          onCuadroHonorChange={aliasForm.setUsaEnCuadroHonor}
-          onGuardar={aliasForm.guardar}
-          ocultarCuadroHonor={esHuespedTemporal}
-        />
+        <SegunLaCarga estado={aliasForm.carga} texto="tu alias" forma="formulario" cuantos={2} enLinea>
+          <PerfilAliasCard
+            alias={aliasForm.alias}
+            usaCuadroHonor={aliasForm.usaEnCuadroHonor}
+            guardando={aliasForm.guardando}
+            onAliasChange={aliasForm.setAlias}
+            onCuadroHonorChange={aliasForm.setUsaEnCuadroHonor}
+            onGuardar={aliasForm.guardar}
+            ocultarCuadroHonor={esHuespedTemporal}
+          />
+        </SegunLaCarga>
       )}
 
       {/* Soporte / Cerrar sesión */}

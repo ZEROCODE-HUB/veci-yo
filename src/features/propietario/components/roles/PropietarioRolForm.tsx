@@ -13,6 +13,8 @@ interface Props {
   rol: string;
   onSubmit: () => void;
   editando: boolean;
+  /** Mientras se guarda: el botón gira y no manda dos veces. */
+  guardando?: boolean;
 }
 
 export function PropietarioRolForm({
@@ -20,6 +22,7 @@ export function PropietarioRolForm({
   rol,
   onSubmit,
   editando,
+  guardando = false,
 }: Props) {
   return (
     <>
@@ -209,7 +212,7 @@ export function PropietarioRolForm({
         El alquiler y los servicios incluidos se registran en «Contratos de
         arrendamiento», desde la configuración de la vivienda.
       </Text>
-      <Button variant="primary" onPress={onSubmit}>
+      <Button variant="primary" onPress={onSubmit} loading={guardando}>
         {editando ? "Guardar cambios" : "Aceptar"}
       </Button>
       <View className="h-6" />

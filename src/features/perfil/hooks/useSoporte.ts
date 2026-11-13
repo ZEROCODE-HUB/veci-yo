@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
+import { estadoDe, juntarCargas } from "@/shared/components";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils";
@@ -61,6 +62,8 @@ export function usePreguntasFrecuentes() {
   return {
     preguntas,
     cargando: query.isLoading,
+    /** Para no decir «no hay preguntas» cuando lo que pasó es que falló. */
+    carga: estadoDe(query),
     puedeEditar,
     guardar,
     eliminar,
@@ -94,5 +97,6 @@ export function useContactoSoporte() {
     contacto: query.data,
     contactos: contactos.data ?? [],
     cargando: query.isLoading || contactos.isLoading,
+    carga: juntarCargas(estadoDe(query), estadoDe(contactos)),
   };
 }

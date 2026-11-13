@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Text, FlatList, Pressable, View } from "react-native";
 import { ScreenLayout } from "@/shared/layouts";
 import { cambiarDeRol } from "@/shared/layouts/SelectorDeRol";
-import { Button, Modal } from "@/shared/components";
+import { Button, Cargando, Modal, SegunLaCarga } from "@/shared/components";
 import { useAuthStore, useUbicacionStore } from "@/stores";
 import { NotificacionCard } from "../components/notificaciones";
 import { useNotificaciones } from "../hooks/useNotificaciones";
@@ -19,7 +19,7 @@ import type { Notificacion } from "../types/home";
 
 export function NotificacionesScreen() {
   const navigation = useNavegacion();
-  const { notificaciones, marcarLeida, marcarTodasLeidas, isLoading } =
+  const { notificaciones, marcarLeida, marcarTodasLeidas, carga, marcandoTodas } =
     useNotificaciones();
   const haySinLeer = notificaciones.some((n) => !n.leida);
   const rolActivo = useAuthStore((s) => s.rolActivo);
@@ -67,52 +67,59 @@ export function NotificacionesScreen() {
       {haySinLeer && (
         <Pressable
           onPress={marcarTodasLeidas}
-          className="self-end px-3 py-1 rounded-full mb-3"
-          style={{ backgroundColor: theme.colors.primaryLight }}
+          // Mientras viaja no acepta otro toque, y lo enseña (13/11/2026).
+          disabled={marcandoTodas}
+          accessibilityRole="button"
+          accessibilityState={{ busy: marcandoTodas, disabled: marcandoTodas }}
+          aria-busy={marcandoTodas}
+          className="self-end flex-row items-center gap-1.5 px-3 py-1 rounded-full mb-3"
+          style={{ backgroundColor: theme.colors.primaryLight, opacity: marcandoTodas ? 0.6 : 1 }}
         >
+          {marcandoTodas ? <Cargando variante="control" texto="marcando como leídas" /> : null}
           <Text className="text-xs font-semibold" style={{ color: theme.colors.iconAmberDark }}>
             Marcar todas como leídas
           </Text>
         </Pressable>
       )}
-      <FlatList
-        data={notificaciones}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ gap: 10 }}
-        renderItem={({ item }) => {
-          const pertenece = aQuienPerteneceElAviso(item, ubicaciones, roles);
-          return (
-            <NotificacionCard
-              notificacion={item}
-              deDonde={pertenece?.etiqueta}
-              onPress={(notificacion) => {
-                if (!notificacion.leida) marcarLeida(notificacion.id);
-                if (
-                  pertenece &&
-                  destinoDeAviso(notificacion) &&
-                  hayQueCambiarParaVerlo(pertenece, rolActivo, ubicaciones)
-                ) {
-                  setPorCambiar({ aviso: notificacion, pertenece });
-                  return;
-                }
-                abrir(notificacion);
-              }}
-            />
-          );
-        }}
-        /*
-          Mientras carga no se dice que no hay nada. Son dos situaciones
-          distintas --«todavia no lo se» y «lo se, y no hay»-- y la segunda es
-          una afirmacion: quien la lee deja de esperar y se va.
-        */
-        ListEmptyComponent={
-          <Text className="text-center text-gray-400 py-8">
-            {isLoading
-              ? "Buscando tus notificaciones..."
-              : "No tienes notificaciones por el momento"}
-          </Text>
-        }
-      />
+      {/*
+        Mientras carga no se dice que no hay nada. Son dos situaciones
+        distintas --«todavia no lo se» y «lo se, y no hay»-- y la segunda es
+        una afirmacion: quien la lee deja de esperar y se va. Y si falla, se
+        dice que falló, no que no hay ninguna (13/11/2026).
+      */}
+      <SegunLaCarga estado={carga} texto="tus notificaciones" forma="lista">
+        <FlatList
+          data={notificaciones}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ gap: 10 }}
+          renderItem={({ item }) => {
+            const pertenece = aQuienPerteneceElAviso(item, ubicaciones, roles);
+            return (
+              <NotificacionCard
+                notificacion={item}
+                deDonde={pertenece?.etiqueta}
+                onPress={(notificacion) => {
+                  if (!notificacion.leida) marcarLeida(notificacion.id);
+                  if (
+                    pertenece &&
+                    destinoDeAviso(notificacion) &&
+                    hayQueCambiarParaVerlo(pertenece, rolActivo, ubicaciones)
+                  ) {
+                    setPorCambiar({ aviso: notificacion, pertenece });
+                    return;
+                  }
+                  abrir(notificacion);
+                }}
+              />
+            );
+          }}
+          ListEmptyComponent={
+            <Text className="text-center text-gray-400 py-8">
+              No tienes notificaciones por el momento
+            </Text>
+          }
+        />
+      </SegunLaCarga>
       <Modal
         visible={Boolean(porCambiar)}
         onClose={() => setPorCambiar(null)}

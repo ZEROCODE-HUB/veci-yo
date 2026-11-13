@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pressable, Text, View } from "react-native";
 import { useUIStore } from "@/stores";
+import { Cargando, SegunLaCarga, estadoDe } from "@/shared/components";
 import {
   guardarVisibilidadCuotas,
   obtenerVisibilidadCuotas,
@@ -49,11 +50,12 @@ export function VisibilidadDeCuotas({ condominioId }: { condominioId: string }) 
   const cliente = useQueryClient();
   const { addToast } = useUIStore();
 
-  const { data: elegida } = useQuery({
+  const consulta = useQuery({
     queryKey: ["visibilidad-cuotas", condominioId],
     queryFn: () => obtenerVisibilidadCuotas(condominioId),
     enabled: Boolean(condominioId),
   });
+  const elegida = consulta.data;
 
   const guardar = useMutation({
     mutationFn: (valor: VisibilidadCuotas) =>
@@ -74,8 +76,11 @@ export function VisibilidadDeCuotas({ condominioId }: { condominioId: string }) 
         Lo que los vecinos ven del estado de las cuotas. Tú lo ves todo siempre.
       </Text>
 
+      {/* Ninguna marcada mientras cargaba parecía «nada elegido» (13/11/2026). */}
+      <SegunLaCarga estado={estadoDe(consulta)} texto="la visibilidad de las cuotas" forma="filas" cuantos={3} enLinea>
       {OPCIONES.map((opcion) => {
         const puesta = elegida === opcion.valor;
+        const guardandoEsta = guardar.isPending && guardar.variables === opcion.valor;
         return (
           <Pressable
             key={opcion.valor}
@@ -90,6 +95,7 @@ export function VisibilidadDeCuotas({ condominioId }: { condominioId: string }) 
             aria-checked={puesta}
             accessibilityState={{ checked: puesta }}
             disabled={guardar.isPending}
+            aria-busy={guardandoEsta}
             onPress={() => guardar.mutate(opcion.valor)}
             className="rounded-xl border p-3"
             style={{
@@ -97,16 +103,20 @@ export function VisibilidadDeCuotas({ condominioId }: { condominioId: string }) 
               backgroundColor: puesta ? theme.colors.primaryLight : theme.colors.bgCard,
             }}
           >
-            <Text className="text-sm font-bold text-gray-900">
-              {puesta ? "● " : "○ "}
-              {opcion.titulo}
-            </Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm font-bold text-gray-900">
+                {puesta ? "● " : "○ "}
+                {opcion.titulo}
+              </Text>
+              {guardandoEsta ? <Cargando variante="control" texto="la opción" /> : null}
+            </View>
             <Text className="mt-0.5 text-xs leading-5 text-gray-500">
               {opcion.detalle}
             </Text>
           </Pressable>
         );
       })}
+      </SegunLaCarga>
     </View>
   );
 }

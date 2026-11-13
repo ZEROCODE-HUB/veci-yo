@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Select, Toggle } from "@/shared/components";
+import { Cargando, Select, Toggle } from "@/shared/components";
 import type { UnidadDisponible } from "@/shared/hooks/useUnidadesDisponibles";
 import {
   etiquetaDeUnidad,
@@ -13,6 +13,11 @@ import {
 interface DestinosDeCorrespondenciaProps {
   /** Todas las viviendas del edificio. */
   unidades: UnidadDisponible[];
+  /**
+   * Si la lista todavía no llegó. Sin esto salía «No hay departamentos en esa
+   * torre y ese piso» mientras cargaba (13/11/2026).
+   */
+  cargando?: boolean;
   torres: string[];
   torre: string;
   piso: string;
@@ -40,6 +45,7 @@ const TODOS = { value: "", label: "Todos" };
  */
 export function DestinosDeCorrespondencia({
   unidades,
+  cargando = false,
   torres,
   torre,
   piso,
@@ -128,7 +134,11 @@ export function DestinosDeCorrespondencia({
           borderColor: theme.colors.border,
         }}
       >
-        {visibles.length === 0 ? (
+        {cargando ? (
+          <View className="w-full">
+            <Cargando texto="los departamentos" variante="enLinea" forma="lineas" cuantos={2} />
+          </View>
+        ) : visibles.length === 0 ? (
           <Text className="text-sm text-gray-500">
             No hay departamentos en esa torre y ese piso.
           </Text>

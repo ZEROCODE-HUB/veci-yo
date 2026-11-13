@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Button, Select } from "@/shared/components";
+import { Button, Cargando, SegunLaCarga, Select } from "@/shared/components";
 import { useChatScreen } from "../hooks/useChatScreen";
 import { ChatConversationList } from "../components/chat/ChatConversationList";
 import { ANCHO_DEL_CHAT } from "../components/chat/ChatThread";
@@ -34,6 +34,9 @@ export function ChatScreen() {
     handleNewChat,
     marcarMensajesLeidos,
     alternarSilencio,
+    carga,
+    marcandoLeidos,
+    silenciandoId,
   } = useChatScreen();
 
   /*
@@ -102,10 +105,20 @@ export function ChatScreen() {
                   marcarMensajesLeidos();
                   setSoloNoLeidos(false);
                 }}
+                // Mientras viaja, no acepta otro toque y lo enseña.
+                disabled={marcandoLeidos}
+                accessibilityRole="button"
+                accessibilityState={{ busy: marcandoLeidos, disabled: marcandoLeidos }}
+                aria-busy={marcandoLeidos}
+                className="flex-row items-center gap-1.5"
               >
+                {marcandoLeidos ? <Cargando variante="control" texto="marcando como leídos" /> : null}
                 <Text
                   className="text-xs font-medium"
-                  style={{ color: theme.colors.primary }}
+                  style={{
+                    color: theme.colors.primary,
+                    opacity: marcandoLeidos ? 0.5 : 1,
+                  }}
                 >
                   Marcar todos leídos
                 </Text>
@@ -235,29 +248,32 @@ export function ChatScreen() {
         </View>
       </View>
 
-      <ChatConversationList
-        conversations={convFiltradas}
-        onSelect={handleSelectConversation}
-        onSilenciar={alternarSilencio}
-        /*
-          El vacío dice **por qué** está vacío. La portería abre el chat en la
-          pestaña «Torres», que son las conversaciones que no son de seguridad
-          ni de administración, y hoy no hay ninguna: leía «No hay
-          conversaciones» con tres hilos de seguridad esperando a un clic de
-          distancia.
+      <SegunLaCarga estado={carga} texto="tus conversaciones" forma="lista">
+        <ChatConversationList
+          conversations={convFiltradas}
+          onSelect={handleSelectConversation}
+          onSilenciar={alternarSilencio}
+          silenciandoId={silenciandoId}
+          /*
+            El vacío dice **por qué** está vacío. La portería abre el chat en la
+            pestaña «Torres», que son las conversaciones que no son de seguridad
+            ni de administración, y hoy no hay ninguna: leía «No hay
+            conversaciones» con tres hilos de seguridad esperando a un clic de
+            distancia.
 
-          Es la familia de «una pantalla que anuncia lo que no intentó», en
-          pequeño: el texto era cierto para el filtro puesto y falso para lo
-          que la persona entiende al leerlo.
-        */
-        emptyMessage={
-          soloNoLeidos
-            ? "No hay conversaciones sin leer"
-            : esGuardia && tabActiva === "torres"
-              ? "Aquí van los chats con una vivienda. Los hilos de seguridad y de administración están en sus pestañas."
-              : "No hay conversaciones"
-        }
-      />
+            Es la familia de «una pantalla que anuncia lo que no intentó», en
+            pequeño: el texto era cierto para el filtro puesto y falso para lo
+            que la persona entiende al leerlo.
+          */
+          emptyMessage={
+            soloNoLeidos
+              ? "No hay conversaciones sin leer"
+              : esGuardia && tabActiva === "torres"
+                ? "Aquí van los chats con una vivienda. Los hilos de seguridad y de administración están en sus pestañas."
+                : "No hay conversaciones"
+          }
+        />
+      </SegunLaCarga>
     </View>
   );
 }

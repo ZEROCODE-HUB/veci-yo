@@ -78,6 +78,13 @@ export function EditarEstancia({
   */
   const [amigos, setAmigos] = useState<VisitaDeAmigos[] | null>(null);
   const [fechasPendientes, setFechasPendientes] = useState<{ desde: string; hasta: string } | null>(null);
+  /*
+    Qué se está guardando ahora (13/11/2026). `ocupado` solo cubre las fechas
+    y las personas: «Guardar vehículos» y la mascota no decían nada mientras
+    se guardaban, y el «Guardar» de las fechas se podía pulsar otra vez
+    mientras se comprobaban las visitas de amigos.
+  */
+  const [enCurso, setEnCurso] = useState<"fechas" | "vehiculos" | "mascota" | null>(null);
   const queryClient = useQueryClient();
   const registrados = visita.vehiculos?.length ?? 0;
   const [vehiculos, setVehiculos] = useState(visita.vehiculosPrevistos ?? registrados);
@@ -97,21 +104,27 @@ export function EditarEstancia({
   const limites = limitesDeLasFechas(fechas?.desde ?? "", fechas?.hasta ?? "", ahora());
 
   const guardarFechas = async (f: { desde: string; hasta: string }, mirarAmigos: boolean) => {
-    if (mirarAmigos && visita.unidadId) {
-      try {
-        const pisadas = await visitasDeAmigosEn(visita.unidadId, f.desde, f.hasta);
-        if (pisadas.length) {
-          setFechasPendientes(f);
-          setFechas(null);
-          setAmigos(pisadas);
+    if (enCurso) return;
+    setEnCurso("fechas");
+    try {
+      if (mirarAmigos && visita.unidadId) {
+        try {
+          const pisadas = await visitasDeAmigosEn(visita.unidadId, f.desde, f.hasta);
+          if (pisadas.length) {
+            setFechasPendientes(f);
+            setFechas(null);
+            setAmigos(pisadas);
+            return;
+          }
+        } catch (e) {
+          addToast(mensajeDeError(e, "No se pudo comprobar si hay visitas en esas fechas"), "error");
           return;
         }
-      } catch (e) {
-        addToast(mensajeDeError(e, "No se pudo comprobar si hay visitas en esas fechas"), "error");
-        return;
       }
+      await intentar(() => onCambiarFechas(f.desde, f.hasta), "Fechas cambiadas", () => setFechas(null));
+    } finally {
+      setEnCurso(null);
     }
-    await intentar(() => onCambiarFechas(f.desde, f.hasta), "Fechas cambiadas", () => setFechas(null));
   };
 
   const intentar = async (accion: () => Promise<void>, exito: string, cerrar?: () => void) => {
@@ -121,6 +134,21 @@ export function EditarEstancia({
       cerrar?.();
     } catch {
       // El aviso del fallo lo da el hook, con el motivo de la base.
+    }
+  };
+
+  /** Lo mismo, marcando qué se guarda para que su control espere. */
+  const guardarExtra = async (
+    que: "vehiculos" | "mascota",
+    accion: () => Promise<void>,
+    exito: string,
+  ) => {
+    if (enCurso) return;
+    setEnCurso(que);
+    try {
+      await intentar(accion, exito);
+    } finally {
+      setEnCurso(null);
     }
   };
 
@@ -193,9 +221,11 @@ export function EditarEstancia({
           <View className="flex-row">
             <Button
               size="sm"
-              loading={ocupado}
+              loading={enCurso === "vehiculos"}
+              disabled={ocupado || enCurso !== null}
               onPress={() =>
-                intentar(
+                guardarExtra(
+                  "vehiculos",
                   () => onCambiarExtras({ vehiculosPrevistos: vehiculos }),
                   "Vehículos actualizados",
                 )
@@ -212,8 +242,11 @@ export function EditarEstancia({
           <Text className="shrink text-sm font-semibold text-gray-900">¿Trae mascota?</Text>
           <Toggle
             value={Boolean(visita.traeMascota)}
+            cargando={enCurso === "mascota"}
+            disabled={enCurso !== null && enCurso !== "mascota"}
             onChange={(valor) =>
-              void intentar(
+              void guardarExtra(
+                "mascota",
                 () => onCambiarExtras({ traeMascota: valor }),
                 valor ? "Se le pedirá registrar su mascota" : "Sin mascota",
               )
@@ -252,7 +285,7 @@ export function EditarEstancia({
           />
           <Button
             fullWidth
-            loading={ocupado}
+            loading={ocupado || enCurso === "fechas"}
             disabled={Boolean(limites.error)}
             onPress={() => {
               if (fechas) void guardarFechas(fechas, true);

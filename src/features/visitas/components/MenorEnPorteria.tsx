@@ -54,6 +54,9 @@ export function MenorEnPorteria({
   }, [condominioId]);
 
   const anotar = async (resultado: RevisionMenor) => {
+    // Una respuesta a la vez: con los otros dos botones libres se podía anotar
+    // «se parece» y «no se parece» del mismo menor (13/11/2026).
+    if (enviando) return;
     setEnviando(resultado);
     try {
       await anotarRevisionMenor(invitadoUuid, resultado, comentario);
@@ -101,13 +104,19 @@ export function MenorEnPorteria({
           multiline
           showEditIcon={false}
         />
-        <Button fullWidth loading={enviando === "se_parece"} onPress={() => anotar("se_parece")}>
+        <Button
+          fullWidth
+          loading={enviando === "se_parece"}
+          disabled={enviando !== null}
+          onPress={() => anotar("se_parece")}
+        >
           Sí se parece
         </Button>
         <Button
           fullWidth
           variant="secondary"
           loading={enviando === "no_se_parece_seguro"}
+          disabled={enviando !== null}
           onPress={() => anotar("no_se_parece_seguro")}
         >
           No se parece, pero parece estar seguro
@@ -116,6 +125,7 @@ export function MenorEnPorteria({
           fullWidth
           variant="danger"
           loading={enviando === "no_se_parece_revisar"}
+          disabled={enviando !== null}
           onPress={() => anotar("no_se_parece_revisar")}
         >
           No se parece: avisar al anfitrión

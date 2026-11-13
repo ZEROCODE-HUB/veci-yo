@@ -20,6 +20,9 @@ export { SelectorDePais } from './SelectorDePais';
 export { EnlaceDeInvitacion } from './EnlaceDeInvitacion';
 export { EtiquetaVivienda } from './EtiquetaVivienda';
 export { Cargando } from './Cargando';
+export { Esqueleto, Bloque } from './Esqueleto';
+export { SegunLaCarga, ErrorAlCargar, estadoDe, juntarCargas } from './SegunLaCarga';
+export type { EstadoDeLaCarga } from './SegunLaCarga';
 export { ErrorBoundary } from './ErrorBoundary';
 
 // Composite components (depend on base)

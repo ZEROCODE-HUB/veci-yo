@@ -45,7 +45,7 @@ type Props = {
   onSave: (
     form: UnitFormValues,
     extra?: { borrador: BorradorDeRecursos; propietario: { nombre: string; correo: string } | null },
-  ) => void;
+  ) => unknown;
   /** Lo de abajo solo se ofrece si llegan estas (la torre las pasa). */
   parkings?: EstacionamientoDeTorre[];
   deposits?: Deposito[];
@@ -76,7 +76,14 @@ export function UnidadFormModal({
   const [borrador, setBorrador] = React.useState<BorradorDeRecursos>(BORRADOR_VACIO);
   const [duenoNombre, setDuenoNombre] = React.useState("");
   const [duenoCorreo, setDuenoCorreo] = React.useState("");
-  const { control, handleSubmit, reset, watch } = useForm<UnitFormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
+    formState: { isSubmitting },
+  } = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: initial,
   });
@@ -198,6 +205,7 @@ export function UnidadFormModal({
         )}
         <Button
           fullWidth
+          loading={isSubmitting}
           disabled={!watch("codigo")}
           onPress={() =>
             void handleSubmit((form) =>

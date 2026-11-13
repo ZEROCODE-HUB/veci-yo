@@ -14,6 +14,7 @@ import { ahora, formatDate } from "@/shared/utils";
 import { obtenerOcupacion } from "../services/zonas.repo";
 import { OCUPACION_QUERY_KEY, useZonas } from "./useZonas";
 import { ocupaLaFranja } from "../services/puestosDeLaZona";
+import { estadoDe } from "@/shared/components";
 
 /**
  * Estado y reglas de la pantalla de una zona comun.
@@ -129,6 +130,7 @@ export function useZonaDetalles() {
     reservas,
     zonasComunesConfig,
     cargando: cargandoZonas,
+    estadoZonas,
     /*
       Lo sigue devolviendo aunque `ZonaDetallesScreen` ya no lo pida: resolver
       una reserva se hace desde la pantalla de administracion (R-37), y esta
@@ -137,6 +139,8 @@ export function useZonaDetalles() {
     */
     actualizarEstadoReserva,
     eliminarReserva,
+    eliminarReservaAsync,
+    cancelandoReserva,
     actualizarPersonaReserva,
     guardarAsistentes,
     guardandoAsistentes,
@@ -264,11 +268,18 @@ export function useZonaDetalles() {
    * `reserva_zona_lectura` solo entrega las propias, así que sin esto la
    * grilla le decía a cada vecino que estaba todo libre.
    */
-  const { data: ocupacion = [] } = useQuery({
+  const consultaOcupacion = useQuery({
     queryKey: [...OCUPACION_QUERY_KEY, zonaId, diaISO],
     queryFn: () => obtenerOcupacion(zonaId, diaISO, diaISO),
     enabled: Boolean(zonaId),
   });
+  const ocupacion = consultaOcupacion.data ?? [];
+  /*
+    Mientras no llega --o si falla-- la ocupación vale `[]`, y la grilla pintaba
+    todas las franjas libres: «quedan 4 de 4» en una hora llena (13/11/2026).
+    La grilla espera a este estado antes de pintar las franjas.
+  */
+  const estadoOcupacion = estadoDe(consultaOcupacion);
 
   /** Cuántas reservas caben a la vez: 1 en la piscina, 4 en la lavandería. */
   // Sin parámetros no hay grilla (ver `freeHours`), así que tampoco cupos.
@@ -383,6 +394,10 @@ export function useZonaDetalles() {
     zona,
     zonaConfig,
     cargando,
+    /** Si la carga de las zonas falló: no es lo mismo que «ya no está». */
+    falloZonas: Boolean(estadoZonas.fallo),
+    reintentarZonas: estadoZonas.reintentar,
+    estadoOcupacion,
     rol,
     esGuardiaAdmin,
     esGuardia,
@@ -390,6 +405,8 @@ export function useZonaDetalles() {
     ubicaciones,
     actualizarEstadoReserva,
     eliminarReserva,
+    eliminarReservaAsync,
+    cancelandoReserva,
     actualizarPersonaReserva,
     guardarAsistentes,
     guardandoAsistentes,

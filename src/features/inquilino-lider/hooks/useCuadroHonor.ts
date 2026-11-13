@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { listaDe } from "@/shared/utils";
 import { useQuery } from "@tanstack/react-query";
+import { estadoDe, juntarCargas } from "@/shared/components";
 import { useAuthStore } from "@/stores";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
@@ -44,8 +45,11 @@ export function useCuadroHonor() {
 
   /*
     Uno cada 30 días (16/10/2026). La misma clave que la portada, para que
-    dar uno apague las dos a la vez. Mientras no se sabe, se ofrece: quien
-    decide es la base.
+    dar uno apague las dos a la vez.
+
+    Mientras no se sabe, **no** se ofrece (13/11/2026): con el cero de relleno
+    salía «Gratitud» a quien ya lo había dado, abría la ventana y la base lo
+    rechazaba al final. `gratitudSabida` dice si ya llegó la respuesta.
   */
   const regalos = useQuery({
     queryKey: ["home", "regalos", condominioId, usuarioId],
@@ -53,6 +57,7 @@ export function useCuadroHonor() {
     enabled: Boolean(condominioId && usuarioId),
   });
   const diasParaGratitud = regalos.data ?? 0;
+  const gratitudSabida = regalos.data !== undefined;
   const yaDioEsteMes = diasParaGratitud > 0;
 
   /*
@@ -116,6 +121,16 @@ export function useCuadroHonor() {
   return {
     isLoading: query.isLoading,
     error: query.error,
+    /*
+      Cómo va cada trozo de la pantalla (13/11/2026): la lista se quedaba en
+      blanco mientras cargaba, y «Todavía nadie.» / «Ninguna.» se leían antes
+      de saberlo.
+    */
+    carga: estadoDe(query),
+    cargaCarrusel: estadoDe(cuotas),
+    cargaEstadoCuotas: juntarCargas(estadoDe(miCuota), estadoDe(detalle), estadoDe(visibilidad)),
+    cargaGratitud: estadoDe(regalos),
+    gratitudSabida,
     search,
     setSearch,
     filtered,

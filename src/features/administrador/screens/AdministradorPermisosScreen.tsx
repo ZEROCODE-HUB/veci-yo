@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import {
   Button,
+  ErrorAlCargar,
   Input,
   Modal,
+  SegunLaCarga,
   Select,
   Toggle,
 } from "@/shared/components";
@@ -48,6 +50,7 @@ export function AdministradorPermisosScreen() {
   const documento = useVerificacionDeDocumento();
   const {
     data: permisos,
+    estado: cargaDePermisos,
     cargado,
     guardando,
     savePermisos,
@@ -139,13 +142,7 @@ export function AdministradorPermisosScreen() {
   const openRegulations = (tipo: string) =>
     navigation.navigate("ReglaDetalle", { tipo });
 
-  // Sin los parámetros todavía no hay formulario que enseñar.
-  if (!form) return null;
-
-  return (
-    <View className="flex-1 bg-bg-app">
-      <PageHeader title="Editar permisos viviendas" />
-      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-5">
+  const selector = (
         <AdminSectionCard>
           <Select
             label="Qué se está configurando"
@@ -167,6 +164,44 @@ export function AdministradorPermisosScreen() {
               : "La regla general. Cada vivienda puede tener su excepción."}
           </Text>
         </AdminSectionCard>
+  );
+
+  /*
+    Hasta que llega lo guardado de este destino no se enseña el formulario
+    (13/11/2026): salía en blanco, después con los valores de fábrica, y un
+    «Guardar» a tiempo los escribía encima. Si la lectura falla, se dice.
+  */
+  if (!form || !listo) {
+    return (
+      <View className="flex-1 bg-bg-app">
+        <PageHeader title="Editar permisos viviendas" />
+        <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-5">
+          {selector}
+          <SegunLaCarga
+            estado={{ ...cargaDePermisos, cargando: !cargaDePermisos.fallo }}
+            texto="los permisos"
+            forma="formulario"
+            enLinea
+          >
+            {null}
+          </SegunLaCarga>
+        </DesplazableConTeclado>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-bg-app">
+      <PageHeader title="Editar permisos viviendas" />
+      <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-5">
+        {selector}
+        {documento.fallo ? (
+          <ErrorAlCargar
+            texto="la verificación del documento"
+            reintentar={documento.reintentar}
+            enLinea
+          />
+        ) : (
         <PermisoConInterruptor
           seccion="Visitas"
           etiqueta="La portería verifica el documento de los profesionales"
@@ -181,8 +216,9 @@ export function AdministradorPermisosScreen() {
           }}
           valor={documento.verificar}
           onCambiar={documento.setVerificar}
-          deshabilitado={documento.guardando}
+          cargando={documento.cargando || documento.guardando}
         />
+        )}
         <PermisoConInterruptor
           seccion="Correspondencia"
           etiqueta="Permitir entrega directa en vivienda"

@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { Cargando } from "@/shared/components";
+import { SegunLaCarga, estadoDe } from "@/shared/components";
 import { useNavegacion } from "@/shared/hooks";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { desdeLaBase, formatDateTime } from "@/shared/utils";
@@ -25,12 +25,21 @@ const ESTADO: Record<NonNullable<AlarmaDelHistorial["cierre"]> | "abierta", { te
  */
 export function HistorialSosScreen() {
   const navigation = useNavegacion();
-  const { data: alarmas = [], isLoading } = useQuery({
+  const consulta = useQuery({
     queryKey: ["sos", "historial"],
     queryFn: () => historialSos(100),
   });
+  const alarmas = consulta.data ?? [];
 
-  if (isLoading) return <Cargando texto="el historial" />;
+  // Si falla, no es «todavía no hay ningún S.O.S.» (13/11/2026).
+  const carga = estadoDe(consulta);
+  if (carga.cargando || carga.fallo) {
+    return (
+      <SegunLaCarga estado={carga} texto="el historial">
+        {null}
+      </SegunLaCarga>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerStyle={{ padding: 16, gap: 12 }}>

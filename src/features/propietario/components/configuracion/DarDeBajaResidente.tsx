@@ -8,8 +8,11 @@ export function DarDeBajaResidente({
   residente,
   onConfirmar,
   onCancelar,
+  eliminando = false,
 }: {
   residente: ResidenteDeUnidad | null;
+  /** Mientras se da de baja: la ventana espera abierta, con el botón girando. */
+  eliminando?: boolean;
   onConfirmar: () => void;
   onCancelar: () => void;
 }) {
@@ -20,10 +23,10 @@ export function DarDeBajaResidente({
           ¿Seguro que deseas eliminar a{" "}
           <Text className="font-bold">{residente?.nombre}</Text>?
         </Text>
-        <Button variant="danger" onPress={onConfirmar}>
+        <Button variant="danger" onPress={onConfirmar} loading={eliminando}>
           Eliminar
         </Button>
-        <Button variant="ghost" onPress={onCancelar}>
+        <Button variant="ghost" onPress={onCancelar} disabled={eliminando}>
           Cancelar
         </Button>
       </View>

@@ -9,6 +9,7 @@ import {
 import { useApodoDeVivienda } from "../hooks";
 import { nombreDeVivienda } from "@/shared/services/nombreDeVivienda";
 import { useElegirVivienda } from "@/shared/hooks";
+import { Cargando } from "@/shared/components";
 
 /*
   Esta pantalla tenia tres controles --«+ Agregar ubicacion», un lapiz y una
@@ -25,6 +26,8 @@ import { useElegirVivienda } from "@/shared/hooks";
 export function AdministracionUbicacionScreen() {
   const rolActivo = useAuthStore((estado) => estado.rolActivo);
   const ubicaciones = useUbicacionStore((estado) => estado.ubicaciones);
+  // Hasta que la sesión las trae, «no tienes ninguna» no es verdad (13/11/2026).
+  const cargadas = useUbicacionStore((estado) => estado.cargadas);
   const elegirVivienda = useElegirVivienda();
   const esGuardia = rolActivo === "guardia";
   const apodo = useApodoDeVivienda();
@@ -49,7 +52,11 @@ export function AdministracionUbicacionScreen() {
           pantalla en blanco. Se le dice que es lo que falta y quien lo hace, en
           vez de ofrecerle un formulario que no le corresponde.
         */}
-        {ubicaciones.length === 0 && (
+        {!cargadas ? (
+          <Cargando texto="tus viviendas" variante="enLinea" forma="filas" cuantos={2} />
+        ) : null}
+
+        {cargadas && ubicaciones.length === 0 && (
           <View className="bg-white rounded-xl p-4 gap-2">
             <Text className="text-base font-semibold text-gray-900">
               Todavía no tienes ninguna vivienda

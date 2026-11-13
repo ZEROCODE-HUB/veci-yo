@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from "react-native";
 import { useRoute, type RouteProp } from "@react-navigation/native";
 import { DesplazableConTeclado } from "@/shared/layouts";
-import { Card, Cargando } from "@/shared/components/ui";
+import { Card, Cargando, ErrorAlCargar } from "@/shared/components/ui";
 import type { PlataformaStackParamList } from "@/shared/types/navigation";
 import { usePaisesDeLaApp } from "../hooks/usePanelDeLaApp";
 import { DatosDelPais } from "../components/DatosDelPais";
@@ -18,10 +18,12 @@ import { DocumentoDelPaisCard } from "../components/DocumentoDelPaisCard";
  */
 export function PlataformaPaisScreen() {
   const { params } = useRoute<RouteProp<PlataformaStackParamList, "PlataformaPais">>();
-  const { paises, monedas, cargando, esDueno, cambiar, cambiarDocumento } = usePaisesDeLaApp();
+  const { paises, monedas, cargando, estado, esDueno, cambiar, cambiarDocumento } = usePaisesDeLaApp();
   const pais = paises.find((p) => p.codigo === params.codigo);
 
-  if (cargando) return <Cargando texto="el país" />;
+  if (cargando || estado.cargando) return <Cargando texto="el país" forma="formulario" />;
+  // Sin esto, una red caída se leía «Ese país no existe» (13/11/2026).
+  if (estado.fallo) return <ErrorAlCargar texto="el país" reintentar={estado.reintentar} />;
   if (!pais) {
     return (
       <Card className="m-4 p-4">

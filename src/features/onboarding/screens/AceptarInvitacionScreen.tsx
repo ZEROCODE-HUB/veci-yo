@@ -51,6 +51,11 @@ export function AceptarInvitacionScreen() {
   const [detalle, setDetalle] = useState<DetalleInvitacion | null>(null);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
+  /*
+    Cuál de los dos botones se pulsó: rechazar dejaba girando «Aceptar» y el
+    propio «Rechazar» solo se apagaba (13/11/2026).
+  */
+  const [rechazando, setRechazando] = useState(false);
 
   /** No se pudo preguntar por la invitación: no es lo mismo que «no existe». */
   const [sinRespuesta, setSinRespuesta] = useState(false);
@@ -137,6 +142,7 @@ export function AceptarInvitacionScreen() {
 
   const rechazar = async () => {
     setProcesando(true);
+    setRechazando(true);
     try {
       await rechazarInvitacion(token);
       addToast("Invitación rechazada", "info");
@@ -148,6 +154,7 @@ export function AceptarInvitacionScreen() {
       );
     } finally {
       setProcesando(false);
+      setRechazando(false);
     }
   };
 
@@ -196,12 +203,18 @@ export function AceptarInvitacionScreen() {
 
         {detalle.vigente && autenticado && correoCoincide && (
           <View className="gap-2">
-            <Button fullWidth loading={procesando} onPress={aceptar}>
+            <Button
+              fullWidth
+              loading={procesando && !rechazando}
+              disabled={rechazando}
+              onPress={aceptar}
+            >
               Aceptar invitación
             </Button>
             <Button
               fullWidth
               variant="secondary"
+              loading={rechazando}
               disabled={procesando}
               onPress={rechazar}
             >

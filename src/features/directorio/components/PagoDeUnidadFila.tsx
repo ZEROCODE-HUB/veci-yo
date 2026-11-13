@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
-import { Checkbox } from "@/shared/components";
+import { Bloque, Cargando, Checkbox } from "@/shared/components";
 
 interface PagoDeUnidadFilaProps {
   codigo: string;
@@ -19,6 +19,11 @@ interface PagoDeUnidadFilaProps {
   /** El propietario tiene cuenta: sin cuenta no puede estar en el comité. */
   propietarioConCuenta: boolean;
   cambiandoComite: boolean;
+  /**
+   * Todavía no se sabe quién tiene cuenta. Mientras tanto se leía «el
+   * propietario tiene que tener cuenta» en todas las viviendas (13/11/2026).
+   */
+  comiteCargando?: boolean;
   onRegistrarPago: () => void;
   /**
    * Cuánto falta, ya con la moneda, para la casilla «Pagado». Null si no hay
@@ -65,6 +70,7 @@ export function PagoDeUnidadFila({
   enComite,
   propietarioConCuenta,
   cambiandoComite,
+  comiteCargando = false,
   onRegistrarPago,
   falta,
   onMarcarPagado,
@@ -141,14 +147,18 @@ export function PagoDeUnidadFila({
             }}
             disabled={sinMes || guardando || deshaciendo}
             accessibilityRole="button"
+            accessibilityState={{ busy: deshaciendo, disabled: sinMes || guardando || deshaciendo }}
+            aria-busy={deshaciendo}
             accessibilityLabel={
               confirmandoDeshacer
                 ? `Confirmar: deshacer el pago de ${codigo}`
                 : `Deshacer el pago de ${codigo}`
             }
-            className={`rounded-full border px-2.5 py-1 active:opacity-70 ${confirmandoDeshacer ? "border-red-300 bg-red-50" : "border-gray-200"}`}
+            className={`flex-row items-center gap-1.5 rounded-full border px-2.5 py-1 active:opacity-70 ${confirmandoDeshacer ? "border-red-300 bg-red-50" : "border-gray-200"}`}
             style={{ opacity: sinMes || guardando || deshaciendo ? 0.5 : 1 }}
           >
+            {/* Mientras se deshace, gira: antes solo se apagaba (13/11/2026). */}
+            {deshaciendo ? <Cargando variante="control" texto="deshaciendo el pago" /> : null}
             <Text className={`text-xs ${confirmandoDeshacer ? "font-semibold text-red-700" : "text-gray-600"}`}>
               {confirmandoDeshacer ? "Confirmar: volver a «No pagado»" : "Deshacer pago"}
             </Text>
@@ -165,14 +175,27 @@ export function PagoDeUnidadFila({
         </Pressable>
       </View>
 
-      {propietarioConCuenta ? (
+      {comiteCargando ? (
+        <View
+          className="items-center py-1"
+          accessibilityRole="progressbar"
+          aria-busy
+          role="status"
+          accessibilityLabel="Cargando el comité"
+        >
+          <Bloque ancho="60%" alto={22} redondo={11} />
+        </View>
+      ) : propietarioConCuenta ? (
         <Pressable
           disabled={cambiandoComite}
           onPress={() => onComite(!enComite)}
           accessibilityRole="button"
-          className="w-full self-start rounded-full border border-gray-200 px-2.5 py-1 active:opacity-70"
+          accessibilityState={{ busy: cambiandoComite, disabled: cambiandoComite }}
+          aria-busy={cambiandoComite}
+          className="w-full flex-row items-center justify-center gap-1.5 self-start rounded-full border border-gray-200 px-2.5 py-1 active:opacity-70"
           style={{ opacity: cambiandoComite ? 0.5 : 1 }}
         >
+          {cambiandoComite ? <Cargando variante="control" texto="el comité" /> : null}
           <Text className="text-xs text-gray-600 text-center">
             {enComite ? "Quitar de Comité" : "Marcar Comité de Propietarios"}
           </Text>

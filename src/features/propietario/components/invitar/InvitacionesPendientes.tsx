@@ -16,9 +16,12 @@ const etiquetaRol = (rol: string | null) =>
 export function InvitacionesPendientes({
   pendientes,
   onRevocar,
+  revocandoId,
 }: {
   pendientes: InvitacionPendiente[];
   onRevocar: (id: string) => void;
+  /** La que se está revocando: su confirmación espera abierta, con el botón girando. */
+  revocandoId?: string;
 }) {
   const [porRevocar, setPorRevocar] = useState<string | null>(null);
   if (pendientes.length === 0) return null;
@@ -50,7 +53,13 @@ export function InvitacionesPendientes({
               </Text>
             </View>
 
-            <Pressable onPress={() => setPorRevocar(invitacion.id)} hitSlop={8}>
+            <Pressable
+              onPress={() => setPorRevocar(invitacion.id)}
+              disabled={revocandoId !== undefined}
+              aria-disabled={revocandoId !== undefined}
+              style={{ opacity: revocandoId !== undefined ? 0.5 : 1 }}
+              hitSlop={8}
+            >
               <Text
                 className="text-xs font-medium"
                 style={{ color: theme.colors.danger }}
@@ -63,9 +72,15 @@ export function InvitacionesPendientes({
             <ConfirmacionEnLinea
               pregunta={`¿Revocar la invitación de ${invitacion.nombre || invitacion.correo}? Su enlace dejará de valer y no podrá entrar con él.`}
               confirmar="Sí, revocar"
+              ocupado={revocandoId === invitacion.id}
               onCancelar={() => setPorRevocar(null)}
+              /*
+                No se cierra al confirmar (13/11/2026): espera con el botón
+                girando. Al revocarse, la invitación sale de la lista; si
+                falla, sigue ahí con el aviso del error.
+              */
               onConfirmar={() => {
-                setPorRevocar(null);
+                if (revocandoId !== undefined) return;
                 onRevocar(invitacion.id);
               }}
             />

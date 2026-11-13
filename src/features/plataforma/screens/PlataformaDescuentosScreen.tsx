@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { DesplazableConTeclado } from "@/shared/layouts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Button, CampoFecha, Card, Cargando, Input } from "@/shared/components/ui";
+import { Badge, Button, CampoFecha, Card, Input, SegunLaCarga, estadoDe } from "@/shared/components/ui";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ahora } from "@/shared/utils/reloj.util";
@@ -25,10 +25,11 @@ const CLAVE = ["plataforma", "descuentos"];
 export function PlataformaDescuentosScreen() {
   const addToast = useUIStore((s) => s.addToast);
   const cliente = useQueryClient();
-  const { data: codigos = [], isLoading } = useQuery({
+  const consulta = useQuery({
     queryKey: CLAVE,
     queryFn: listarCodigosDeDescuento,
   });
+  const codigos = consulta.data ?? [];
 
   const [codigo, setCodigo] = useState("");
   const [porcentaje, setPorcentaje] = useState("");
@@ -107,38 +108,41 @@ export function PlataformaDescuentosScreen() {
         </View>
       </Card>
 
-      {isLoading ? (
-        <Cargando texto="los códigos" variante="enLinea" />
-      ) : codigos.length === 0 ? (
-        <Text className="text-sm text-gray-500 text-center">Todavía no hay códigos.</Text>
-      ) : (
-        codigos.map((c) => (
-          <Card key={c.id}>
-            <View className="flex-row items-center justify-between gap-2">
-              <View className="flex-1 gap-0.5">
-                <Text className="text-base font-bold text-gray-900">{c.codigo}</Text>
-                <Text className="text-xs text-gray-600">
-                  {c.porcentaje} % · {c.venceEn ? `hasta el ${c.venceEn}` : "no vence"} ·{" "}
-                  {c.usosMaximos ? `hasta ${c.usosMaximos} usos` : "sin tope de usos"}
-                </Text>
+      {/* Si la lista no llega, no se dice «Todavía no hay códigos» (13/11/2026). */}
+      <SegunLaCarga estado={estadoDe(consulta)} texto="los códigos" forma="tarjetas" cuantos={2} enLinea>
+        {codigos.length === 0 ? (
+          <Text className="text-sm text-gray-500 text-center">Todavía no hay códigos.</Text>
+        ) : (
+          codigos.map((c) => (
+            <Card key={c.id}>
+              <View className="flex-row items-center justify-between gap-2">
+                <View className="flex-1 gap-0.5">
+                  <Text className="text-base font-bold text-gray-900">{c.codigo}</Text>
+                  <Text className="text-xs text-gray-600">
+                    {c.porcentaje} % · {c.venceEn ? `hasta el ${c.venceEn}` : "no vence"} ·{" "}
+                    {c.usosMaximos ? `hasta ${c.usosMaximos} usos` : "sin tope de usos"}
+                  </Text>
+                </View>
+                <Badge status={c.activo ? "Aceptado" : "Pendiente"}>
+                  {c.activo ? "Activo" : "Inactivo"}
+                </Badge>
               </View>
-              <Badge status={c.activo ? "Aceptado" : "Pendiente"}>
-                {c.activo ? "Activo" : "Inactivo"}
-              </Badge>
-            </View>
-            <View className="flex-row mt-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                loading={activar.isPending}
-                onPress={() => activar.mutate({ id: c.id, activo: !c.activo })}
-              >
-                {c.activo ? "Desactivar" : "Activar"}
-              </Button>
-            </View>
-          </Card>
-        ))
-      )}
+              <View className="flex-row mt-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  // Solo gira la fila que se está cambiando; las demás esperan sin pulsarse dos veces.
+                  loading={activar.isPending && activar.variables?.id === c.id}
+                  disabled={activar.isPending}
+                  onPress={() => activar.mutate({ id: c.id, activo: !c.activo })}
+                >
+                  {c.activo ? "Desactivar" : "Activar"}
+                </Button>
+              </View>
+            </Card>
+          ))
+        )}
+      </SegunLaCarga>
     </DesplazableConTeclado>
   );
 }

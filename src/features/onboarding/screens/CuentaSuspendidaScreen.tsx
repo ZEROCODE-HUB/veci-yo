@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Button, Card } from "@/shared/components/ui";
+import { Button, Card, Cargando } from "@/shared/components/ui";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -22,6 +22,12 @@ export function CuentaSuspendidaScreen() {
   const cerrarAvisoDeSuspension = useAuthStore((s) => s.cerrarAvisoDeSuspension);
   const parametros = useParametrosDeLaBase();
   const correoSoporte = parametros.listo ? parametros.texto("soporte_correo")?.trim() : "";
+  /*
+    Mientras llegan los parámetros, el texto de respaldo («habla con la
+    administración») cambiaba solo al correo un momento después (13/11/2026).
+    Si no llegan, se queda el respaldo.
+  */
+  const esperandoParametros = !parametros.listo && !parametros.error;
 
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="flex-grow justify-center p-6">
@@ -39,11 +45,15 @@ export function CuentaSuspendidaScreen() {
           </Text>
         )}
 
-        <Text className="text-center text-sm text-gray-500">
-          {correoSoporte
-            ? `Si crees que es un error, escríbenos a ${correoSoporte}.`
-            : "Si crees que es un error, habla con la administración de tu edificio."}
-        </Text>
+        {esperandoParametros ? (
+          <Cargando variante="enLinea" texto="el contacto de soporte" forma="lineas" cuantos={1} />
+        ) : (
+          <Text className="text-center text-sm text-gray-500">
+            {correoSoporte
+              ? `Si crees que es un error, escríbenos a ${correoSoporte}.`
+              : "Si crees que es un error, habla con la administración de tu edificio."}
+          </Text>
+        )}
 
         <Button fullWidth onPress={() => void cerrarAvisoDeSuspension()}>
           Entendido

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { theme } from "@/config";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import { SegunLaCarga, type EstadoDeLaCarga } from "@/shared/components";
 
 interface Verificaciones {
   incluidas?: number;
@@ -12,6 +13,8 @@ interface Verificaciones {
 
 interface VerificacionesConsumoProps {
   verificaciones: Verificaciones | null;
+  /** Si el consumo todavía no ha llegado o no se pudo leer. */
+  estado?: EstadoDeLaCarga;
   suscripcionActiva?: boolean;
   /**
    * Compra un paquete. Sin esto la barra decía cuántas quedaban y no había
@@ -54,6 +57,7 @@ function Barra({
 
 export function VerificacionesConsumo({
   verificaciones,
+  estado,
   suscripcionActiva = false,
   onComprarPaquete,
   comprando = false,
@@ -63,9 +67,17 @@ export function VerificacionesConsumo({
   if (!verificaciones) {
     return (
       <View className="mt-2.5 pt-2.5 border-t border-gray-200">
-        <Text className="text-xs text-gray-400">
-          Sin información de verificaciones para esta propiedad.
-        </Text>
+        <SegunLaCarga
+          estado={estado ?? { cargando: false }}
+          texto="las verificaciones"
+          forma="lineas"
+          cuantos={2}
+          enLinea
+        >
+          <Text className="text-xs text-gray-400">
+            Sin información de verificaciones para esta propiedad.
+          </Text>
+        </SegunLaCarga>
       </View>
     );
   }

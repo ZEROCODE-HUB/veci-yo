@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,6 +27,13 @@ interface ToggleProps {
   labelClassName?: string;
   labelRightClassName?: string;
   disabled?: boolean;
+  /**
+   * Se está guardando el cambio (13/11/2026). Bloquea el interruptor y pinta
+   * una rueda en el pulgar: sin esto, un interruptor que espera a la base no
+   * se movía hasta que volvía la respuesta y un segundo toque mandaba el
+   * mismo valor viejo otra vez.
+   */
+  cargando?: boolean;
 }
 
 /**
@@ -57,7 +64,9 @@ export function Toggle({
   labelClassName = "",
   labelRightClassName = "",
   disabled = false,
+  cargando = false,
 }: ToggleProps) {
+  const bloqueado = disabled || cargando;
   const progreso = useSharedValue(value ? 1 : 0);
   const presion = useSharedValue(0);
 
@@ -106,7 +115,7 @@ export function Toggle({
         onPressOut={() => {
           presion.value = withTiming(0, { duration: 140 });
         }}
-        disabled={disabled}
+        disabled={bloqueado}
         accessibilityRole="switch"
         /*
           `aria-checked` ademas del estado de React Native, por lo mismo que
@@ -115,8 +124,9 @@ export function Toggle({
           estado. Es la causa de R-13 --tres interruptores que no decian si
           estaban puestos-- y estaba anotado como un olvido.
         */
-        accessibilityState={{ checked: value, disabled }}
+        accessibilityState={{ checked: value, disabled: bloqueado, busy: cargando }}
         aria-checked={value}
+        aria-busy={cargando}
         accessibilityLabel={accessibilityLabel ?? label ?? labelRight}
         hitSlop={8}
         style={{ opacity: disabled ? 0.45 : 1, flexShrink: 0 }}
@@ -145,9 +155,15 @@ export function Toggle({
                 shadowRadius: 3,
                 shadowOffset: { width: 0, height: 1 },
                 elevation: 2,
+                alignItems: "center",
+                justifyContent: "center",
               },
             ]}
-          />
+          >
+            {cargando ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} style={{ transform: [{ scale: 0.7 }] }} />
+            ) : null}
+          </Animated.View>
         </Animated.View>
       </Pressable>
       {Boolean(labelRight) && (

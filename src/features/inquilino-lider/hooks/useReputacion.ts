@@ -8,6 +8,7 @@ import { useReputacionUsuario } from "@/features/home/hooks/useReputacionUsuario
  * condominio. Sin niveles ni progresion: decision del 21/07/2026.
  */
 export function useReputacion() {
-  const insignias = useReputacionUsuario();
-  return { insignias, isLoading: false };
+  const { insignias, carga } = useReputacionUsuario();
+  // `isLoading` estaba escrito a fuego en `false` (13/11/2026).
+  return { insignias, isLoading: carga.cargando, carga };
 }

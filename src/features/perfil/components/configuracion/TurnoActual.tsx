@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Button } from "@/shared/components";
+import { Button, SegunLaCarga } from "@/shared/components";
 import { formatRangoHoras } from "@/shared/utils";
 import { usePerfil } from "../../hooks/usePerfil";
 import { useFueraDeTurno } from "../../hooks/useFueraDeTurno";
@@ -16,7 +16,8 @@ const FILA = { borderBottomWidth: 1, borderBottomColor: theme.colors.borderLight
  * Ahora sale de su horario, con lo que cambie hoy.
  */
 export function TurnoActual() {
-  const { guardiaActual, turnoActual, terminarTurno, terminandoTurno } = usePerfil();
+  const { guardiaActual, cargaDelPuesto, turnoActual, terminarTurno, terminandoTurno } =
+    usePerfil();
   const { fueraDeTurno, horario } = useFueraDeTurno();
   return (
     <View
@@ -30,50 +31,53 @@ export function TurnoActual() {
       }}
     >
       <Text className="text-base font-bold text-gray-900 text-center mb-3.5">Turno Actual</Text>
-      {turnoActual ? (
-        <View className="gap-2">
-          <View className="flex-row justify-between items-center py-2.5" style={FILA}>
-            <Text className="text-sm text-gray-500">Estado</Text>
-            <Text className="text-sm font-semibold" style={{ color: theme.colors.success }}>
-              En turno · {formatRangoHoras(turnoActual.horaInicio, turnoActual.horaFin)}
-            </Text>
-          </View>
-          {guardiaActual?.garita ? (
+      {/* Decía «Sin turno en curso» mientras el puesto todavía no había llegado. */}
+      <SegunLaCarga estado={cargaDelPuesto} texto="tu turno" forma="lineas" cuantos={2} enLinea>
+        {turnoActual ? (
+          <View className="gap-2">
             <View className="flex-row justify-between items-center py-2.5" style={FILA}>
-              <Text className="text-sm text-gray-500">Portería</Text>
-              <Text className="text-sm text-gray-900">{guardiaActual.garita}</Text>
+              <Text className="text-sm text-gray-500">Estado</Text>
+              <Text className="text-sm font-semibold" style={{ color: theme.colors.success }}>
+                En turno · {formatRangoHoras(turnoActual.horaInicio, turnoActual.horaFin)}
+              </Text>
             </View>
-          ) : null}
-          <View className="mt-3">
-            <Button variant="danger" loading={terminandoTurno} onPress={() => terminarTurno()}>
-              Terminar turno
-            </Button>
-          </View>
-        </View>
-      ) : (
-        <View>
-          <View className="flex-row justify-between items-center py-2.5">
-            <Text className="text-sm text-gray-500">Estado</Text>
-            <Text
-              className="text-sm font-medium"
-              style={{ color: fueraDeTurno ? theme.colors.badgeAmberText : theme.colors.textSecondary }}
-            >
-              {fueraDeTurno ? "Fuera de turno" : "Sin turno en curso"}
-            </Text>
-          </View>
-          {/* Fuera de turno, cuándo le toca (Para Claude 164, 29/10/2026). */}
-          {horario.length > 0 ? (
-            <View className="gap-1 pt-1">
-              <Text className="text-xs text-gray-500">Tu horario</Text>
-              {horario.map((linea) => (
-                <Text key={linea} className="text-sm text-gray-900">
-                  {linea}
-                </Text>
-              ))}
+            {guardiaActual?.garita ? (
+              <View className="flex-row justify-between items-center py-2.5" style={FILA}>
+                <Text className="text-sm text-gray-500">Portería</Text>
+                <Text className="text-sm text-gray-900">{guardiaActual.garita}</Text>
+              </View>
+            ) : null}
+            <View className="mt-3">
+              <Button variant="danger" loading={terminandoTurno} onPress={() => terminarTurno()}>
+                Terminar turno
+              </Button>
             </View>
-          ) : null}
-        </View>
-      )}
+          </View>
+        ) : (
+          <View>
+            <View className="flex-row justify-between items-center py-2.5">
+              <Text className="text-sm text-gray-500">Estado</Text>
+              <Text
+                className="text-sm font-medium"
+                style={{ color: fueraDeTurno ? theme.colors.badgeAmberText : theme.colors.textSecondary }}
+              >
+                {fueraDeTurno ? "Fuera de turno" : "Sin turno en curso"}
+              </Text>
+            </View>
+            {/* Fuera de turno, cuándo le toca (Para Claude 164, 29/10/2026). */}
+            {horario.length > 0 ? (
+              <View className="gap-1 pt-1">
+                <Text className="text-xs text-gray-500">Tu horario</Text>
+                {horario.map((linea) => (
+                  <Text key={linea} className="text-sm text-gray-900">
+                    {linea}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        )}
+      </SegunLaCarga>
     </View>
   );
 }

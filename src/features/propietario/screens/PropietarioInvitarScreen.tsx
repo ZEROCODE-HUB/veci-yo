@@ -1,5 +1,5 @@
 import { ScrollView, Text, View } from "react-native";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import {
   FormularioInvitacion,
   InvitacionesPendientes,
@@ -25,6 +25,9 @@ export function PropietarioInvitarScreen() {
     puedeInvitar,
     personas,
     pendientes,
+    cargaDePersonas,
+    cargaDePendientes,
+    revocandoId,
     form,
     setForm,
     rolesInvitables,
@@ -59,8 +62,28 @@ export function PropietarioInvitarScreen() {
           {ubicacionActiva?.alias}
         </Text>
 
-        <PersonasDeLaUnidad personas={personas} />
-        <InvitacionesPendientes pendientes={pendientes} onRevocar={revocar} />
+        <SegunLaCarga
+          estado={cargaDePersonas}
+          texto="la gente de la vivienda"
+          forma="filas"
+          cuantos={3}
+          enLinea
+        >
+          <PersonasDeLaUnidad personas={personas} />
+        </SegunLaCarga>
+        <SegunLaCarga
+          estado={cargaDePendientes}
+          texto="las invitaciones"
+          forma="filas"
+          cuantos={1}
+          enLinea
+        >
+          <InvitacionesPendientes
+            pendientes={pendientes}
+            onRevocar={revocar}
+            revocandoId={revocandoId}
+          />
+        </SegunLaCarga>
 
         <FormularioInvitacion
           form={form}

@@ -35,6 +35,11 @@ interface CorrespondenciaActionOverlaysProps {
   onAccionDesdeDetalle: (accion: AccionDeCorrespondencia, item: CorrespondenciaItem) => void;
   showDeleteSuccess: boolean;
   onCloseDeleteSuccess: () => void;
+  /** Mientras se borra o se entrega, el botón espera y no se pulsa dos veces. */
+  eliminando?: boolean;
+  entregando?: boolean;
+  /** La acción del menú o del detalle que se está guardando. */
+  accionEnCurso?: AccionDeCorrespondencia | null;
 }
 
 export function CorrespondenciaActionOverlays(
@@ -58,6 +63,9 @@ export function CorrespondenciaActionOverlays(
     onAccionDesdeDetalle,
     showDeleteSuccess,
     onCloseDeleteSuccess,
+    eliminando = false,
+    entregando = false,
+    accionEnCurso = null,
   } = props;
   return (
     <>
@@ -71,8 +79,11 @@ export function CorrespondenciaActionOverlays(
           ? opcionesDeCorrespondencia(menuItem.estado).map((opcion) => (
               <BottomSheetOption
                 key={opcion.accion}
-                label={opcion.etiqueta}
+                label={
+                  accionEnCurso === opcion.accion ? "Guardando…" : opcion.etiqueta
+                }
                 variant={opcion.peligrosa ? "danger" : undefined}
+                disabled={accionEnCurso !== null}
                 onPress={() => onAccion(opcion.accion)}
               />
             ))
@@ -111,7 +122,12 @@ export function CorrespondenciaActionOverlays(
               </View>
             </View>
           )}
-          <Button variant="primary" fullWidth onPress={onConfirmDelete}>
+          <Button
+            variant="primary"
+            fullWidth
+            loading={eliminando}
+            onPress={onConfirmDelete}
+          >
             Eliminar
           </Button>
         </View>
@@ -150,6 +166,7 @@ export function CorrespondenciaActionOverlays(
             variant="primary"
             fullWidth
             disabled={entregaNombre.trim() === ""}
+            loading={entregando}
             onPress={onConfirmEntrega}
           >
             Confirmar Entrega
@@ -173,6 +190,8 @@ export function CorrespondenciaActionOverlays(
                 key={opcion.accion}
                 variant={opcion.peligrosa ? "danger" : "secondary"}
                 fullWidth
+                loading={accionEnCurso === opcion.accion}
+                disabled={accionEnCurso !== null}
                 onPress={() => onAccionDesdeDetalle(opcion.accion, detailItem)}
               >
                 {opcion.etiqueta}

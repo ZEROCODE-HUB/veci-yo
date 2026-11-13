@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import React, { useState } from "react";
-import { View, TextInput, Text, Pressable } from "react-native";
+import { View, TextInput, Text, Pressable, type ReturnKeyTypeOptions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 
@@ -29,6 +29,16 @@ interface InputProps {
    * apóstrofos, guiones y puntos. Se podían poner números (QA 23/10/2026).
    */
   soloLetras?: boolean;
+  /**
+   * Para pasar de un campo al siguiente con el teclado (13/11/2026, cliente:
+   * «en Crear Cuenta el teclado tiene el botón Next para enviarte al
+   * siguiente campo»). Quien monta el formulario le da al campo su `ref`,
+   * pone `returnKeyType="next"` y en `onSubmitEditing` enfoca el siguiente;
+   * el último lleva `"done"` y envía.
+   */
+  ref?: React.Ref<TextInput>;
+  returnKeyType?: ReturnKeyTypeOptions;
+  onSubmitEditing?: () => void;
 }
 
 const filtrarCifras = (texto: string) => texto.replace(/[^0-9]/g, "");
@@ -50,6 +60,9 @@ export function Input({
   editable = true,
   soloCifras = false,
   soloLetras = false,
+  ref,
+  returnKeyType,
+  onSubmitEditing,
 }: InputProps) {
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -68,6 +81,14 @@ export function Input({
       {label ? <EtiquetaDelCampo label={label} /> : null}
       <View className="relative">
         <TextInput
+          ref={ref}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing ? () => onSubmitEditing() : undefined}
+          /*
+            Con «siguiente», el teclado se queda abierto al saltar de campo; si
+            no, se cierra y se vuelve a abrir en cada salto.
+          */
+          submitBehavior={returnKeyType === "next" ? "submit" : undefined}
           value={value}
           onChangeText={
             soloCifras

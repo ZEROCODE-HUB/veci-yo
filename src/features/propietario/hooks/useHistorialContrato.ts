@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useUnidadActiva } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import {
   cerrarContrato,
   crearContrato,
@@ -100,6 +101,8 @@ export function useHistorialContrato() {
   return {
     contratos: query.data ?? [],
     cargando: query.isLoading,
+    /** Para que un fallo no se lea como «no tiene ningún contrato». */
+    carga: estadoDe(query),
     terminosGenerales,
     /** Quiénes pueden figurar como inquilinos: los de la vivienda. */
     candidatos: residentes.filter((r) => r.rol !== "Propietario"),

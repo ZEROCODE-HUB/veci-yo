@@ -23,9 +23,10 @@ type Props = {
    */
   estacionamientos: Array<{ torreNumero?: number | null; tipo?: string }>;
   onSelect: (tower: Torre) => void;
-  onCreate: (form: TowerFormValues) => void;
-  onUpdate: (tower: Torre) => void;
-  onDelete: (tower: Torre) => void;
+  /** `false` si falló: la ventana se queda abierta con lo escrito (13/11/2026). */
+  onCreate: (form: TowerFormValues) => Promise<boolean>;
+  onUpdate: (tower: Torre) => Promise<boolean>;
+  onDelete: (tower: Torre) => Promise<boolean>;
 };
 
 export function TorresTab({
@@ -41,6 +42,7 @@ export function TorresTab({
   const [editing, setEditing] = useState<Torre | null>(null);
   const [menu, setMenu] = useState<Torre | null>(null);
   const [deleting, setDeleting] = useState<Torre | null>(null);
+  const [borrando, setBorrando] = useState(false);
 
   /** Las de la torre que se va a borrar, con la misma cuenta que la tarjeta. */
   const viviendasDeLaTorre = deleting
@@ -53,10 +55,16 @@ export function TorresTab({
     setEditing(null);
   };
 
-  const save = (form: TowerFormValues) => {
-    if (editing) onUpdate({ ...editing, ...form });
-    else onCreate(form);
-    closeForm();
+  const save = async (form: TowerFormValues) => {
+    const ok = editing ? await onUpdate({ ...editing, ...form }) : await onCreate(form);
+    if (ok) closeForm();
+  };
+  const borrar = async () => {
+    if (!deleting) return;
+    setBorrando(true);
+    const ok = await onDelete(deleting);
+    setBorrando(false);
+    if (ok) setDeleting(null);
   };
 
   const nextNumber = towers.length
@@ -214,10 +222,8 @@ export function TorresTab({
           <Button
             variant="danger"
             fullWidth
-            onPress={() => {
-              if (deleting) onDelete(deleting);
-              setDeleting(null);
-            }}
+            loading={borrando}
+            onPress={() => void borrar()}
           >
             Eliminar
           </Button>

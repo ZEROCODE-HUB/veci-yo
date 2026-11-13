@@ -108,6 +108,7 @@ export function DetalleDeEstancia({
         }
         onCambiarExtras={(cambios) => visitas.actualizarVisitaAsync(uuid, cambios)}
         editandoEstancia={visitas.editandoEstancia}
+        cambiandoCuantos={visitas.actualizandoVisita}
         onCambiarCuantos={(previstas, menores) =>
           visitas.actualizarVisita(uuid, {
             huespedesPrevistos: previstas,

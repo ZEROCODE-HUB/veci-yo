@@ -14,6 +14,7 @@ import {
   CampoHora,
   Input,
   Modal,
+  SegunLaCarga,
   Select,
 } from "@/shared/components";
 import { FotoDeZona } from "@/features/zonas/components/FotoDeZona";
@@ -180,9 +181,14 @@ export function GestionZonaReservasView({
   const zona = gestionZonas[id];
   const {
     data: allReservations = [],
+    estadoZona,
+    estado: cargaDeReservas,
     updateEstado,
+    resolviendo,
     updateReserva,
+    guardando,
     deleteReserva,
+    eliminando,
   } = useAdministradorReservasZona(id);
   const [filter, setFilter] = useState<"todas" | "futuras" | "pasadas">(
     "todas",
@@ -267,7 +273,7 @@ export function GestionZonaReservasView({
     });
     setFormError("");
   };
-  const saveEdit = (values: ReservaZonaEditValues) => {
+  const saveEdit = async (values: ReservaZonaEditValues) => {
     const { horaInicio, horaFin } = values;
     if (!values.fecha || !horaInicio || !horaFin)
       return setFormError("Completa todos los campos obligatorios");
@@ -275,17 +281,28 @@ export function GestionZonaReservasView({
       return setFormError("La hora de fin debe ser posterior a la de inicio");
     // El nombre y el departamento no se editan aqui: salen de la zona y de la
     // unidad reservada, que son claves foraneas.
-    if (editing)
-      updateReserva(editing.uuid ?? "", {
+    // Se espera: si falla, la ventana sigue abierta con lo escrito.
+    if (
+      editing &&
+      !(await updateReserva(editing.uuid ?? "", {
         fecha: values.fecha,
         horaInicio,
         horaFin,
         comentarios: values.comentarios,
-      });
+      }))
+    )
+      return;
     setEditing(null);
     setFormError("");
   };
 
+  // «Zona no encontrada» salía mientras las zonas cargaban (13/11/2026).
+  if (estadoZona.cargando || estadoZona.fallo)
+    return (
+      <SegunLaCarga estado={estadoZona} texto="la zona" forma="tarjetas">
+        {null}
+      </SegunLaCarga>
+    );
   if (!zona)
     return (
       <View className="items-center px-4 py-10">
@@ -367,7 +384,16 @@ export function GestionZonaReservasView({
           </Button>
         </View>
         <View className="gap-2.5 px-4">
-          {reservations.length === 0 ? (
+          {cargaDeReservas.cargando || cargaDeReservas.fallo ? (
+            <SegunLaCarga
+              estado={cargaDeReservas}
+              texto="las reservas"
+              forma="tarjetas"
+              enLinea
+            >
+              {null}
+            </SegunLaCarga>
+          ) : reservations.length === 0 ? (
             <Text className="px-4 py-10 text-center text-base text-gray-500">
               No hay reservas
               {filter !== "todas"
@@ -453,8 +479,10 @@ export function GestionZonaReservasView({
                           <Button
                             size="sm"
                             fullWidth
+                            loading={resolviendo === reservation.uuid}
+                            disabled={Boolean(resolviendo)}
                             onPress={() =>
-                              updateEstado(reservation.uuid ?? "", "Aprobado")
+                              void updateEstado(reservation.uuid ?? "", "Aprobado")
                             }
                           >
                             Aprobar
@@ -636,7 +664,11 @@ export function GestionZonaReservasView({
               {formError}
             </Text>
           )}
-          <Button fullWidth onPress={() => void handleSubmit(saveEdit)()}>
+          <Button
+            fullWidth
+            loading={guardando}
+            onPress={() => void handleSubmit(saveEdit)()}
+          >
             Guardar Cambios
           </Button>
         </View>
@@ -756,10 +788,12 @@ export function GestionZonaReservasView({
               <Button
                 variant="danger"
                 fullWidth
+                loading={Boolean(canceling) && resolviendo === canceling?.uuid}
                 onPress={() => {
-                  if (canceling)
-                    updateEstado(canceling.uuid ?? "", "Cancelada");
-                  setCanceling(null);
+                  if (!canceling) return;
+                  void updateEstado(canceling.uuid ?? "", "Cancelada").then(
+                    (ok) => ok && setCanceling(null),
+                  );
                 }}
               >
                 Cancelar Reserva
@@ -808,16 +842,17 @@ export function GestionZonaReservasView({
               <Button
                 variant="danger"
                 fullWidth
+                loading={Boolean(rechazando) && resolviendo === rechazando?.uuid}
                 onPress={() => {
                   const motivo = motivoRechazo.trim();
                   if (!motivo) {
                     setErrorMotivo("Escribe el motivo del rechazo.");
                     return;
                   }
-                  if (rechazando) {
-                    updateEstado(rechazando.uuid ?? "", "Rechazado", motivo);
-                  }
-                  setRechazando(null);
+                  if (!rechazando) return;
+                  void updateEstado(rechazando.uuid ?? "", "Rechazado", motivo).then(
+                    (ok) => ok && setRechazando(null),
+                  );
                 }}
               >
                 Rechazar
@@ -852,9 +887,12 @@ export function GestionZonaReservasView({
               <Button
                 variant="danger"
                 fullWidth
+                loading={Boolean(deleting) && eliminando === deleting?.uuid}
                 onPress={() => {
-                  if (deleting) deleteReserva(deleting.uuid ?? "");
-                  setDeleting(null);
+                  if (!deleting) return;
+                  void deleteReserva(deleting.uuid ?? "").then(
+                    (ok) => ok && setDeleting(null),
+                  );
                 }}
               >
                 Eliminar

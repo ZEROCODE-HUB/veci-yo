@@ -2,7 +2,8 @@ import { theme } from "@/config";
 import React, { useRef, useEffect, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { useGuardiasDeTurno } from "../../hooks/useGuardiasDeTurno";
-import { EtiquetaVivienda } from "@/shared/components";
+import { EtiquetaVivienda, SegunLaCarga } from "@/shared/components";
+import type { EstadoDeLaCarga } from "@/shared/components";
 import type { Conversation, MensajeChat } from "@/shared/types";
 import { nombreDelDia } from "../../helpers/chatHelpers";
 import { AdjuntoDelMensaje } from "./AdjuntoDelMensaje";
@@ -14,6 +15,11 @@ interface ChatThreadProps {
   puedeModerar?: boolean;
   retirando?: boolean;
   onRetirar?: (mensajeId: string) => void;
+  /**
+   * Si los mensajes todavía no han llegado o fallaron. Sin esto, mientras
+   * cargaban se leía «Todavía no hay mensajes. Escribe el primero.» (13/11/2026).
+   */
+  carga?: EstadoDeLaCarga;
 }
 
 /** Hasta dónde se estira la conversación en una pantalla ancha. */
@@ -34,9 +40,10 @@ export function ChatThread({
   puedeModerar = false,
   retirando = false,
   onRetirar,
+  carga = { cargando: false },
 }: ChatThreadProps) {
   const scrollRef = useRef<ScrollView>(null);
-  const guardias = useGuardiasDeTurno();
+  const { guardias, cargando: cargandoGuardias } = useGuardiasDeTurno();
   const isGrupo = conversation.tipo === "grupo";
 
   /*
@@ -55,7 +62,7 @@ export function ChatThread({
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.colors.chatFondo }}>
-      {conversation.nombre.startsWith("Seguridad") && (
+      {conversation.nombre.startsWith("Seguridad") && !cargandoGuardias && (
         <Aviso
           icono="👮"
           fondo={theme.colors.secondaryLight}
@@ -88,213 +95,215 @@ export function ChatThread({
           alignSelf: "center",
         }}
       >
-        {messages.length === 0 ? (
-          <View className="items-center py-16 gap-2">
-            <Text style={{ fontSize: 36 }}>💬</Text>
-            <Text
-              className="text-sm text-center"
-              style={{ color: theme.colors.textMuted }}
-            >
-              Todavía no hay mensajes. Escribe el primero.
-            </Text>
-          </View>
-        ) : (
-          messages.map((msg, i) => {
-            const anterior = messages[i - 1];
-            const nuevoDia = !anterior || anterior.fecha !== msg.fecha;
-            // El autor y su avatar solo cuando cambia: varios seguidos de la
-            // misma persona se leen como un bloque.
-            const mismoAutor =
-              !nuevoDia &&
-              anterior?.esMio === msg.esMio &&
-              anterior?.de === msg.de;
-            // El prototipo comparaba contra el literal "portero", asi que en
-            // el telefono de un residente sus propios mensajes salian del lado
-            // equivocado. Y despues `de` valia "yo" para los propios.
-            const mio = msg.esMio;
-            const puedeRetirar = !msg.retiradoPor && (mio || puedeModerar);
+        <SegunLaCarga estado={carga} texto="los mensajes" forma="lista" cuantos={4} enLinea>
+          {messages.length === 0 ? (
+            <View className="items-center py-16 gap-2">
+              <Text style={{ fontSize: 36 }}>💬</Text>
+              <Text
+                className="text-sm text-center"
+                style={{ color: theme.colors.textMuted }}
+              >
+                Todavía no hay mensajes. Escribe el primero.
+              </Text>
+            </View>
+          ) : (
+            messages.map((msg, i) => {
+              const anterior = messages[i - 1];
+              const nuevoDia = !anterior || anterior.fecha !== msg.fecha;
+              // El autor y su avatar solo cuando cambia: varios seguidos de la
+              // misma persona se leen como un bloque.
+              const mismoAutor =
+                !nuevoDia &&
+                anterior?.esMio === msg.esMio &&
+                anterior?.de === msg.de;
+              // El prototipo comparaba contra el literal "portero", asi que en
+              // el telefono de un residente sus propios mensajes salian del lado
+              // equivocado. Y despues `de` valia "yo" para los propios.
+              const mio = msg.esMio;
+              const puedeRetirar = !msg.retiradoPor && (mio || puedeModerar);
 
-            return (
-              <View key={String(msg.id)}>
-                {nuevoDia ? (
-                  <View className="items-center my-3">
-                    <View
-                      className="rounded-full px-3 py-1"
-                      style={{ backgroundColor: theme.colors.chatSeparador }}
-                    >
-                      <Text
-                        className="text-xs font-medium"
-                        style={{ color: theme.colors.textSecondary }}
+              return (
+                <View key={String(msg.id)}>
+                  {nuevoDia ? (
+                    <View className="items-center my-3">
+                      <View
+                        className="rounded-full px-3 py-1"
+                        style={{ backgroundColor: theme.colors.chatSeparador }}
                       >
-                        {nombreDelDia(msg.fecha)}
-                      </Text>
-                    </View>
-                  </View>
-                ) : null}
-
-                <View
-                  className="flex-row items-end gap-2"
-                  style={{
-                    justifyContent: mio ? "flex-end" : "flex-start",
-                    marginTop: mismoAutor ? 2 : 8,
-                  }}
-                >
-                  {/* En un grupo, quién habla; en una de dos ya se sabe. */}
-                  {isGrupo && !mio ? (
-                    <View
-                      className="w-8 h-8 rounded-full items-center justify-center"
-                      style={{
-                        backgroundColor: theme.colors.chatAcentoSuave,
-                        opacity: mismoAutor ? 0 : 1,
-                      }}
-                    >
-                      <Text style={{ fontSize: 15 }}>
-                        {msg.avatarEmoji || "👤"}
-                      </Text>
+                        <Text
+                          className="text-xs font-medium"
+                          style={{ color: theme.colors.textSecondary }}
+                        >
+                          {nombreDelDia(msg.fecha)}
+                        </Text>
+                      </View>
                     </View>
                   ) : null}
 
-                  <View style={{ maxWidth: "80%" }}>
-                    <View
-                      className="px-3 py-2"
-                      style={{
-                        backgroundColor: mio
-                          ? theme.colors.chatBurbujaMia
-                          : theme.colors.bgCard,
-                        borderRadius: 16,
-                        borderBottomRightRadius: mio ? 4 : 16,
-                        borderBottomLeftRadius: mio ? 16 : 4,
-                        borderWidth: mio ? 0 : 1,
-                        borderColor: theme.colors.borderLight,
-                      }}
-                    >
-                      {isGrupo && !mio && !mismoAutor ? (
-                        /*
-                          El nombre y el depto, juntos. Lo pidio el cliente el
-                          02/10/2026: con el alias encendido --«Vecino
-                          Misterioso»-- un nombre a secas no identificaba a
-                          nadie. La administracion y la porteria no tienen
-                          depto, y entonces no se pinta etiqueta.
-                        */
-                        <View className="flex-row items-center gap-1.5 mb-0.5">
-                          <Text
-                            className="text-xs font-semibold"
-                            style={{ color: theme.colors.secondaryDark }}
-                          >
-                            {msg.de}
-                          </Text>
-                          <EtiquetaVivienda codigo={msg.unidad} />
-                        </View>
-                      ) : null}
-                      {/*
-                        La lápida. Un mensaje retirado deja hueco en vez de
-                        desaparecer (decisión del cliente, 07/10/2026): si no,
-                        la conversación pierde mensajes en silencio. Quién lo
-                        quitó se distingue: «me arrepentí» y «lo moderó la
-                        administración» no son lo mismo para quien lee.
-                      */}
-                      {msg.retiradoPor ? (
-                        <Text
-                          className="text-sm italic"
-                          style={{ color: theme.colors.textMuted }}
-                        >
-                          {msg.retiradoPor === "administracion"
-                            ? "Mensaje retirado por la administración"
-                            : "Mensaje retirado"}
-                        </Text>
-                      ) : (
-                        <>
-                          {msg.adjunto ? (
-                            <AdjuntoDelMensaje adjunto={msg.adjunto} />
-                          ) : null}
-                          {/* Solo el nombre del archivo ya lo dice el adjunto. */}
-                          {msg.adjunto && msg.texto === `📎 ${msg.adjunto.nombre}` ? null : (
-                            <Text
-                              className="text-base"
-                              style={{ lineHeight: 21, color: theme.colors.text }}
-                            >
-                              {msg.texto}
-                            </Text>
-                          )}
-                        </>
-                      )}
-                      <Text
-                        className="text-[11px] mt-0.5"
+                  <View
+                    className="flex-row items-end gap-2"
+                    style={{
+                      justifyContent: mio ? "flex-end" : "flex-start",
+                      marginTop: mismoAutor ? 2 : 8,
+                    }}
+                  >
+                    {/* En un grupo, quién habla; en una de dos ya se sabe. */}
+                    {isGrupo && !mio ? (
+                      <View
+                        className="w-8 h-8 rounded-full items-center justify-center"
                         style={{
-                          color: theme.colors.textMuted,
-                          alignSelf: "flex-end",
+                          backgroundColor: theme.colors.chatAcentoSuave,
+                          opacity: mismoAutor ? 0 : 1,
                         }}
                       >
-                        {msg.hora}
-                      </Text>
-                    </View>
+                        <Text style={{ fontSize: 15 }}>
+                          {msg.avatarEmoji || "👤"}
+                        </Text>
+                      </View>
+                    ) : null}
 
-                    {/*
-                      Retirar. Hasta el 07/10/2026 no habia ningun sitio desde
-                      donde hacerlo: la funcion y la politica estaban, y faltaba
-                      el ultimo eslabon de la cadena.
-                    */}
-                    {puedeRetirar ? (
-                      confirmando === String(msg.id) ? (
-                        <View
-                          className="flex-row items-center gap-3 mt-1 flex-wrap"
-                          style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
-                        >
+                    <View style={{ maxWidth: "80%" }}>
+                      <View
+                        className="px-3 py-2"
+                        style={{
+                          backgroundColor: mio
+                            ? theme.colors.chatBurbujaMia
+                            : theme.colors.bgCard,
+                          borderRadius: 16,
+                          borderBottomRightRadius: mio ? 4 : 16,
+                          borderBottomLeftRadius: mio ? 16 : 4,
+                          borderWidth: mio ? 0 : 1,
+                          borderColor: theme.colors.borderLight,
+                        }}
+                      >
+                        {isGrupo && !mio && !mismoAutor ? (
+                          /*
+                            El nombre y el depto, juntos. Lo pidio el cliente el
+                            02/10/2026: con el alias encendido --«Vecino
+                            Misterioso»-- un nombre a secas no identificaba a
+                            nadie. La administracion y la porteria no tienen
+                            depto, y entonces no se pinta etiqueta.
+                          */
+                          <View className="flex-row items-center gap-1.5 mb-0.5">
+                            <Text
+                              className="text-xs font-semibold"
+                              style={{ color: theme.colors.secondaryDark }}
+                            >
+                              {msg.de}
+                            </Text>
+                            <EtiquetaVivienda codigo={msg.unidad} />
+                          </View>
+                        ) : null}
+                        {/*
+                          La lápida. Un mensaje retirado deja hueco en vez de
+                          desaparecer (decisión del cliente, 07/10/2026): si no,
+                          la conversación pierde mensajes en silencio. Quién lo
+                          quitó se distingue: «me arrepentí» y «lo moderó la
+                          administración» no son lo mismo para quien lee.
+                        */}
+                        {msg.retiradoPor ? (
                           <Text
-                            className="text-xs"
+                            className="text-sm italic"
                             style={{ color: theme.colors.textMuted }}
                           >
-                            ¿Retirarlo? No se puede deshacer.
+                            {msg.retiradoPor === "administracion"
+                              ? "Mensaje retirado por la administración"
+                              : "Mensaje retirado"}
                           </Text>
-                          <Pressable
-                            accessibilityLabel="Confirmar que se retira el mensaje"
-                            disabled={retirando}
-                            onPress={() => {
-                              onRetirar?.(String(msg.id));
-                              setConfirmando(null);
-                            }}
-                          >
-                            <Text
-                              className="text-xs font-bold"
-                              style={{ color: theme.colors.danger }}
-                            >
-                              Sí, retirar
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            accessibilityLabel="Dejar el mensaje como está"
-                            onPress={() => setConfirmando(null)}
+                        ) : (
+                          <>
+                            {msg.adjunto ? (
+                              <AdjuntoDelMensaje adjunto={msg.adjunto} />
+                            ) : null}
+                            {/* Solo el nombre del archivo ya lo dice el adjunto. */}
+                            {msg.adjunto && msg.texto === `📎 ${msg.adjunto.nombre}` ? null : (
+                              <Text
+                                className="text-base"
+                                style={{ lineHeight: 21, color: theme.colors.text }}
+                              >
+                                {msg.texto}
+                              </Text>
+                            )}
+                          </>
+                        )}
+                        <Text
+                          className="text-[11px] mt-0.5"
+                          style={{
+                            color: theme.colors.textMuted,
+                            alignSelf: "flex-end",
+                          }}
+                        >
+                          {msg.hora}
+                        </Text>
+                      </View>
+
+                      {/*
+                        Retirar. Hasta el 07/10/2026 no habia ningun sitio desde
+                        donde hacerlo: la funcion y la politica estaban, y faltaba
+                        el ultimo eslabon de la cadena.
+                      */}
+                      {puedeRetirar ? (
+                        confirmando === String(msg.id) ? (
+                          <View
+                            className="flex-row items-center gap-3 mt-1 flex-wrap"
+                            style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
                           >
                             <Text
                               className="text-xs"
-                              style={{ color: theme.colors.textSecondary }}
+                              style={{ color: theme.colors.textMuted }}
                             >
-                              Cancelar
+                              ¿Retirarlo? No se puede deshacer.
+                            </Text>
+                            <Pressable
+                              accessibilityLabel="Confirmar que se retira el mensaje"
+                              disabled={retirando}
+                              onPress={() => {
+                                onRetirar?.(String(msg.id));
+                                setConfirmando(null);
+                              }}
+                            >
+                              <Text
+                                className="text-xs font-bold"
+                                style={{ color: theme.colors.danger }}
+                              >
+                                Sí, retirar
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              accessibilityLabel="Dejar el mensaje como está"
+                              onPress={() => setConfirmando(null)}
+                            >
+                              <Text
+                                className="text-xs"
+                                style={{ color: theme.colors.textSecondary }}
+                              >
+                                Cancelar
+                              </Text>
+                            </Pressable>
+                          </View>
+                        ) : (
+                          <Pressable
+                            accessibilityLabel={`Retirar el mensaje de ${msg.de}`}
+                            onPress={() => setConfirmando(String(msg.id))}
+                            style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
+                            hitSlop={6}
+                          >
+                            <Text
+                              className="text-[11px] mt-0.5 px-1"
+                              style={{ color: theme.colors.textMuted }}
+                            >
+                              Retirar
                             </Text>
                           </Pressable>
-                        </View>
-                      ) : (
-                        <Pressable
-                          accessibilityLabel={`Retirar el mensaje de ${msg.de}`}
-                          onPress={() => setConfirmando(String(msg.id))}
-                          style={{ alignSelf: mio ? "flex-end" : "flex-start" }}
-                          hitSlop={6}
-                        >
-                          <Text
-                            className="text-[11px] mt-0.5 px-1"
-                            style={{ color: theme.colors.textMuted }}
-                          >
-                            Retirar
-                          </Text>
-                        </Pressable>
-                      )
-                    ) : null}
+                        )
+                      ) : null}
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </SegunLaCarga>
       </ScrollView>
     </View>
   );

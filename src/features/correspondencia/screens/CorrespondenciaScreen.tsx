@@ -3,7 +3,7 @@ import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { useAuthStore, useUbicacionStore } from "@/stores";
-import { InfoButton } from "@/shared/components";
+import { InfoButton, SegunLaCarga } from "@/shared/components";
 import { HELP } from "@/shared/content/helpContent";
 import {
   CorrespondenciaActionOverlays,
@@ -22,8 +22,15 @@ export function CorrespondenciaScreen() {
   const navigation = useNavegacion();
   const rolActivo = useAuthStore((state) => state.rolActivo);
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
-  const { items, cargando, error, actualizarEstado, notificarPorOtroMedio, eliminar } =
-    useCorrespondencia();
+  const {
+    items,
+    estado: carga,
+    actualizarEstado,
+    notificarPorOtroMedio,
+    eliminar,
+    cambiandoEstado,
+    eliminando,
+  } = useCorrespondencia();
   const filtros = useCorrespondenciaFiltros(items);
   const [menuItem, setMenuItem] = useState<CorrespondenciaItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<CorrespondenciaItem | null>(
@@ -37,6 +44,13 @@ export function CorrespondenciaScreen() {
   );
   const [entregaNombre, setEntregaNombre] = useState("");
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  /*
+    La acción que se está guardando (13/11/2026). Notificar, recibir o
+    devolver se lanzaban y el menú se cerraba al instante: no se veía que
+    algo pasaba y se podía pulsar otra vez. Ahora el menú o el detalle se
+    quedan abiertos, con la opción esperando, hasta que la base contesta.
+  */
+  const [enCurso, setEnCurso] = useState<AccionDeCorrespondencia | null>(null);
   const puedeModificarEstado =
     rolActivo === "administrador" || rolActivo === "guardia";
   const puedeCrear = puedeModificarEstado;
@@ -69,12 +83,42 @@ export function CorrespondenciaScreen() {
     });
   }, [navigation, puedeCrear]);
 
-  const handleAccion = (accion: AccionDeCorrespondencia, desde?: CorrespondenciaItem) => {
-    // Desde los tres puntos o desde el detalle (Para Claude 167).
-    const item = desde ?? menuItem;
+  const cerrarMenus = () => {
     setMenuItem(null);
     setDetailItem(null);
-    if (!item) return;
+  };
+
+  /** Espera a la base y solo cierra lo abierto si salió bien. */
+  const esperarAccion = async (
+    accion: AccionDeCorrespondencia,
+    guardar: () => Promise<boolean>,
+  ) => {
+    setEnCurso(accion);
+    try {
+      if (await guardar()) cerrarMenus();
+    } finally {
+      setEnCurso(null);
+    }
+  };
+
+  const handleAccion = (accion: AccionDeCorrespondencia, desde?: CorrespondenciaItem) => {
+    if (enCurso) return;
+    // Desde los tres puntos o desde el detalle (Para Claude 167).
+    const item = desde ?? menuItem;
+    if (!item) {
+      cerrarMenus();
+      return;
+    }
+
+    if (accion === "notificar") {
+      void esperarAccion(accion, () => notificarPorOtroMedio(item.uuid ?? ""));
+      return;
+    }
+    if (accion === "recibir" || accion === "devolver") {
+      void esperarAccion(accion, () => actualizarEstado(item.uuid ?? "", "En Portería"));
+      return;
+    }
+    cerrarMenus();
 
     if (accion === "entregar") {
       /*
@@ -90,14 +134,6 @@ export function CorrespondenciaScreen() {
       setEntregaNombre("");
       return;
     }
-    if (accion === "notificar") {
-      notificarPorOtroMedio(item.uuid ?? "");
-      return;
-    }
-    if (accion === "recibir" || accion === "devolver") {
-      actualizarEstado(item.uuid ?? "", "En Portería");
-      return;
-    }
     if (accion === "informar") {
       navigation.navigate("CorrespondenciaAgregar", { informar: item });
       return;
@@ -105,25 +141,26 @@ export function CorrespondenciaScreen() {
     setDeleteItem(item);
   };
 
-  const confirmarEntrega = () => {
-    if (!entregaItem || entregaNombre.trim() === "") return;
+  // Las dos ventanas esperan a la base y se cierran solo si salió (13/11/2026).
+  const confirmarEntrega = async () => {
+    if (!entregaItem || entregaNombre.trim() === "" || cambiandoEstado) return;
     // La base registra la fecha y la hora de entrega por su cuenta; aqui solo
     // viaja quien recibio el paquete.
-    actualizarEstado(entregaItem.uuid ?? "", "Entregado", {
+    const ok = await actualizarEstado(entregaItem.uuid ?? "", "Entregado", {
       entregadoA: entregaNombre.trim(),
     });
-    setEntregaItem(null);
+    if (ok) setEntregaItem(null);
   };
-  const confirmarEliminacion = () => {
-    if (!deleteItem) return;
+  const confirmarEliminacion = async () => {
+    if (!deleteItem || eliminando) return;
     // «Eliminada con éxito» salía en cuanto se pulsaba, sin saber si lo estaba.
-    eliminar(deleteItem.uuid ?? "", {
+    const ok = await eliminar(deleteItem.uuid ?? "", {
       onSuccess: () => {
         setShowDeleteSuccess(true);
         setTimeout(() => setShowDeleteSuccess(false), 2000);
       },
     });
-    setDeleteItem(null);
+    if (ok) setDeleteItem(null);
   };
   if (accesoBloqueado)
     return (
@@ -150,17 +187,13 @@ export function CorrespondenciaScreen() {
         // El uuid, no el numero derivado de el: dos envios podian coincidir.
         keyExtractor={(item) => item.uuid ?? item.id.toString()}
         ListEmptyComponent={
-          cargando ? null : error ? (
-            <View className="items-center p-6 gap-2">
-              <Text className="text-base font-semibold text-gray-900">
-                No se pudo cargar la correspondencia
-              </Text>
-              <Text className="text-sm text-center text-gray-500">
-                Vuelve a intentarlo. Si sigue pasando, avisa a la
-                administración.
-              </Text>
-            </View>
-          ) : (
+          // Mientras carga, la silueta; si falla, «No se pudo cargar · Reintentar».
+          <SegunLaCarga
+            estado={carga}
+            texto="la correspondencia"
+            forma="tarjetas"
+            enLinea
+          >
             <View className="items-center p-6">
               {/*
                 No es lo mismo que no haya nada a que lo tape un filtro: decia
@@ -172,7 +205,7 @@ export function CorrespondenciaScreen() {
                   : "No hay correspondencia registrada."}
               </Text>
             </View>
-          )
+          </SegunLaCarga>
         }
         contentContainerStyle={{ padding: 12, gap: 10 }}
         ListHeaderComponent={
@@ -218,6 +251,9 @@ export function CorrespondenciaScreen() {
         deleteItem={deleteItem}
         onCloseDelete={() => setDeleteItem(null)}
         onConfirmDelete={confirmarEliminacion}
+        eliminando={eliminando}
+        entregando={cambiandoEstado && Boolean(entregaItem)}
+        accionEnCurso={enCurso}
         entregaItem={entregaItem}
         onCloseEntrega={() => setEntregaItem(null)}
         entregaNombre={entregaNombre}

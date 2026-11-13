@@ -16,11 +16,16 @@ import { ahora, formatRangoHoras } from "@/shared/utils";
 type Props = {
   guardia: Guardia | null;
   onClose: () => void;
-  onUpdate: (guardia: Guardia) => void;
+  /*
+    Las tres esperan a la base y devuelven `false` si falló (13/11/2026):
+    sin eso, dos toques rápidos mandaban dos horarios que se pisaban, y un
+    fallo dejaba el formulario vacío como si se hubiera guardado.
+  */
+  onUpdate: (guardia: Guardia) => Promise<boolean>;
   /** El ajuste de un día concreto. Va aparte: se guarda en su propia tabla. */
-  onOverride: (guardia: Guardia, ajuste: TurnoOverride) => void;
+  onOverride: (guardia: Guardia, ajuste: TurnoOverride) => Promise<boolean>;
   /** Quita un ajuste que ya estaba guardado. */
-  onQuitarOverride: (uuid: string) => void;
+  onQuitarOverride: (uuid: string) => Promise<boolean>;
 };
 
 export function GuardiaTurnosModal({
@@ -46,6 +51,17 @@ export function GuardiaTurnosModal({
     horaFin: string;
   } | null>(null);
   const [avisoEdicion, setAvisoEdicion] = React.useState("");
+  /** Qué se está guardando: solo gira ese botón y los demás esperan. */
+  const [enCurso, setEnCurso] = React.useState<string | null>(null);
+  const hacer = async (clave: string, accion: () => Promise<boolean>) => {
+    if (enCurso) return false;
+    setEnCurso(clave);
+    try {
+      return await accion();
+    } finally {
+      setEnCurso(null);
+    }
+  };
   const recurringForm = useForm<RecurringScheduleFormValues>({
     resolver: zodResolver(recurringScheduleSchema),
     defaultValues: { horaInicio: "", horaFin: "", tipoRotacion: "" },
@@ -78,7 +94,7 @@ export function GuardiaTurnosModal({
     reiniciarAjuste(emptyOverride);
   }, [guardia?.id, reiniciarRecurrente, reiniciarAjuste]);
 
-  const addRecurringSchedule = (values: RecurringScheduleFormValues) => {
+  const addRecurringSchedule = async (values: RecurringScheduleFormValues) => {
     if (!guardia || !recurrenceDays.length || !values.horaInicio) return;
     /*
       Llevaba `hora: values.horaInicio` --solo la de entrada-- aunque el
@@ -107,17 +123,20 @@ export function GuardiaTurnosModal({
       return;
     }
     setAviso("");
-    onUpdate({
-      ...guardia,
-      turnos: [...guardia.turnos, ...nextTurns],
-    });
+    const ok = await hacer("recurrente", () =>
+      onUpdate({
+        ...guardia,
+        turnos: [...guardia.turnos, ...nextTurns],
+      }),
+    );
+    if (!ok) return;
     setRecurring(false);
     setRecurrenceDays([]);
     recurringForm.reset();
   };
 
   /** Guarda el turno editado: mismo día, horas nuevas. */
-  const guardarEdicion = () => {
+  const guardarEdicion = async () => {
     if (!guardia || !editando) return;
     const { indice, horaInicio, horaFin } = editando;
     if (!horaInicio || !horaFin) {
@@ -137,19 +156,23 @@ export function GuardiaTurnosModal({
       return;
     }
     setAvisoEdicion("");
-    onUpdate({
-      ...guardia,
-      turnos: guardia.turnos.map((t, i) => (i === indice ? { ...t, horaInicio, horaFin } : t)),
-    });
-    setEditando(null);
+    const ok = await hacer("edicion", () =>
+      onUpdate({
+        ...guardia,
+        turnos: guardia.turnos.map((t, i) => (i === indice ? { ...t, horaInicio, horaFin } : t)),
+      }),
+    );
+    if (ok) setEditando(null);
   };
 
   const quitarTurno = (indice: number) => {
     if (!guardia) return;
-    onUpdate({
-      ...guardia,
-      turnos: guardia.turnos.filter((_, i) => i !== indice),
-    });
+    void hacer(`quitar-${indice}`, () =>
+      onUpdate({
+        ...guardia,
+        turnos: guardia.turnos.filter((_, i) => i !== indice),
+      }),
+    );
   };
 
   /*
@@ -157,9 +180,9 @@ export function GuardiaTurnosModal({
     guardaba permisos, rotación y turnos: «Guardar modificación» cerraba la
     ventana y no existía (13/10/2026). Ahora sale por su propio camino.
   */
-  const saveOverride = (data: TurnoOverride) => {
+  const saveOverride = async (data: TurnoOverride) => {
     if (!guardia) return;
-    onOverride(guardia, data);
+    if (!(await hacer("puntual", () => onOverride(guardia, data)))) return;
     overrideForm.reset(emptyOverride);
     setOverrideOpen(false);
   };
@@ -209,7 +232,13 @@ export function GuardiaTurnosModal({
                   ) : null}
                   <View className="flex-row gap-2">
                     <View className="flex-1">
-                      <Button size="sm" fullWidth onPress={guardarEdicion}>
+                      <Button
+                        size="sm"
+                        fullWidth
+                        loading={enCurso === "edicion"}
+                        disabled={Boolean(enCurso)}
+                        onPress={() => void guardarEdicion()}
+                      >
                         Guardar
                       </Button>
                     </View>
@@ -255,6 +284,8 @@ export function GuardiaTurnosModal({
                   <Button
                     size="sm"
                     variant="ghost"
+                    loading={enCurso === `quitar-${index}`}
+                    disabled={Boolean(enCurso)}
                     onPress={() => quitarTurno(index)}
                   >
                     <Text>Quitar</Text>
@@ -283,7 +314,13 @@ export function GuardiaTurnosModal({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onPress={() => onQuitarOverride(ajuste.uuid ?? "")}
+                      loading={enCurso === `ajuste-${ajuste.uuid}`}
+                      disabled={Boolean(enCurso)}
+                      onPress={() =>
+                        void hacer(`ajuste-${ajuste.uuid}`, () =>
+                          onQuitarOverride(ajuste.uuid ?? ""),
+                        )
+                      }
                     >
                       <Text>Quitar</Text>
                     </Button>
@@ -350,6 +387,8 @@ export function GuardiaTurnosModal({
               )}
               <Button
                 fullWidth
+                loading={enCurso === "recurrente"}
+                disabled={Boolean(enCurso)}
                 onPress={() => {
                   if (!recurrenceDays.length) {
                     setAviso("Elige al menos un día.");
@@ -433,6 +472,8 @@ export function GuardiaTurnosModal({
           )}
           <Button
             fullWidth
+            loading={enCurso === "puntual"}
+            disabled={Boolean(enCurso)}
             onPress={() => void overrideForm.handleSubmit(saveOverride)()}
           >
             Guardar modificación

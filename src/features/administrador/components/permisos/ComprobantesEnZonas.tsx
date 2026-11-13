@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Text, View } from "react-native";
-import { Toggle } from "@/shared/components";
+import { SegunLaCarga, Toggle, estadoDe } from "@/shared/components";
 import { useUIStore } from "@/stores";
 import {
   guardarComprobantesEnZonas,
@@ -16,11 +16,12 @@ export function ComprobantesEnZonas({ condominioId }: { condominioId: string }) 
   const cliente = useQueryClient();
   const { addToast } = useUIStore();
 
-  const { data: permitir } = useQuery({
+  const consulta = useQuery({
     queryKey: ["comprobantes-en-zonas", condominioId],
     queryFn: () => sePidenComprobantes(condominioId),
     enabled: Boolean(condominioId),
   });
+  const permitir = consulta.data;
 
   const guardar = useMutation({
     mutationFn: (valor: boolean) => guardarComprobantesEnZonas(condominioId, valor),
@@ -32,10 +33,13 @@ export function ComprobantesEnZonas({ condominioId }: { condominioId: string }) 
   });
 
   return (
+    // Apagado mientras cargaba se leía como «no se pide» (13/11/2026).
+    <SegunLaCarga estado={estadoDe(consulta)} texto="la opción de comprobantes" enLinea>
     <View className="gap-2">
       <Toggle
         value={Boolean(permitir)}
-        disabled={guardar.isPending || permitir === undefined}
+        disabled={permitir === undefined}
+        cargando={guardar.isPending}
         onChange={(valor) => guardar.mutate(valor)}
         labelRight="Permitir subir comprobantes de pago en Zonas Comunes"
       />
@@ -45,5 +49,6 @@ export function ComprobantesEnZonas({ condominioId }: { condominioId: string }) 
           : "Al reservar no se pide comprobante de pago."}
       </Text>
     </View>
+    </SegunLaCarga>
   );
 }

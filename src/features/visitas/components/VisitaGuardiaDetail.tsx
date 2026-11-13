@@ -22,7 +22,7 @@ interface Props {
   item: VisitaItem;
   personIndex?: number | null;
   onToggleArrival?: (arrived: boolean) => void;
-  onToggleInstruction?: () => void;
+  onToggleInstruction?: () => Promise<unknown> | void;
   /** El numero que se lee en el documento. Responde si coincide. */
   onVerifyDocument?: (numero: string) => Promise<boolean>;
   /** Qué fotos se están subiendo ahora, para decirlo en su botón (29/10/2026). */

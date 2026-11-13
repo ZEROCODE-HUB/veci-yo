@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Toggle, Cargando } from "@/shared/components";
+import { Toggle, SegunLaCarga } from "@/shared/components";
+import type { PreferenciaDeAviso } from "@/features/home/services/notificaciones.repo";
 import { useAvisos } from "../../hooks/useAvisos";
 import { useAuthStore } from "@/stores";
 import { useParametrosDeLaBase } from "@/shared/hooks";
@@ -29,7 +30,13 @@ const DE_LA_ESTANCIA = new Set([
  * WhatsApp, así que esas filas no se ofrecen.
  */
 export function AvisosPorDonde() {
-  const { avisos: todos, cargando, guardar } = useAvisos();
+  const { avisos: todos, cargando, fallo, reintentar, pendiente, guardar } = useAvisos();
+  /*
+    Un interruptor que se está guardando gira y no se puede volver a pulsar
+    (13/11/2026): se reconoce porque lo pedido difiere de lo que hay.
+  */
+  const girando = (aviso: PreferenciaDeAviso, campo: "porApp" | "porPush" | "porWhatsapp") =>
+    pendiente?.motivo === aviso.motivo && pendiente[campo] !== aviso[campo];
   /*
     Los de la estancia (14/10/2026) solo los ve quien responde por una
     vivienda: a un guardia o a un huésped no le llegan nunca, y un interruptor
@@ -42,73 +49,76 @@ export function AvisosPorDonde() {
   const parametros = useParametrosDeLaBase();
   const whatsappVisible = parametros.listo && parametros.booleano("avisos_whatsapp_visible");
 
-  if (cargando) {
-    return (
-      <Cargando variante="enLinea" />
-    );
-  }
-
+  /*
+    Si la carga falla, la lista vacía se leía como «no hay avisos»: ahora se
+    dice y se ofrece reintentar.
+  */
   return (
-    <View className="gap-3">
-      <Text className="text-xs leading-5 text-gray-500">
-        Elige qué avisos te llegan a la campana y como notificación push.
-      </Text>
+    <SegunLaCarga estado={{ cargando, fallo, reintentar }} texto="tus avisos" enLinea>
+      <View className="gap-3">
+        <Text className="text-xs leading-5 text-gray-500">
+          Elige qué avisos te llegan a la campana y como notificación push.
+        </Text>
 
-      {avisos.map((aviso) => (
-        <View
-          key={aviso.motivo}
-          className="gap-2 pt-3"
-          style={{
-            borderTopWidth: 1,
-            borderTopColor: theme.colors.borderLight,
-          }}
-        >
-          <Text className="text-sm font-medium text-gray-900">
-            {aviso.emoji} {aviso.etiqueta}
-          </Text>
-
-          {aviso.configurable ? (
-            <View className="gap-1.5">
-              <Fila
-                etiqueta="En la aplicación"
-                nombre={`${aviso.etiqueta}: en la aplicación`}
-                valor={aviso.porApp}
-                onChange={(v) => guardar({ ...aviso, porApp: v })}
-              />
-              <Fila
-                etiqueta="Notificación push"
-                nombre={`${aviso.etiqueta}: notificación push`}
-                valor={aviso.porPush}
-                onChange={(v) => guardar({ ...aviso, porPush: v })}
-              />
-              {/*
-                Por correo no: los avisos no salen por correo (decisión del
-                22/10/2026), y un interruptor que no hace nada es el defecto
-                más repetido de este proyecto. WhatsApp tampoco existe; la
-                fila vuelve si la plataforma enciende `avisos_whatsapp_visible`.
-              */}
-              {whatsappVisible ? (
-                <Fila
-                  etiqueta="Por WhatsApp"
-                  nombre={`${aviso.etiqueta}: por WhatsApp`}
-                  valor={aviso.porWhatsapp}
-                  onChange={(v) => guardar({ ...aviso, porWhatsapp: v })}
-                />
-              ) : null}
-            </View>
-          ) : (
-            /*
-              La alarma de pánico. No se apaga, y se dice por qué en vez de
-              enseñar un interruptor desactivado que nadie entiende.
-            */
-            <Text className="text-xs text-gray-500">
-              Siempre activa, por todos los medios. Una alarma que se puede
-              silenciar no es una alarma.
+        {avisos.map((aviso) => (
+          <View
+            key={aviso.motivo}
+            className="gap-2 pt-3"
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.borderLight,
+            }}
+          >
+            <Text className="text-sm font-medium text-gray-900">
+              {aviso.emoji} {aviso.etiqueta}
             </Text>
-          )}
-        </View>
-      ))}
-    </View>
+
+            {aviso.configurable ? (
+              <View className="gap-1.5">
+                <Fila
+                  etiqueta="En la aplicación"
+                  nombre={`${aviso.etiqueta}: en la aplicación`}
+                  valor={aviso.porApp}
+                  cargando={girando(aviso, "porApp")}
+                  onChange={(v) => guardar({ ...aviso, porApp: v })}
+                />
+                <Fila
+                  etiqueta="Notificación push"
+                  nombre={`${aviso.etiqueta}: notificación push`}
+                  valor={aviso.porPush}
+                  cargando={girando(aviso, "porPush")}
+                  onChange={(v) => guardar({ ...aviso, porPush: v })}
+                />
+                {/*
+                  Por correo no: los avisos no salen por correo (decisión del
+                  22/10/2026), y un interruptor que no hace nada es el defecto
+                  más repetido de este proyecto. WhatsApp tampoco existe; la
+                  fila vuelve si la plataforma enciende `avisos_whatsapp_visible`.
+                */}
+                {whatsappVisible ? (
+                  <Fila
+                    etiqueta="Por WhatsApp"
+                    nombre={`${aviso.etiqueta}: por WhatsApp`}
+                    valor={aviso.porWhatsapp}
+                    cargando={girando(aviso, "porWhatsapp")}
+                    onChange={(v) => guardar({ ...aviso, porWhatsapp: v })}
+                  />
+                ) : null}
+              </View>
+            ) : (
+              /*
+                La alarma de pánico. No se apaga, y se dice por qué en vez de
+                enseñar un interruptor desactivado que nadie entiende.
+              */
+              <Text className="text-xs text-gray-500">
+                Siempre activa, por todos los medios. Una alarma que se puede
+                silenciar no es una alarma.
+              </Text>
+            )}
+          </View>
+        ))}
+      </View>
+    </SegunLaCarga>
   );
 }
 
@@ -116,18 +126,25 @@ function Fila({
   etiqueta,
   nombre,
   valor,
+  cargando = false,
   onChange,
 }: {
   etiqueta: string;
   /** Lo que lee quien no ve la pantalla: «Llega un paquete: por WhatsApp». */
   nombre: string;
   valor: boolean;
+  cargando?: boolean;
   onChange: (valor: boolean) => void;
 }) {
   return (
     <View className="flex-row items-center justify-between">
       <Text className="flex-1 text-xs text-gray-600">{etiqueta}</Text>
-      <Toggle value={valor} onChange={onChange} accessibilityLabel={nombre} />
+      <Toggle
+        value={valor}
+        onChange={onChange}
+        cargando={cargando}
+        accessibilityLabel={nombre}
+      />
     </View>
   );
 }

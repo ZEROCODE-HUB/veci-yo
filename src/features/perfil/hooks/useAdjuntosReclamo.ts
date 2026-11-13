@@ -2,6 +2,7 @@ import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores";
+import { estadoDe } from "@/shared/components";
 import {
   urlTemporal,
   type ArchivoElegido,
@@ -64,6 +65,9 @@ export function useAdjuntosReclamo(reclamoId: string) {
   return {
     adjuntos: query.data ?? [],
     cargando: query.isLoading,
+    carga: estadoDe(query),
+    /** El adjunto que se está quitando: solo ese gira y no se pulsa dos veces. */
+    quitandoId: borrar.isPending ? borrar.variables?.id : undefined,
     subiendo: subir.isPending,
     agregarDocumento: () => elegirYSubir(elegirDocumento),
     agregarImagen: () => elegirYSubir(elegirImagen),

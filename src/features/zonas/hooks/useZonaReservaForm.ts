@@ -38,6 +38,7 @@ import { useCondominioActivo } from "@/shared/hooks";
 import type { ArchivoElegido } from "@/shared/services/archivos";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { ahora, formatDate, formatDateInput } from "@/shared/utils";
+import { estadoDe } from "@/shared/components";
 
 interface UseZonaReservaFormParams {
   zona: ZonaComun;
@@ -279,11 +280,18 @@ export function useZonaReservaForm({
     el cliente ve --`reserva_zona_lectura` solo le entrega las suyas--, asi que
     sale de `ocupacion_zona()`, que devuelve lo tomado sin decir de quien es.
   */
-  const { data: ocupacion = [] } = useQuery({
+  const consultaOcupacion = useQuery({
     queryKey: [...OCUPACION_QUERY_KEY, zona.id, fechaISO],
     queryFn: () => obtenerOcupacion(zona.id, fechaISO, fechaISO),
     enabled: Boolean(zona.id),
   });
+  const ocupacion = consultaOcupacion.data;
+  /*
+    Mientras no llega --o si falla-- la ocupación vale `[]` y todos los puestos
+    salían libres: se podía elegir la lavadora que ya tenía otro (13/11/2026).
+  */
+  const estadoPuestos = estadoDe(consultaOcupacion);
+  const puestosSinSaber = Boolean(estadoPuestos.cargando || estadoPuestos.fallo);
 
   const tramo = useMemo(() => {
     // Con el tiempo elegido, no con la franja máxima (29/10/2026).
@@ -300,12 +308,14 @@ export function useZonaReservaForm({
     );
     // Sin tramo elegido todavia no hay nada que descartar.
     if (!tramo) return todos;
+    // Y sin la ocupación no se ofrece ninguno: no se sabe cuáles quedan.
+    if (puestosSinSaber) return [];
     return puestosDisponibles({
       nombreZona: zona.nombre,
       puestos,
-      ocupados: puestosOcupados(ocupacion, fechaISO, tramo),
+      ocupados: puestosOcupados(ocupacion ?? [], fechaISO, tramo),
     });
-  }, [zona, puestos, ocupacion, fechaISO, tramo]);
+  }, [zona, puestos, ocupacion, fechaISO, tramo, puestosSinSaber]);
 
   /*
     Si el puesto elegido deja de estar libre --porque se cambia la hora o el
@@ -350,6 +360,10 @@ export function useZonaReservaForm({
     }
     if (pideComprobante && !comprobante) {
       addToast("Es una zona de pago: adjunta el comprobante antes de reservar.", "error");
+      return;
+    }
+    if (tramo && puestosSinSaber) {
+      addToast("Todavía no sabemos qué puestos quedan libres. Espera un momento o reintenta.", "error");
       return;
     }
     if (asignaNumeroSolo && numbers.length === 0) {
@@ -467,6 +481,8 @@ export function useZonaReservaForm({
       }),
     ),
     numbers,
+    /** La ocupación del día: hasta que llega, el desplegable de puestos espera. */
+    estadoPuestos,
     /** Cuánto tiempo se puede reservar desde la hora elegida, y el elegido. */
     /** El guardia en una zona de pago: comprobante obligatorio. */
     pideComprobante,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
-import { Button } from "@/shared/components";
+import { Button, Cargando, SegunLaCarga } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useLista } from "@/shared/hooks/useLista";
 import { useUIStore } from "@/stores";
@@ -24,7 +24,8 @@ import { ESTILO_DE_TARJETA } from "./gruposDeResidentes";
 export function MisVehiculos({ unidadId }: { unidadId: string }) {
   const parametrosDeLaBase = useParametrosDeLaBase();
   const { addToast } = useUIStore();
-  const { vehiculos, agregar, quitar, guardando, cocheras } = useVehiculosResidente(unidadId);
+  const { carga, vehiculos, agregar, quitar, quitandoId, guardando, cocheras } =
+    useVehiculosResidente(unidadId);
   const [mostrarAlta, setMostrarAlta] = useState(false);
   const tipos = useLista("tipos_de_vehiculo");
   const [form, setForm] = useState({ placa: "", tipo: "" });
@@ -59,57 +60,72 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
     }
     // El código sale de la lista `tipos_de_vehiculo`, cuyos códigos son los
     // del enum: la lista no admite códigos nuevos.
-    agregar({ placa: form.placa, tipo: tipoElegido as VehiculoResidente["tipo"] });
-    setForm({ placa: "", tipo: "" });
-    setMostrarAlta(false);
+    // La ventana se cierra cuando se guardó; si falla, sigue abierta con lo escrito.
+    agregar({ placa: form.placa, tipo: tipoElegido as VehiculoResidente["tipo"] })
+      .then(() => {
+        setForm({ placa: "", tipo: "" });
+        setMostrarAlta(false);
+      })
+      .catch(() => undefined);
   };
 
   return (
     <>
       <Text className="text-sm font-bold text-gray-900 mt-2">Mis Vehículos</Text>
       <View className="rounded-2xl p-4" style={ESTILO_DE_TARJETA}>
-        <Text className="text-xs text-center mb-3" style={{ color: theme.colors.textMuted }}>
-          {vehiculos.length} de {cocheras} estacionamiento(s) asignado(s)
-        </Text>
-        {vehiculos.length > 0 && (
-          <View className="flex-col gap-2 mb-3">
-            {vehiculos.map((v: VehiculoResidente) => (
-              <View
-                key={v.uuid}
-                className="flex-row justify-between items-center p-2.5 rounded-xl"
-                style={{ backgroundColor: theme.colors.bgMuted }}
-              >
-                <View>
-                  <Text className="text-base font-bold text-gray-900">{v.placa}</Text>
-                  <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                    {tipos.etiquetaDe(v.tipo)}
-                  </Text>
-                </View>
-                <Pressable onPress={() => quitar(v.uuid)}>
-                  <Text className="text-xs font-medium" style={{ color: theme.colors.danger }}>
-                    Eliminar
-                  </Text>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        )}
-        {vehiculos.length < cocheras && (
-          <Button variant="primary" onPress={() => setMostrarAlta(true)}>
-            + Agregar vehículo
-          </Button>
-        )}
-        {/*
-          Sin cocheras no hay botón, y hay que decir por qué. Salía «0 de 0
-          estacionamiento(s) asignado(s)» y nada más: indistinguible de una
-          pantalla rota (13/10/2026).
-        */}
-        {cocheras === 0 && (
-          <Text className="text-xs text-gray-500">
-            Esta vivienda no tiene cocheras asignadas. Se asignan desde la
-            administración del edificio.
+        <SegunLaCarga estado={carga} texto="tus vehículos" forma="filas" cuantos={2} enLinea>
+          <Text className="text-xs text-center mb-3" style={{ color: theme.colors.textMuted }}>
+            {vehiculos.length} de {cocheras} estacionamiento(s) asignado(s)
           </Text>
-        )}
+          {vehiculos.length > 0 && (
+            <View className="flex-col gap-2 mb-3">
+              {vehiculos.map((v: VehiculoResidente) => (
+                <View
+                  key={v.uuid}
+                  className="flex-row justify-between items-center p-2.5 rounded-xl"
+                  style={{ backgroundColor: theme.colors.bgMuted }}
+                >
+                  <View>
+                    <Text className="text-base font-bold text-gray-900">{v.placa}</Text>
+                    <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                      {tipos.etiquetaDe(v.tipo)}
+                    </Text>
+                  </View>
+                  {quitandoId === v.uuid ? (
+                    <Cargando variante="control" texto="quitando el vehículo" />
+                  ) : (
+                    <Pressable
+                      onPress={() => quitar(v.uuid)}
+                      disabled={quitandoId !== undefined}
+                      aria-disabled={quitandoId !== undefined}
+                      style={{ opacity: quitandoId !== undefined ? 0.5 : 1 }}
+                    >
+                      <Text className="text-xs font-medium" style={{ color: theme.colors.danger }}>
+                        Eliminar
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+          {vehiculos.length < cocheras && (
+            <Button variant="primary" onPress={() => setMostrarAlta(true)}>
+              + Agregar vehículo
+            </Button>
+          )}
+          {/*
+            Sin cocheras no hay botón, y hay que decir por qué. Salía «0 de 0
+            estacionamiento(s) asignado(s)» y nada más: indistinguible de una
+            pantalla rota (13/10/2026).
+          */}
+          {cocheras === 0 && (
+            <Text className="text-xs text-gray-500">
+              Esta vivienda no tiene cocheras asignadas. Se asignan desde la
+              administración del edificio.
+            </Text>
+          )}
+        </SegunLaCarga>
       </View>
 
       <ModalesConfiguracion

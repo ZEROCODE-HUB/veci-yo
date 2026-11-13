@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, type ReturnKeyTypeOptions, type TextInput } from "react-native";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
@@ -23,6 +23,10 @@ interface Props {
   error?: string;
   /** Texto de ayuda bajo el campo. */
   ayuda?: string;
+  /** Para saltar al siguiente campo con el teclado; ver `Input`. */
+  ref?: React.Ref<TextInput>;
+  returnKeyType?: ReturnKeyTypeOptions;
+  onSubmitEditing?: () => void;
 }
 
 /**
@@ -75,6 +79,9 @@ export function CampoTelefono({
   placeholder = "Número de teléfono",
   error,
   ayuda,
+  ref,
+  returnKeyType,
+  onSubmitEditing,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
   const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(paisPorDefecto());
@@ -116,6 +123,9 @@ export function CampoTelefono({
             soloCifras
             error={error}
             onBlur={onTelefonoBlur}
+            ref={ref}
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
           />
         </View>
       </View>

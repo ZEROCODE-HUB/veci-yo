@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
-import { Button, CampoTelefono, Cargando, Input } from "@/shared/components";
+import { Button, CampoTelefono, Input, SegunLaCarga, estadoDe } from "@/shared/components";
 import { useCondominioActivo } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { paisPorDefecto } from "@/shared/constants";
@@ -67,7 +67,15 @@ export function InformacionDeConstructora() {
     onError: (e) => addToast(mensajeDeError(e, "No se pudo guardar"), "error"),
   });
 
-  if (guardada.isLoading) return <Cargando variante="enLinea" texto="la constructora" />;
+  /*
+    Si la lectura falla, los campos se quedaban vacíos y «Guardar» seguía
+    activo: pulsarlo borraba la constructora guardada con blancos (13/11/2026).
+    Sin datos leídos no hay formulario.
+  */
+  const carga = estadoDe(guardada);
+  if (carga.cargando || carga.fallo) {
+    return <SegunLaCarga estado={carga} texto="la constructora" forma="formulario" enLinea>{null}</SegunLaCarga>;
+  }
 
   return (
     <View className="gap-3 rounded-2xl p-4" style={{ backgroundColor: theme.colors.bgCard }}>

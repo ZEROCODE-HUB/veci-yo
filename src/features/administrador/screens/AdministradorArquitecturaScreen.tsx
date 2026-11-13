@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
-import { Tabs } from "@/shared/components";
+import { SegunLaCarga, Tabs } from "@/shared/components";
 import {
   CondominioTab,
   PorteriasTab,
@@ -21,6 +21,7 @@ export function AdministradorArquitecturaScreen() {
     estacionamientos,
     depositos,
     porterias,
+    estado,
     createTower,
     updateTower,
     deleteTower,
@@ -128,7 +129,12 @@ export function AdministradorArquitecturaScreen() {
           onChange={(value) => setTab(value || "Condominio")}
         />
         {tab === "Condominio" && <CondominioTab />}
+        {/*
+          Torres y porterías esperan a la lista: antes salían en blanco
+          mientras cargaba, y en blanco para siempre si fallaba (13/11/2026).
+        */}
         {tab === "Torres" && (
+          <SegunLaCarga estado={estado} texto="las torres" forma="tarjetas" enLinea>
           <TorresTab
             towers={torres}
             unidades={unidades}
@@ -138,8 +144,10 @@ export function AdministradorArquitecturaScreen() {
             onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}
             onDelete={(tower) => deleteTower(tower.uuid ?? "")}
           />
+          </SegunLaCarga>
         )}
         {tab === "Porterías" && (
+          <SegunLaCarga estado={estado} texto="las porterías" forma="filas" enLinea>
           <PorteriasTab
             items={porterias}
             // El tipo lo elige quien da de alta la porteria. Estaba escrito a
@@ -149,6 +157,7 @@ export function AdministradorArquitecturaScreen() {
             onUpdate={(item, form) => updatePorteria(item.uuid ?? "", form)}
             onDelete={(uuid) => deletePorteria(uuid)}
           />
+          </SegunLaCarga>
         )}
       </ScrollView>
     </View>

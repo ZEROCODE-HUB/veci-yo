@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Button, Cargando, Modal } from "@/shared/components";
+import { Badge, Button, Modal, SegunLaCarga, estadoDe, juntarCargas } from "@/shared/components";
 import { useUIStore } from "@/stores/ui-store";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ESTADO_UNIDAD } from "@/shared/constants";
@@ -80,6 +80,7 @@ export function UnidadDetalleModal({
   const tipologia = tipologias.find((t) => t.uuid === unit.tipologiaId);
   const suyos = parkings.filter((p) => p.unidadId === unidadId);
   const susDepositos = deposits.filter((d) => String(d.unidadId ?? "") === unidadId);
+  const cargaDelPropietario = juntarCargas(estadoDe(personas), estadoDe(pendiente));
   const propietarios = (personas.data ?? []).filter((p) => p.rol === "propietario");
   const otros = (personas.data ?? []).filter((p) => p.rol !== "propietario");
 
@@ -105,8 +106,15 @@ export function UnidadDetalleModal({
         </Seccion>
 
         <Seccion titulo="Propietario">
-          {personas.isLoading ? (
-            <Cargando variante="enLinea" texto="el propietario" />
+          {/*
+            «Sin propietario asignado» solo cuando las dos consultas
+            respondieron: salía mientras la asignación pendiente llegaba, o
+            para siempre si fallaba (13/11/2026).
+          */}
+          {cargaDelPropietario.cargando || cargaDelPropietario.fallo ? (
+            <SegunLaCarga estado={cargaDelPropietario} texto="el propietario" enLinea>
+              {null}
+            </SegunLaCarga>
           ) : propietarios.length > 0 ? (
             propietarios.map((p) => (
               <View key={p.membresiaId} className="flex-row items-center gap-2">

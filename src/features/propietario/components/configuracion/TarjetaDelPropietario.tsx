@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Checkbox, Toggle } from "@/shared/components";
+import { Cargando, Checkbox, Toggle } from "@/shared/components";
 import { Etiqueta } from "./Etiqueta";
 import { ESTILO_DE_TARJETA, ROL_COLORES } from "./gruposDeResidentes";
 
@@ -18,6 +18,12 @@ interface Props {
   onCambiarResidencia: () => void;
   onMarcarAnfitrion: () => void;
   onMarcarAdministrador: () => void;
+  /** La casilla que se está guardando: gira y ninguna se pulsa mientras tanto. */
+  pendiente?: "anfitrion" | "administrador" | null;
+  /** Hay otro guardado de la lista en curso: las casillas esperan. */
+  ocupado?: boolean;
+  /** Se está guardando la declaración de residencia. */
+  cambiandoResidencia?: boolean;
 }
 
 /** La tarjeta del propietario en la configuración de su vivienda. */
@@ -31,7 +37,11 @@ export function TarjetaDelPropietario({
   onCambiarResidencia,
   onMarcarAnfitrion,
   onMarcarAdministrador,
+  pendiente = null,
+  ocupado = false,
+  cambiandoResidencia = false,
 }: Props) {
+  const bloqueadas = ocupado || pendiente !== null;
   const rolResidencia = esResidente ? "Residente" : "Corresidente";
   return (
     <>
@@ -86,7 +96,11 @@ export function TarjetaDelPropietario({
                 <Text className="shrink text-xs" style={{ color: theme.colors.textSecondary }}>
                   Residente:
                 </Text>
-                <Toggle value={esResidente} onChange={onCambiarResidencia} />
+                <Toggle
+                  value={esResidente}
+                  onChange={onCambiarResidencia}
+                  cargando={cambiandoResidencia}
+                />
               </View>
             )}
           </View>
@@ -95,16 +109,28 @@ export function TarjetaDelPropietario({
           className="flex-col gap-1.5 mt-3 pt-3"
           style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
         >
-          <Checkbox
-            checked={anfitrionPrimario}
-            onChange={onMarcarAnfitrion}
-            label="Anfitrión primario"
-          />
-          <Checkbox
-            checked={administradorPrimario}
-            onChange={onMarcarAdministrador}
-            label="Administrador primario"
-          />
+          <View className="flex-row items-center gap-2">
+            <Checkbox
+              checked={anfitrionPrimario}
+              onChange={onMarcarAnfitrion}
+              label="Anfitrión primario"
+              disabled={bloqueadas}
+            />
+            {pendiente === "anfitrion" ? (
+              <Cargando variante="control" texto="el anfitrión primario" />
+            ) : null}
+          </View>
+          <View className="flex-row items-center gap-2">
+            <Checkbox
+              checked={administradorPrimario}
+              onChange={onMarcarAdministrador}
+              label="Administrador primario"
+              disabled={bloqueadas}
+            />
+            {pendiente === "administrador" ? (
+              <Cargando variante="control" texto="el administrador primario" />
+            ) : null}
+          </View>
           <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
             Por defecto el propietario es anfitrión y administrador primario.
             Puedes reasignarlo.

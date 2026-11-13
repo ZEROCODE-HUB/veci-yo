@@ -15,7 +15,7 @@ interface VisitaDetailModalProps {
   onAssignParking?: () => void;
   assignedSpots?: string[];
   /** Quien anunció al profesional permanente puede cambiar sus días. */
-  onCambiarDias?: (dias: number[]) => void;
+  onCambiarDias?: (dias: number[]) => Promise<unknown> | void;
 }
 
 export function VisitaDetailModal({

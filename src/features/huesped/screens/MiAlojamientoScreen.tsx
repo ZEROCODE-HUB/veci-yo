@@ -5,7 +5,7 @@ import {
   LibroHuespedVacio,
 } from "../components/libroHuesped";
 import { useMiAlojamiento } from "../hooks/useMiAlojamiento";
-import { Button, Cargando } from "@/shared/components";
+import { Button, Cargando, ErrorAlCargar } from "@/shared/components";
 import { QrDeMiEstancia } from "../components/qr/QrDeMiEstancia";
 
 export function MiAlojamientoScreen() {
@@ -21,8 +21,11 @@ export function MiAlojamientoScreen() {
     falloLaFicha,
     falloElLibro,
     reintentar,
+    reintentando,
     acceso,
     accesoCargado,
+    falloElAcceso,
+    reintentarAcceso,
   } = useMiAlojamiento();
 
   return (
@@ -51,6 +54,9 @@ export function MiAlojamientoScreen() {
           </Text>
         </View>
       ) : null}
+      {!acceso && falloElAcceso ? (
+        <ErrorAlCargar texto="tu QR de entrada" reintentar={reintentarAcceso} enLinea />
+      ) : null}
 
       {/* Sin suscripcion de renta corta no hay ficha; antes se mostraba una
           inventada, la misma para cualquier vivienda. */}
@@ -64,7 +70,12 @@ export function MiAlojamientoScreen() {
             No pudimos leer los datos de tu alojamiento. Revisa tu conexión y
             vuelve a intentarlo.
           </Text>
-          <Button variant="secondary" fullWidth onPress={reintentar}>
+          <Button
+            variant="secondary"
+            fullWidth
+            loading={Boolean(reintentando)}
+            onPress={reintentar}
+          >
             Reintentar
           </Button>
         </View>

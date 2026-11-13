@@ -13,6 +13,8 @@ interface Props {
   onMarcarAdministrador: (r: ResidenteDeUnidad) => void;
   onCambiarPermisoDeVisitas: (r: ResidenteDeUnidad) => void;
   onMenu: (r: ResidenteDeUnidad) => void;
+  /** «anfitrion:<membresía>»… lo que se está guardando, o null. */
+  pendiente?: string | null;
 }
 
 /**
@@ -29,7 +31,12 @@ export function ResidentesDeLaVivienda({
   onMarcarAdministrador,
   onCambiarPermisoDeVisitas,
   onMenu,
+  pendiente = null,
 }: Props) {
+  const cualDe = (r: ResidenteDeUnidad) => {
+    const [cual, id] = (pendiente ?? "").split(":");
+    return id === r.id ? (cual as "anfitrion" | "administrador" | "visitas") : null;
+  };
   return (
     <>
       <Text className="text-base font-bold text-gray-900 mt-2">
@@ -70,6 +77,8 @@ export function ResidentesDeLaVivienda({
                 onMarcarAdministrador={() => onMarcarAdministrador(r)}
                 onCambiarPermisoDeVisitas={() => onCambiarPermisoDeVisitas(r)}
                 onMenu={() => onMenu(r)}
+                pendiente={cualDe(r)}
+                ocupado={pendiente !== null}
               />
             ))}
           </View>

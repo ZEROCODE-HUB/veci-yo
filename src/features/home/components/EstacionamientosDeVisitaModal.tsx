@@ -1,7 +1,13 @@
 import { theme } from "@/config";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { Button, Modal, Select } from "@/shared/components";
+import {
+  Button,
+  Cargando,
+  Modal,
+  SegunLaCarga,
+  Select,
+} from "@/shared/components";
 import type { VisitaItem } from "@/shared/types";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
 import { visitasParaEstacionar } from "@/features/visitas/helpers/visitasParaEstacionar";
@@ -26,8 +32,15 @@ export function EstacionamientosDeVisitaModal({
   onClose,
   visitas,
 }: Props) {
-  const { cupos, cargando, asignar, asignando, liberar, liberando } =
-    useEstacionamientosVisita();
+  const {
+    cupos,
+    estado,
+    asignar,
+    asignando,
+    liberar,
+    liberando,
+    liberandoUuid,
+  } = useEstacionamientosVisita();
   const opciones = visitasParaEstacionar(visitas);
   const visitaDe = (visitaId: string | null) =>
     visitas.find((visita) => visita.uuid === visitaId) ?? null;
@@ -38,15 +51,22 @@ export function EstacionamientosDeVisitaModal({
   */
   const detalleDe = (visita: VisitaItem | null): string[] => {
     if (!visita) return [];
-    const vivienda = [visita.torre ? `Torre ${visita.torre}` : null, visita.depto ? `Depto ${visita.depto}` : null]
+    const vivienda = [
+      visita.torre ? `Torre ${visita.torre}` : null,
+      visita.depto ? `Depto ${visita.depto}` : null,
+    ]
       .filter(Boolean)
       .join(" · ");
-    const primera = [vivienda || null, TIPO_LABELS[visita.tipo] ?? null].filter(Boolean).join(" · ");
+    const primera = [vivienda || null, TIPO_LABELS[visita.tipo] ?? null]
+      .filter(Boolean)
+      .join(" · ");
     const placas = (visita.vehiculos ?? []).map((v) => v.placa).filter(Boolean);
     const ingreso = visita.horaIngreso
       ? `Ingresó ${visita.fechaIngreso ? `el ${visita.fechaIngreso} ` : ""}a las ${visita.horaIngreso}`
       : "Todavía no ingresa";
-    const segunda = [ingreso, placas.length ? `🚗 ${placas.join(", ")}` : null].filter(Boolean).join(" · ");
+    const segunda = [ingreso, placas.length ? `🚗 ${placas.join(", ")}` : null]
+      .filter(Boolean)
+      .join(" · ");
     return [primera, segunda].filter(Boolean);
   };
 
@@ -61,69 +81,85 @@ export function EstacionamientosDeVisitaModal({
           Elige la visita que ocupa cada estacionamiento
         </Text>
 
-        {!cargando && cupos.length === 0 ? (
-          <Text className="text-sm text-gray-400 text-center py-4">
-            Este condominio no tiene estacionamientos de visita registrados.
-          </Text>
-        ) : null}
+        {/* Mientras llegan los cupos no se veía nada (13/11/2026). */}
+        <SegunLaCarga
+          estado={estado}
+          texto="los estacionamientos"
+          enLinea
+          forma="filas"
+          cuantos={3}
+        >
+          {cupos.length === 0 ? (
+            <Text className="text-sm text-gray-400 text-center py-4">
+              Este condominio no tiene estacionamientos de visita registrados.
+            </Text>
+          ) : null}
 
-        <View className="gap-2">
-          {cupos.map((cupo) => (
-            <View
-              key={cupo.uuid}
-              className={`flex-row items-center gap-2 rounded-xl px-3 py-2 ${cupo.ocupado ? "border border-green-500 bg-green-50" : "border border-gray-200 bg-gray-50"}`}
-            >
-              <View className="min-w-[64px]">
-                <Text className="text-sm font-bold text-gray-900">
-                  {cupo.codigo}
-                </Text>
-                {cupo.ubicacion ? (
-                  <Text className="text-2xs text-gray-500">
-                    {cupo.ubicacion}
+          <View className="gap-2">
+            {cupos.map((cupo) => (
+              <View
+                key={cupo.uuid}
+                className={`flex-row items-center gap-2 rounded-xl px-3 py-2 ${cupo.ocupado ? "border border-green-500 bg-green-50" : "border border-gray-200 bg-gray-50"}`}
+              >
+                <View className="min-w-[64px]">
+                  <Text className="text-sm font-bold text-gray-900">
+                    {cupo.codigo}
                   </Text>
-                ) : null}
-              </View>
-              {cupo.ocupado ? (
-                <>
-                  <View className="flex-1" style={{ gap: 2 }}>
-                    <Text numberOfLines={1} className="text-sm font-semibold text-gray-900">
-                      {visitaDe(cupo.visitaId)?.nombre || "Ocupado"}
+                  {cupo.ubicacion ? (
+                    <Text className="text-2xs text-gray-500">
+                      {cupo.ubicacion}
                     </Text>
-                    {detalleDe(visitaDe(cupo.visitaId)).map((linea) => (
-                      <Text key={linea} className="text-xs text-gray-600">
-                        {linea}
-                      </Text>
-                    ))}
-                  </View>
-                  <Pressable
-                    onPress={() => liberar(cupo.uuid)}
-                    disabled={liberando}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Liberar el estacionamiento ${cupo.codigo}`}
-                    className="rounded-full px-2.5 py-1"
-                    style={{ backgroundColor: theme.colors.warningLight }}
-                  >
-                    <Text className="text-2xs font-semibold text-amber-800">
-                      Liberar
-                    </Text>
-                  </Pressable>
-                </>
-              ) : (
-                <View className="flex-1">
-                  <Select
-                    value=""
-                    options={opciones}
-                    placeholder="— Libre —"
-                    textoSinOpciones="Hoy no hay visitas registradas"
-                    onChange={(visitaId) => {
-                      if (!asignando) asignar(cupo.uuid, String(visitaId));
-                    }}
-                  />
+                  ) : null}
                 </View>
-              )}
-            </View>
-          ))}
-        </View>
+                {cupo.ocupado ? (
+                  <>
+                    <View className="flex-1" style={{ gap: 2 }}>
+                      <Text
+                        numberOfLines={1}
+                        className="text-sm font-semibold text-gray-900"
+                      >
+                        {visitaDe(cupo.visitaId)?.nombre || "Ocupado"}
+                      </Text>
+                      {detalleDe(visitaDe(cupo.visitaId)).map((linea) => (
+                        <Text key={linea} className="text-xs text-gray-600">
+                          {linea}
+                        </Text>
+                      ))}
+                    </View>
+                    <Pressable
+                      onPress={() => liberar(cupo.uuid)}
+                      disabled={liberando}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Liberar el estacionamiento ${cupo.codigo}`}
+                      className="rounded-full px-2.5 py-1"
+                      style={{ backgroundColor: theme.colors.warningLight }}
+                    >
+                      {liberandoUuid === cupo.uuid ? (
+                        <Cargando variante="control" texto="la liberación" />
+                      ) : (
+                        <Text className="text-2xs font-semibold text-amber-800">
+                          Liberar
+                        </Text>
+                      )}
+                    </Pressable>
+                  </>
+                ) : (
+                  <View className="flex-1">
+                    <Select
+                      value=""
+                      options={opciones}
+                      placeholder="— Libre —"
+                      textoSinOpciones="Hoy no hay visitas registradas"
+                      onChange={(visitaId) => {
+                        if (!asignando) asignar(cupo.uuid, String(visitaId));
+                      }}
+                    />
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        </SegunLaCarga>
 
         <Button fullWidth onPress={onClose}>
           Cerrar

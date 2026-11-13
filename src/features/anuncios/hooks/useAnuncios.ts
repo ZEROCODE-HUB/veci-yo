@@ -21,6 +21,7 @@ import {
 } from "../services/anuncios.repo";
 import type { Anuncio, AnunciosFiltros } from "../types/anuncios";
 import { mensajeDeError } from "@/shared/utils/error.util";
+import { estadoDe } from "@/shared/components";
 
 export const anunciosQueryKey = ["anuncios"] as const;
 
@@ -156,6 +157,8 @@ export function useAnuncios() {
   ) => setFiltros((current) => ({ ...current, [key]: value }));
   return {
     ...query,
+    /** Carga y fallo de la lista (13/11/2026): no tenía ni espera ni vacío. */
+    carga: estadoDe(query),
     anuncios,
     filtros,
     updateFiltro,
@@ -252,6 +255,18 @@ export function useAnuncioDetalle(uuid: string) {
   return {
     data: anuncio,
     isLoading: anuncios.isLoading,
+    /*
+      Una red caída se leía «No se encontró el anuncio» (13/11/2026): el fallo
+      y el «no existe» son cosas distintas.
+    */
+    carga: estadoDe(anuncios),
+    /*
+      Lo que ya votó esta persona. Hasta que llega, `misOpciones` y
+      `viviendasPorVotar` están vacías y la pantalla dejaba votar otra vez una
+      encuesta de una sola opción: la base lo rechazaba con un aviso rojo
+      (13/11/2026). La votación espera a esto.
+    */
+    cargaMisVotos: estadoDe(votosPropios),
     detalleNominal: nominal.data ?? [],
     /*
       La unidad **y** el propietario. Se quedaba solo con la unidad, asi que

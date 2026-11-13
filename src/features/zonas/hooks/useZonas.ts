@@ -4,6 +4,7 @@ import { supabase } from "@/shared/services/supabase";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
 import { useUnidadElegidaDelRol } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import {
   actualizarParticipante,
   actualizarReserva,
@@ -219,6 +220,13 @@ export function useZonas() {
     gestionZonas: zonas.data?.gestion ?? {},
     reservas: reservas.data ?? [],
     cargando: zonas.isLoading || reservas.isLoading,
+    /*
+      Carga y fallo de cada consulta por separado (13/11/2026, cliente: «en
+      muchas pantallas no hay estados de carga»). Sin esto, una red caída se
+      leía como «Todavía no hay zonas» o «No tienes reservas activas».
+    */
+    estadoZonas: estadoDe(zonas),
+    estadoReservas: estadoDe(reservas),
 
     /** La zona con sus fechas y su imagen. Se espera: el éxito se dice después. */
     guardarZonaEntera: zonaEntera.mutateAsync,
@@ -240,11 +248,32 @@ export function useZonas() {
       estado: string,
       motivoRechazo?: string,
     ) => resolver.mutate({ reservaUuid, estado, motivoRechazo }),
+    /** Igual, esperando: la ventana espera la respuesta antes de cerrarse. */
+    actualizarEstadoReservaAsync: (
+      reservaUuid: string,
+      estado: string,
+      motivoRechazo?: string,
+    ) => resolver.mutateAsync({ reservaUuid, estado, motivoRechazo }),
+    /** La reserva que se está aprobando o rechazando. */
+    resolviendoReserva: resolver.isPending ? resolver.variables?.reservaUuid : undefined,
     actualizarReserva: (
       reservaUuid: string,
       datos: Parameters<typeof actualizarReserva>[1],
     ) => editarReserva.mutate({ reservaUuid, datos }),
+    actualizarReservaAsync: (
+      reservaUuid: string,
+      datos: Parameters<typeof actualizarReserva>[1],
+    ) => editarReserva.mutateAsync({ reservaUuid, datos }),
+    guardandoReserva: editarReserva.isPending,
     eliminarReserva: (reservaUuid: string) => borrarReserva.mutate(reservaUuid),
+    /**
+     * Cancelar esperando la respuesta: la ventana de confirmación se queda
+     * abierta con el botón girando y solo se cierra si salió. El fallo ya lo
+     * dice `alFallar`.
+     */
+    eliminarReservaAsync: (reservaUuid: string) => borrarReserva.mutateAsync(reservaUuid),
+    /** La reserva que se está cancelando, para que solo gire su botón. */
+    cancelandoReserva: borrarReserva.isPending ? borrarReserva.variables : undefined,
     actualizarPersonaReserva: (
       participanteUuid: string,
       datos: Parameters<typeof actualizarParticipante>[1],

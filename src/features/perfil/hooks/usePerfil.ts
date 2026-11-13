@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import {
   obtenerNombreUsuario,
@@ -54,6 +55,8 @@ export function usePerfil() {
     esGuardia,
     esHuespedTemporal: rolActivo === "huesped-temporal",
     guardiaActual,
+    /** El puesto del guardia: mientras llega, no se sabe si está de turno. */
+    cargaDelPuesto: estadoDe(puesto),
     turnoActual: obtenerTurnoActual(guardiaActual),
     terminarTurno: terminar.mutate,
     terminandoTurno: terminar.isPending,

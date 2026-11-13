@@ -1,3 +1,4 @@
+import { estadoDe } from "@/shared/components";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { paisPorDefecto } from "@/shared/constants";
@@ -40,6 +41,7 @@ export function useAdministradorUbicacion() {
   return {
     valores: query.data?.valores,
     cargando: query.isLoading,
+    estado: estadoDe(query),
     // La etiqueta del identificador fiscal depende del pais: RUC o NIT.
     etiquetaFiscal: etiquetaIdentificacionFiscal(query.data?.paisIso ?? paisPorDefecto()),
     guardar: guardar.mutate,

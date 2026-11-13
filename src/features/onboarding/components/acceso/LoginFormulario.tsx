@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input } from "@/shared/components";
+import { Button, Cargando, Input } from "@/shared/components";
 import { esquemaLogin, type LoginFormData } from "../../schemas";
 import { useLogin } from "../../hooks/useLogin";
 import { GoogleIcon } from "./GoogleIcon";
@@ -60,7 +60,12 @@ export function LoginFormulario({
           )}
         />
 
-        <Button onPress={handleSubmit(handleLogin)} loading={ingresando}>
+        {/* Mientras se entra con Google, el otro camino espera (13/11/2026). */}
+        <Button
+          onPress={handleSubmit(handleLogin)}
+          loading={ingresando}
+          disabled={entrandoConGoogle}
+        >
           Iniciar sesión
         </Button>
         {/*
@@ -77,7 +82,12 @@ export function LoginFormulario({
             <Text className="text-base font-semibold text-gray-700">
               Iniciar sesión con Google
             </Text>
-            <GoogleIcon />
+            {/* La rueda en lugar del logo: el texto sigue diciendo qué espera. */}
+            {entrandoConGoogle ? (
+              <Cargando variante="control" texto="la entrada con Google" />
+            ) : (
+              <GoogleIcon />
+            )}
           </View>
         </Button>
 

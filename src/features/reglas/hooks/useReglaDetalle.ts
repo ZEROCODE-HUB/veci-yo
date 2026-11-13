@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo } from "@/shared/hooks";
+import { estadoDe } from "@/shared/components";
 import {
   type ArchivoElegido,
 } from "@/shared/services/archivos";
@@ -45,7 +46,7 @@ export function useReglaDetalle(tipo?: string) {
 
   const tipoRegla = (tipo as TipoRegla) || "residente-permanente";
 
-  const { data, isLoading } = useQuery({
+  const consulta = useQuery({
     queryKey: ["reglamento", condominioId, tipoRegla],
     queryFn: () => obtenerReglamento(condominioId, tipoRegla),
     enabled: Boolean(condominioId),
@@ -56,6 +57,8 @@ export function useReglaDetalle(tipo?: string) {
     */
     refetchInterval: 30_000,
   });
+  const { data } = consulta;
+  const estado = estadoDe(consulta);
 
   const avisar = (error: unknown, respaldo: string) =>
     addToast(mensajeDeError(error, respaldo), "error");
@@ -103,7 +106,10 @@ export function useReglaDetalle(tipo?: string) {
   return {
     role,
     content: data ?? null,
-    cargando: isLoading,
+    cargando: estado.cargando,
+    /** No se pudo pedir: no es lo mismo que «no tiene reglamento» (13/11/2026). */
+    fallo: Boolean(estado.fallo),
+    reintentar: estado.reintentar,
     uploadOpen,
     setUploadOpen,
     cerrarCarga,

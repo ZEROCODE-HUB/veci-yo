@@ -14,7 +14,7 @@ interface AsistenciaDelPermanenteProps {
    * Si se da, quien mira puede cambiar los días. La portería no lo recibe:
    * los días los decide la vivienda.
    */
-  onCambiarDias?: (dias: number[]) => void;
+  onCambiarDias?: (dias: number[]) => Promise<unknown> | void;
 }
 
 /**
@@ -31,6 +31,20 @@ export function AsistenciaDelPermanente({
   const jornadas = (item.jornadas ?? []).slice(0, ULTIMAS);
   const [editando, setEditando] = useState(false);
   const [dias, setDias] = useState<number[]>(item.diasTrabajo ?? []);
+  /*
+    El editor se cerraba al pulsar, antes de saber si se había guardado
+    (13/11/2026). Ahora espera y solo se cierra si salió.
+  */
+  const [guardando, setGuardando] = useState(false);
+  const guardar = async () => {
+    setGuardando(true);
+    try {
+      const resultado = await onCambiarDias?.(dias);
+      if (resultado !== false) setEditando(false);
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   const abrir = () => {
     setDias(item.diasTrabajo ?? []);
@@ -60,10 +74,8 @@ export function AsistenciaDelPermanente({
               <Button
                 fullWidth
                 disabled={!dias.length}
-                onPress={() => {
-                  onCambiarDias?.(dias);
-                  setEditando(false);
-                }}
+                loading={guardando}
+                onPress={() => void guardar()}
               >
                 Guardar días
               </Button>

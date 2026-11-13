@@ -3,7 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminStore, useAuthStore } from "@/stores";
 import { obtenerUnidadesRentaCorta } from "@/features/reglas/services";
 import { useCondominioActivo } from "@/shared/hooks";
-import { obtenerContactosPorUnidad } from "@/features/administrador/services/arquitectura.repo";
+import {
+  obtenerArquitectura,
+  obtenerContactosPorUnidad,
+} from "@/features/administrador/services/arquitectura.repo";
+import { estadoDe, juntarCargas } from "@/shared/components";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
 import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
 import { placaParaBuscar, vehiculosPorUnidad, type VehiculoDelDirectorio } from "../services/vehiculos.repo";
@@ -28,6 +32,17 @@ export function useDirectorio() {
   const contactos = useQuery({
     queryKey: ["directorio", "contactos", condominioId],
     queryFn: () => obtenerContactosPorUnidad(condominioId),
+    enabled: Boolean(condominioId),
+  });
+  /*
+    Las viviendas llegan al store desde `useDatosCondominio`, con esta misma
+    consulta. Aquí solo se mira cómo va --misma clave, la caché es una--: sin
+    eso, mientras cargaba se leía «Sin resultados» y cada tarjeta decía
+    «Propietario: Sin asignar» hasta que llegaban los contactos (13/11/2026).
+  */
+  const arquitectura = useQuery({
+    queryKey: ["condominio", "arquitectura", condominioId],
+    queryFn: obtenerArquitectura,
     enabled: Boolean(condominioId),
   });
   /*
@@ -305,6 +320,8 @@ export function useDirectorio() {
     filteredEst,
     filteredEstVisita,
     filteredDep,
+    /** Viviendas y contactos: hasta tenerlos, ni «Sin resultados» ni «Sin asignar». */
+    carga: juntarCargas(estadoDe(arquitectura), estadoDe(contactos)),
   };
 }
 

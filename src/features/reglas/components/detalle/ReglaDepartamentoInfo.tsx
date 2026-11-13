@@ -1,5 +1,6 @@
 import { theme } from "@/config";
 import { Text, View } from "react-native";
+import { SegunLaCarga } from "@/shared/components";
 import { useContactosDeUnidad } from "../../hooks/useContactosDeUnidad";
 
 /**
@@ -14,7 +15,7 @@ import { useContactosDeUnidad } from "../../hooks/useContactosDeUnidad";
  * información útil, y desde luego mejor que un nombre falso.
  */
 export function ReglaDepartamentoInfo() {
-  const { contactos } = useContactosDeUnidad();
+  const { contactos, estado } = useContactosDeUnidad();
 
   const filas = [
     { orden: "1er", cargo: "Anfitrión", persona: contactos?.anfitrion },
@@ -36,16 +37,22 @@ export function ReglaDepartamentoInfo() {
       <Text className="text-base font-bold text-gray-900">
         Información del departamento
       </Text>
-      {filas.map(({ orden, cargo, persona }) => (
-        <Text key={cargo} className="text-sm text-gray-900">
-          <Text className="font-semibold">
-            {orden} contacto: {cargo}
+      {/*
+        «Sin asignar» es un dato: mientras llegan, o si no llegan, no se dice
+        (13/11/2026).
+      */}
+      <SegunLaCarga estado={estado} texto="los contactos" forma="lineas" cuantos={3} enLinea>
+        {filas.map(({ orden, cargo, persona }) => (
+          <Text key={cargo} className="text-sm text-gray-900">
+            <Text className="font-semibold">
+              {orden} contacto: {cargo}
+            </Text>
+            {" — "}
+            {persona?.nombre || "Sin asignar"}
+            {persona?.telefono ? ` · ${persona.telefono}` : ""}
           </Text>
-          {" — "}
-          {persona?.nombre || "Sin asignar"}
-          {persona?.telefono ? ` · ${persona.telefono}` : ""}
-        </Text>
-      ))}
+        ))}
+      </SegunLaCarga>
     </View>
   );
 }

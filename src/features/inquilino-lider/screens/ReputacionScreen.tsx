@@ -2,9 +2,10 @@ import { theme } from "@/config";
 import { View, Text, ScrollView } from "react-native";
 import { InsigniaRow } from "../components/reputacion";
 import { useReputacion } from "../hooks/useReputacion";
+import { SegunLaCarga } from "@/shared/components";
 
 export function ReputacionScreen() {
-  const { insignias } = useReputacion();
+  const { insignias, carga } = useReputacion();
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -32,13 +33,15 @@ export function ReputacionScreen() {
               Insignias de vecino
             </Text>
           </View>
-          {insignias.map((insignia, index) => (
-            <InsigniaRow
-              key={insignia.key}
-              insignia={insignia}
-              isLast={index === insignias.length - 1}
-            />
-          ))}
+          <SegunLaCarga estado={carga} texto="tus insignias" forma="lineas" cuantos={4} enLinea>
+            {insignias.map((insignia, index) => (
+              <InsigniaRow
+                key={insignia.key}
+                insignia={insignia}
+                isLast={index === insignias.length - 1}
+              />
+            ))}
+          </SegunLaCarga>
         </View>
 
         <View className="h-6" />

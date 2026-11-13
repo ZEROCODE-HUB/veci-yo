@@ -1,5 +1,5 @@
 import React from "react";
-import { Select } from "@/shared/components";
+import { SegunLaCarga, Select, type EstadoDeLaCarga } from "@/shared/components";
 
 interface Opcion {
   value: string;
@@ -25,6 +25,11 @@ interface LlamadaSelectorProps {
   opcionesDelPersonal?: Opcion[];
   /** El personal eligió llamar a una vivienda: se piden torre y vivienda. */
   aUnaVivienda?: boolean;
+  /**
+   * Cómo va la lista de destinos. Mientras cargaba, al vecino se le decía
+   * «El edificio no tiene a quién llamar todavía» (13/11/2026).
+   */
+  cargaDestinos?: EstadoDeLaCarga;
 }
 
 /**
@@ -49,17 +54,20 @@ export function LlamadaSelector({
   onDestinoChange,
   opcionesDelPersonal = [],
   aUnaVivienda = true,
+  cargaDestinos = { cargando: false },
 }: LlamadaSelectorProps) {
   if (!esPersonal) {
     return (
-      <Select
-        label="¿A quién quieres llamar?"
-        value={destino || null}
-        options={destinos}
-        onChange={(valor) => onDestinoChange(String(valor))}
-        placeholder="Elige portería o administración"
-        textoSinOpciones="El edificio no tiene a quién llamar todavía"
-      />
+      <SegunLaCarga estado={cargaDestinos} texto="a quién llamar" forma="formulario" cuantos={1} enLinea>
+        <Select
+          label="¿A quién quieres llamar?"
+          value={destino || null}
+          options={destinos}
+          onChange={(valor) => onDestinoChange(String(valor))}
+          placeholder="Elige portería o administración"
+          textoSinOpciones="El edificio no tiene a quién llamar todavía"
+        />
+      </SegunLaCarga>
     );
   }
 

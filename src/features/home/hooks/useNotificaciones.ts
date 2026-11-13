@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { estadoDe } from "@/shared/components";
 import {
   contarSinLeer,
   marcarNotificacionLeida,
@@ -61,6 +62,12 @@ export function useNotificaciones() {
     notificaciones: soloLosDeMiRol(query.data ?? [], rolActivo),
     marcarLeida: (id: string) => marcar.mutate(id),
     marcarTodasLeidas: () => marcarTodas.mutate(),
+    /*
+      Carga y fallo de la lista, y si «marcar todas» está en camino
+      (13/11/2026). Un fallo de red se leía «No tienes notificaciones».
+    */
+    carga: estadoDe(query),
+    marcandoTodas: marcarTodas.isPending,
   };
 }
 

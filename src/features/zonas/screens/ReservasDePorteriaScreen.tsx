@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Linking, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Button, Cargando, Input, Modal } from "@/shared/components";
+import { Badge, Button, Cargando, ErrorAlCargar, Input, Modal } from "@/shared/components";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
@@ -117,10 +117,13 @@ export function ReservasDePorteriaScreen() {
           Puedes ver las reservas. Aprobarlas o rechazarlas lo hace la administración (te lo puede habilitar en Seguridad).
         </Text>
       )}
-      {reservas.isError ? (
+      {reservas.isError && reservas.data === undefined ? (
+        // Sin lista no se puede decir que no hay reservas (13/11/2026).
+        <ErrorAlCargar texto="las reservas" reintentar={() => void reservas.refetch()} enLinea />
+      ) : reservas.isError ? (
         <Text className="text-sm text-danger">{mensajeDeError(reservas.error, "No se pudieron cargar las reservas")}</Text>
       ) : null}
-      {proximas.length === 0 ? (
+      {proximas.length === 0 && reservas.data !== undefined ? (
         <Text className="py-8 text-center text-sm text-gray-500">No hay reservas de hoy en adelante.</Text>
       ) : null}
       {proximas.map((r) => (
@@ -158,6 +161,7 @@ export function ReservasDePorteriaScreen() {
                 <Button
                   size="sm"
                   variant="danger"
+                  disabled={resolver.isPending && resolver.variables?.id === r.uuid}
                   onPress={() => {
                     setMotivo("");
                     setPorRechazar(r);
@@ -178,11 +182,18 @@ export function ReservasDePorteriaScreen() {
             variant="danger"
             fullWidth
             disabled={!motivo.trim()}
+            loading={resolver.isPending}
             onPress={() => {
-              if (porRechazar?.uuid) {
-                resolver.mutate({ id: porRechazar.uuid, estado: "Rechazado", motivo: motivo.trim() });
-              }
-              setPorRechazar(null);
+              if (!porRechazar?.uuid) return;
+              /*
+                Se espera a la base: antes se cerraba al pulsar y, si fallaba,
+                el motivo escrito se perdía (13/11/2026). El fallo lo dice el
+                aviso de la mutación; la ventana sigue abierta.
+              */
+              resolver
+                .mutateAsync({ id: porRechazar.uuid, estado: "Rechazado", motivo: motivo.trim() })
+                .then(() => setPorRechazar(null))
+                .catch(() => {});
             }}
           >
             Rechazar

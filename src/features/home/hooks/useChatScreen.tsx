@@ -94,6 +94,15 @@ export function useChatScreen() {
     handleSelectConversation,
     handleNewChat,
     marcarMensajesLeidos: () => marcarTodas.mutate(),
+    /*
+      Lo que está en camino, para que el botón y el interruptor lo enseñen y no
+      acepten un segundo toque: pulsar dos veces el silencio mientras viaja
+      mandaba otra vez el valor viejo (13/11/2026).
+    */
+    marcandoLeidos: marcarTodas.isPending,
+    silenciandoId: silenciar.isPending
+      ? silenciar.variables?.conversacionId
+      : undefined,
     alternarSilencio: (conv: Conversation) =>
       silenciar.mutate({
         conversacionId: conv.id,

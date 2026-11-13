@@ -6,7 +6,7 @@ import { zonaIcons2 } from "@/assets/icons/zonas";
 import { claveDeIcono } from "../helpers/claveDeIcono";
 import { useZonas } from "../hooks";
 import { ahora, formatDateInput } from "@/shared/utils";
-import { Button, Modal } from "@/shared/components";
+import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import type { ReservaZona } from "@/shared/types";
 
 const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
@@ -31,7 +31,16 @@ export function MisReservas({
 }) {
   const [open, setOpen] = useState(!collapsible);
   const rol = useAuthStore((state) => state.rolActivo);
-  const { reservas, zonasComunesConfig, eliminarReserva } = useZonas();
+  const {
+    reservas,
+    zonasComunesConfig,
+    estadoReservas,
+    eliminarReservaAsync,
+    cancelandoReserva,
+  } = useZonas();
+  // Hasta que llega la lista no se sabe cuántas hay: ni «0» ni «No tienes
+  // reservas activas» (13/11/2026).
+  const sinRespuesta = estadoReservas.cargando || Boolean(estadoReservas.fallo);
   /*
     Cancelar desde aquí (QA, T-088, 22/10/2026). Solo se podía tocando la
     reserva en la grilla del día, y el huésped la buscaba donde la ve: en «Mis
@@ -117,7 +126,7 @@ export function MisReservas({
             className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
             style={{ backgroundColor: theme.colors.primary }}
           >
-            {propias.length}
+            {sinRespuesta ? "…" : propias.length}
           </Text>
           {collapsible && (
             <Text className="text-gray-500">{open ? "▲" : "▼"}</Text>
@@ -144,7 +153,13 @@ export function MisReservas({
             </Text>
           </View>
         ))}
+      {open && sinRespuesta ? (
+        <SegunLaCarga estado={estadoReservas} texto="tus reservas" forma="filas" cuantos={2} enLinea>
+          {null}
+        </SegunLaCarga>
+      ) : null}
       {open &&
+        !sinRespuesta &&
         (propias.length === 0 ? (
           <Text className="text-sm text-gray-500">
             No tienes reservas activas.
@@ -239,16 +254,25 @@ export function MisReservas({
           </Text>
           <View className="flex-row gap-3">
             <View className="flex-1">
-              <Button variant="secondary" onPress={() => setACancelar(null)}>
+              <Button
+                variant="secondary"
+                onPress={() => setACancelar(null)}
+                disabled={Boolean(cancelandoReserva)}
+              >
                 Volver
               </Button>
             </View>
             <View className="flex-1">
               <Button
                 variant="danger"
+                loading={Boolean(cancelandoReserva)}
                 onPress={() => {
-                  if (aCancelar?.uuid) eliminarReserva(aCancelar.uuid);
-                  setACancelar(null);
+                  if (!aCancelar?.uuid) return;
+                  // Se cierra cuando la base dice que sí; si falla, el aviso
+                  // de `useZonas` dice por qué y la ventana sigue abierta.
+                  eliminarReservaAsync(aCancelar.uuid)
+                    .then(() => setACancelar(null))
+                    .catch(() => {});
                 }}
               >
                 Cancelar reserva

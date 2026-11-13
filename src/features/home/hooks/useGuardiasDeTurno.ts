@@ -12,7 +12,7 @@ import { obtenerGuardiasDeTurno } from "../services/chat.repo";
 export function useGuardiasDeTurno() {
   const condominioId = useCondominioActivo() ?? "";
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["chat", "guardias-turno", condominioId],
     queryFn: () => obtenerGuardiasDeTurno(condominioId),
     enabled: Boolean(condominioId),
@@ -20,5 +20,9 @@ export function useGuardiasDeTurno() {
     staleTime: 5 * 60 * 1000,
   });
 
-  return data ?? [];
+  /*
+    Con su carga (13/11/2026): mientras llegaba, la cabecera decía «sin turno
+    asignado», que es una afirmación sobre la portería.
+  */
+  return { guardias: data ?? [], cargando: isLoading };
 }
