@@ -6,11 +6,19 @@ import { useAuthStore, useUbicacionStore } from "@/stores";
 import { MisReservas, ZonaCard } from "@/features/zonas/components";
 import { useZonas } from "@/features/zonas/hooks";
 import { useNavegacion } from "@/shared/hooks";
+import { usePuedeAprobarReservas } from "../hooks/usePuedeAprobarReservas";
 
 export function ZonasComunesScreen() {
   const navigation = useNavegacion();
   useZonas();
   const rol = useAuthStore((state) => state.rolActivo);
+  /*
+    El guardia ve «Aprobaciones de Zonas Comunes» solo si la administración le
+    dio el permiso de aprobar reservas (13/11/2026, cliente: «al guardia no le
+    di permiso de aprobar zonas comunes, pero sí le sale esa sección»). El
+    mismo permiso que ya miraba la pantalla de aprobaciones para sus botones.
+  */
+  const puedeAprobarReservas = usePuedeAprobarReservas();
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
   const esHuesped = rol === "huesped-temporal";
   const accesoBloqueado = rol === "propietario" && ubicaciones.length === 0;
@@ -51,9 +59,11 @@ export function ZonasComunesScreen() {
       <View className="px-4 pt-3 gap-3">
         {/* La portería ve aquí también las reservas del edificio (29/10/2026). */}
         {rol === "guardia" ? (
-          <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
-            Aprobaciones de Zonas Comunes
-          </Button>
+          puedeAprobarReservas ? (
+            <Button variant="secondary" fullWidth onPress={() => navigation.navigate("ReservasPorteria")}>
+              Aprobaciones de Zonas Comunes
+            </Button>
+          ) : null
         ) : (
           <MisReservas collapsible />
         )}

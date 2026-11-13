@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "El guardia solo ve «Aprobaciones de Zonas Comunes» (en Zonas Comunes y en su Inicio) si la administración le dio el permiso de aprobar reservas."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Si el edificio no tiene activada la renta corta, no aparecen la tarjeta «Huésped Temporal», el aviso de suscripción ni la configuración de Huéspedes Temporales."
     ]
   },
