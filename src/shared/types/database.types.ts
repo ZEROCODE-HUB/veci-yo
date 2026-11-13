@@ -7048,6 +7048,16 @@ export type Database = {
           vehiculos: number
         }[]
       }
+      mis_invitaciones_del_edificio: {
+        Args: never
+        Returns: {
+          condominio: string
+          expira_en: string
+          id: string
+          invitada_por: string
+          rol: string
+        }[]
+      }
       mis_invitaciones_pendientes: {
         Args: never
         Returns: {
@@ -7929,6 +7939,10 @@ export type Database = {
         Returns: undefined
       }
       responder_mi_invitacion: {
+        Args: { p_acepta: boolean; p_invitacion_id: string }
+        Returns: undefined
+      }
+      responder_mi_invitacion_del_edificio: {
         Args: { p_acepta: boolean; p_invitacion_id: string }
         Returns: undefined
       }

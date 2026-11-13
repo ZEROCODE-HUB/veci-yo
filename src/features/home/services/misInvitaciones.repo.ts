@@ -105,3 +105,36 @@ export async function aceptarMiInvitacionDeHuesped(invitacionId: string) {
   });
   if (error) throw error;
 }
+
+/** Una invitación del edificio (guardia, coadministración, administración). */
+export interface MiInvitacionDelEdificio {
+  id: string;
+  edificio: string;
+  /** `guardia`, `coadministrador` o `administrador`. */
+  rol: string;
+  invitadaPor: string | null;
+}
+
+/**
+ * Las invitaciones del edificio pendientes para mi correo (13/11/2026). Antes
+ * solo se aceptaban abriendo el enlace del correo con la sesión iniciada en la
+ * web: quien se registraba en la app no las veía nunca.
+ */
+export async function obtenerMisInvitacionesDelEdificio(): Promise<MiInvitacionDelEdificio[]> {
+  const { data, error } = await supabase.rpc("mis_invitaciones_del_edificio");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    edificio: f.condominio,
+    rol: f.rol,
+    invitadaPor: f.invitada_por ?? null,
+  }));
+}
+
+export async function responderInvitacionDelEdificio(invitacionId: string, acepta: boolean) {
+  const { error } = await supabase.rpc("responder_mi_invitacion_del_edificio", {
+    p_invitacion_id: invitacionId,
+    p_acepta: acepta,
+  });
+  if (error) throw error;
+}
