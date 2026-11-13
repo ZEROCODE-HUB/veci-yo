@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Estacionamientos de visita: el cupo ocupado dice a qué vivienda va la visita, qué tipo de visita es, cuándo ingresó y la placa."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "El guardia solo ve «Aprobaciones de Zonas Comunes» (en Zonas Comunes y en su Inicio) si la administración le dio el permiso de aprobar reservas."
     ]
   },
