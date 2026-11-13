@@ -1,6 +1,6 @@
 import { View, Text, Image } from "react-native";
 
-const fondoOnboarding = require("@/assets/branding/fondo-onboarding-3.png");
+const fondoOnboarding = require("@/assets/branding/fondo-onboarding-3.jpg");
 
 /**
  * La cabecera de la pantalla de entrada.

@@ -2,6 +2,18 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Directorio › Pagos: un pago marcado por error se puede deshacer con «Deshacer pago», que pide confirmar y deja la vivienda en «No pagado».",
+      "Directorio de propiedades: los depósitos salen con su código, igual que los estacionamientos.",
+      "Visitas: el nombre del visitante se escribe con mayúscula en cada palabra. En «Huésped temporal», el campo tiene su título «Nombre y Apellido (opcional)».",
+      "El botón y la pantalla de «Amigos Familiares» se llaman ahora «Amigos - Familiares».",
+      "Arquitectura: ya no se piden ciudad, país, moneda, zona horaria ni número de la policía. Los pone la plataforma al crear el edificio, según su país.",
+      "La app pesa menos: el fondo del inicio de sesión y la imagen de gratitud pasaron de 4 MB a 0,4 MB.",
+      "El aviso «Hay una versión nueva de Veciyo» sale por debajo de la barra de la hora y la batería."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "El aviso «Hay una versión nueva de Veciyo» sale por debajo de la barra de arriba del celular (la de la hora y la batería). Antes quedaba encima y el botón «Reiniciar» chocaba con ella."
     ]
   },

@@ -24,8 +24,8 @@ export type DirectorioDetalle =
       tipo: "departamento";
       datos: Unidad;
       contactos: DirectorioContactos;
-      /** Cuántos depósitos tiene y sus vehículos (09/11/2026, filas 8 y 24). */
-      depositos?: number;
+      /** Los códigos de sus depósitos (13/11/2026) y sus vehículos (09/11/2026). */
+      depositos?: string[];
       vehiculos?: VehiculoDelDirectorio[];
     }
   | {

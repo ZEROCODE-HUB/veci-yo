@@ -60,7 +60,7 @@ export function VisitasNuevoScreen() {
     const titulos: Record<string, string> = {
       temporal: "Profesional temporal",
       permanente: "Profesional permanente",
-      amigos: "Amigos y familiares",
+      amigos: "Amigos - Familiares",
       "huesped-temporal": "Huésped temporal",
     };
     (navigation as unknown as { setOptions?: (o: { title: string }) => void }).setOptions?.({
