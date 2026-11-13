@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Portería: sin permiso de aprobar reservas, el guardia vuelve a ver la lista de reservas, ahora como «Reservas de Zonas Comunes», solo para consultar. Con el permiso sigue siendo «Aprobaciones de Zonas Comunes»."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Estacionamientos de visita: el cupo ocupado dice a qué vivienda va la visita, qué tipo de visita es, cuándo ingresó y la placa."
     ]
   },
