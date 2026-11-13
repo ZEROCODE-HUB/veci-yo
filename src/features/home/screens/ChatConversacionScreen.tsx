@@ -89,6 +89,7 @@ export function ChatConversacionScreen() {
         iPhone `EvitarTeclado` mide en la pantalla y no lo necesita (09/11/2026).
       */
       keyboardVerticalOffset={alturaCabecera}
+      medirEnAndroid
     >
       <View className="flex-1 bg-white">
         <ChatThread
