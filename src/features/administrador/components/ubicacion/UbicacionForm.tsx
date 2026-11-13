@@ -2,10 +2,9 @@ import type React from "react";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Cargando, CampoTelefono, Input } from "@/shared/components";
+import { Button, Input } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
-import { useParametrosDeLaBase } from "@/shared/hooks";
 import { crearEsquemaUbicacion } from "../../schemas/ubicacion.schema";
 import type { UbicacionFormValues } from "../../types/ubicacion";
 
@@ -26,31 +25,11 @@ export function UbicacionForm({
    */
   ayuda?: React.ReactNode;
 }) {
-  // Los largos que se validan son los de la base; sin ellos no se pinta.
-  const parametros = useParametrosDeLaBase();
-  const esquema = useMemo(
-    () =>
-      parametros.listo
-        ? crearEsquemaUbicacion({
-            telefonoMin: parametros.numero("telefono_largo_minimo"),
-            telefonoMax: parametros.numero("telefono_largo_maximo"),
-            horarioMax: parametros.numero("horario_atencion_largo_maximo"),
-          })
-        : null,
-    [parametros],
-  );
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<UbicacionFormValues>({
-    resolver: esquema ? zodResolver(esquema) : undefined,
+  const esquema = useMemo(() => crearEsquemaUbicacion(), []);
+  const { control, handleSubmit } = useForm<UbicacionFormValues>({
+    resolver: zodResolver(esquema),
     defaultValues: initialValues,
   });
-  const codigoPais = watch("codigoPais");
-  const telefono = watch("telefono");
   const field = (name: keyof UbicacionFormValues, label: string, type?: "email") => (
     <Controller
       key={name}
@@ -68,8 +47,6 @@ export function UbicacionForm({
     />
   );
 
-  if (!esquema) return <Cargando variante="enLinea" />;
-
   return (
     <View className="gap-4">
       <AdminSectionCard title="Información del condominio">
@@ -83,47 +60,11 @@ export function UbicacionForm({
         */}
         {field("ruc", "RUC / Identificación fiscal")}
         {/*
-          El telefono con su pais. `condominio.codigo_pais` existe desde el
-          primer dia y **nadie la escribia**: el numero se guardaba como texto
-          suelto --«+57 601 7561234», con el prefijo dentro-- y asi no se puede
-          marcar ni mandar por WhatsApp sin adivinar donde acaba el prefijo.
-
-          Va en su propia fila y no al lado del correo: el campo compuesto
-          necesita el ancho, y a media columna el selector de pais se come el
-          numero.
+          Teléfono, correo y horario de atención salieron de aquí (13/11/2026,
+          decidido con el cliente): el contacto que ven los vecinos es el de la
+          cuenta del administrador (`contacto_de_la_administracion`), que se
+          cambia en su perfil. El horario se retiró de la app.
         */}
-        <CampoTelefono
-          label="Teléfono"
-          codigoPais={codigoPais}
-          onCodigoPaisChange={(codigo) =>
-            setValue("codigoPais", codigo, { shouldValidate: true })
-          }
-          telefono={telefono}
-          onTelefonoChange={(numero) =>
-            setValue("telefono", numero, { shouldValidate: true })
-          }
-          error={errors.telefono?.message}
-          ayuda="El que ven los vecinos para llamar a la administración."
-        />
-        {field("email", "Correo electrónico", "email")}
-        <Controller
-          control={control}
-          name="horarioAtencion"
-          render={({ field: campo, fieldState }) => (
-            <View className="gap-1">
-              <Input
-                label="Horario de atención"
-                value={campo.value}
-                onChangeText={campo.onChange}
-                placeholder="Ej: Lunes a viernes, 8:00 a 17:00"
-                error={fieldState.error?.message}
-              />
-              <Text className="text-xs text-gray-500">
-                El que ven los vecinos en Soporte › Contacto.
-              </Text>
-            </View>
-          )}
-        />
         {/*
           El número de la policía salió de aquí (13/11/2026, pedido del
           cliente): la portería marca el del país del edificio.

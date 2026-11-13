@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "El contacto de la administración (Perfil › Soporte › Contacto, y el número para llamarla) es ahora el de la cuenta del administrador: su nombre, el teléfono de su perfil y su correo. Si lo cambia en su perfil, cambia en todas partes.",
+      "Arquitectura: ya no se piden teléfono, correo ni horario de atención. El horario de atención ya no se muestra en la app."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Directorio › Pagos: un pago marcado por error se puede deshacer con «Deshacer pago», que pide confirmar y deja la vivienda en «No pagado».",
       "Directorio de propiedades: los depósitos salen con su código, igual que los estacionamientos.",
       "Visitas: el nombre del visitante se escribe con mayúscula en cada palabra. En «Huésped temporal», el campo tiene su título «Nombre y Apellido (opcional)».",

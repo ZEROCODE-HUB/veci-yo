@@ -1,3 +1,4 @@
+import { telefonoInternacional } from "@/shared/constants";
 import { supabase } from "@/shared/services/supabase";
 import { ahora, desdeLaBase, formatDate, haciaLaBase } from "@/shared/utils";
 import {
@@ -376,10 +377,11 @@ export async function eliminarPreguntaFrecuente(id: string) {
 }
 
 export interface ContactoSoporte {
+  /** Quién administra el edificio (13/11/2026). */
+  nombre: string | null;
   telefono: string | null;
   email: string | null;
   ubicacion: string | null;
-  horarios: string | null;
 }
 
 /**
@@ -387,23 +389,28 @@ export interface ContactoSoporte {
  *
  * La pantalla mostraba un teléfono de Ecuador, una dirección de Perú y
  * "Veciyomanda@gmail.com". Son los datos del condominio.
+ *
+ * Desde el 13/11/2026 el teléfono y el correo son los de **la cuenta del
+ * administrador principal** (`contacto_de_la_administracion`), no unos que se
+ * escribían a mano en Arquitectura y se quedaban viejos. El horario de
+ * atención se retiró.
  */
 export async function obtenerContactoSoporte(
   condominioId: string,
 ): Promise<ContactoSoporte> {
-  const { data, error } = await supabase
-    .from("condominio")
-    .select("telefono, email, direccion, ciudad, horario_atencion")
-    .eq("id", condominioId)
-    .maybeSingle();
+  const [administracion, edificio] = await Promise.all([
+    supabase.rpc("contacto_de_la_administracion", { p_condominio_id: condominioId }),
+    supabase.from("condominio").select("direccion, ciudad").eq("id", condominioId).maybeSingle(),
+  ]);
+  if (administracion.error) throw administracion.error;
+  if (edificio.error) throw edificio.error;
 
-  if (error) throw error;
-
+  const admin = (administracion.data ?? [])[0];
   return {
-    telefono: data?.telefono ?? null,
-    email: data?.email ?? null,
-    ubicacion: [data?.direccion, data?.ciudad].filter(Boolean).join(", ") || null,
-    horarios: data?.horario_atencion ?? null,
+    nombre: admin?.nombre ?? null,
+    telefono: admin?.telefono ? telefonoInternacional(admin.codigo_pais, admin.telefono) : null,
+    email: admin?.email ?? null,
+    ubicacion: [edificio.data?.direccion, edificio.data?.ciudad].filter(Boolean).join(", ") || null,
   };
 }
 

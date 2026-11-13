@@ -26,14 +26,12 @@ export async function destinosDelEdificio(
       .eq("condominio_id", condominioId)
       .is("deleted_at", null)
       .order("nombre"),
-    supabase
-      .from("condominio")
-      .select("telefono, codigo_pais")
-      .eq("id", condominioId)
-      .maybeSingle(),
+    // El teléfono de la cuenta del administrador principal (13/11/2026).
+    supabase.rpc("contacto_de_la_administracion", { p_condominio_id: condominioId }),
   ]);
   if (porterias.error) throw porterias.error;
   if (edificio.error) throw edificio.error;
+  const admin = (edificio.data ?? [])[0];
 
   return destinosDeLlamada(
     (porterias.data ?? []).map((p) => ({
@@ -41,7 +39,7 @@ export async function destinosDelEdificio(
       nombre: p.nombre,
       numero: telefonoInternacional(p.codigo_pais, p.telefono),
     })),
-    { numero: telefonoInternacional(edificio.data?.codigo_pais, edificio.data?.telefono) },
+    { numero: admin?.telefono ? telefonoInternacional(admin.codigo_pais, admin.telefono) : "" },
   );
 }
 

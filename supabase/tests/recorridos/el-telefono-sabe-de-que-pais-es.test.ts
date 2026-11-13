@@ -9,7 +9,7 @@ import {
   crearPorteria,
 } from "@/features/administrador/services/arquitectura.repo";
 import { actualizarCoadministrador } from "@/features/administrador/services/coadministradores.repo";
-import { crearReclamo } from "@/features/perfil/services/pqrs.repo";
+import { crearReclamo, obtenerContactoSoporte } from "@/features/perfil/services/pqrs.repo";
 import { registrarMenor } from "@/features/propietario/services/invitacionesUnidad.repo";
 
 /**
@@ -138,35 +138,23 @@ afterAll(async () => {
 });
 
 describe("el país del teléfono llega a la base", () => {
-  it("el del edificio", async () => {
-    const antes = await obtenerCondominio(CONDOMINIO);
-    expect(antes).toBeTruthy();
-
-    await actualizarCondominio(CONDOMINIO, {
-      ...antes!.valores,
-      telefono: "6017561234",
-      codigoPais: "CO",
-    });
-
-    const { data } = await servicio
-      .from("condominio")
-      .select("telefono, codigo_pais")
-      .eq("id", CONDOMINIO)
-      .single();
-
-    expect(data!.telefono).toBe("6017561234");
-    expect(data!.codigo_pais).toBe("CO");
-  });
-
-  it("y la pantalla lo vuelve a leer", async () => {
-    /*
-      El control que hace que lo de arriba signifique algo: comprobar que se
-      escribe no es comprobar que se ve. Ya pasó con el número de lavadora, que
-      se guardaba bien y no aparecía en ninguna de las cuatro pantallas.
-    */
-    const leido = await obtenerCondominio(CONDOMINIO);
-    expect(leido!.valores.codigoPais).toBe("CO");
-    expect(leido!.valores.telefono).toBe("6017561234");
+  /*
+    «El del edificio» y «la pantalla lo vuelve a leer» se fueron el 13/11/2026:
+    el teléfono de contacto ya no se escribe en Arquitectura, es el del perfil
+    del administrador (`contacto_de_la_administracion`, que comprueba
+    `contactos-del-edificio` y la prueba de abajo).
+  */
+  it("el contacto de la administración es el de la cuenta del administrador", async () => {
+    await salir();
+    try {
+      await entrarComo("vecino@veciyo.test");
+      const contacto = await obtenerContactoSoporte(CONDOMINIO);
+      expect(contacto.email).toBe("admin@veciyo.test");
+      expect(contacto.nombre).toBeTruthy();
+    } finally {
+      await salir();
+      await entrarComo("admin@veciyo.test");
+    }
   });
 
   it("el de una portería, al crearla y al cambiarla", async () => {
