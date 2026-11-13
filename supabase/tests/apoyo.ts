@@ -50,6 +50,12 @@ export const UNIDAD = {
   u205: "44444444-4444-4444-4444-444444444442",
   u102: "44444444-4444-4444-4444-444444444443",
   u301: "44444444-4444-4444-4444-444444444444",
+  /**
+   * La 206 (11/11/2026): de Guillermo, sin nadie viviendo y alquilada por
+   * noches. Hace lo que hacía la 205 hasta que Laura, su inquilina líder, dejó
+   * de poder convivir con la renta corta (29/10).
+   */
+  u206: "44444444-4444-4444-4444-444444444445",
 } as const;
 
 export interface Sesion {
@@ -312,6 +318,12 @@ export async function crearPqrsDePrueba(
   return {
     id,
     retirar: async () => {
+      // Sus avisos antes: `notificacion.entidad_id` no es clave foránea y se
+      // quedaban huérfanos en la campana de la administración (11/11/2026).
+      await fetch(`${URL}/rest/v1/notificacion?entidad_id=eq.${id}`, {
+        method: "DELETE",
+        headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },
+      });
       const r = await fetch(`${URL}/rest/v1/reclamo?id=eq.${id}`, {
         method: "DELETE",
         headers: { apikey: CLAVE_SERVICIO, Authorization: `Bearer ${CLAVE_SERVICIO}` },

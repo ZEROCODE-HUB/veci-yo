@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio } from "./cliente";
+import { deTurnoMientrasDure, entrarComo, salir, servicio } from "./cliente";
 import { atenderSos, historialSos, sosActivas } from "@/features/perfil/services/sos.repo";
 
 /**
@@ -23,9 +23,14 @@ let alarmaId = "";
 let reclamoId = "";
 let sofiaId = "";
 
+/** El guardia, de turno mientras dura el archivo: ver `deTurnoMientrasDure`. */
+let quitarTurno: (() => Promise<void>) | null = null;
+
 beforeAll(async () => {
   const sofia = await entrarComo(VECINA);
   sofiaId = sofia;
+  await salir();
+  quitarTurno = await deTurnoMientrasDure(await entrarComo(GUARDIA));
   await salir();
   const { data, error } = await servicio
     .from("alarma_sos")
@@ -37,6 +42,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (quitarTurno) await quitarTurno();
   await servicio.from("notificacion").delete().eq("entidad_id", alarmaId);
   if (reclamoId) await servicio.from("reclamo").delete().eq("id", reclamoId);
   const { error } = await servicio.from("alarma_sos").delete().eq("id", alarmaId);

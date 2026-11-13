@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, retirarEstancia, salir, supabase } from "./cliente";
 import {
   generarReporte,
 } from "@/features/administrador/services/reportes.repo";
@@ -95,7 +95,11 @@ afterAll(async () => {
   for (const id of solicitudes) {
     await supabase.from("solicitud_reporte").delete().eq("id", id);
   }
-  if (visitaId) await supabase.from("visita").delete().eq("id", visitaId);
+  if (visitaId) {
+    // Comprobado: una limpieza que no mira si limpió deja basura (11/11/2026).
+    const { error } = await retirarEstancia(visitaId);
+    if (error) throw new Error(`No se pudo retirar la visita: ${error.message}`);
+  }
   await salir();
 });
 

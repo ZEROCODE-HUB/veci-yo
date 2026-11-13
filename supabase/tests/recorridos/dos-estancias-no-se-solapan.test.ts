@@ -20,9 +20,10 @@ import { crearVisita, diasOcupados } from "@/features/visitas/services/visitas.r
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
-// La 205: la otra vivienda del edificio con renta corta. Desde el 09/10/2026 una
+// La 206: la otra vivienda del edificio con renta corta (era la 205 hasta el
+// 11/11/2026, que ya no se alquila por noches). Desde el 09/10/2026 una
 // estancia de huesped solo cabe donde el servicio esta activo.
-const U205 = "44444444-4444-4444-4444-444444444442";
+const U206 = "44444444-4444-4444-4444-444444444445";
 const ANFITRIONA = "vecino@veciyo.test";
 
 const MARCA = "[prueba] solape";
@@ -122,7 +123,7 @@ describe("dos estancias en la misma vivienda", () => {
     /*
       El control: sin el, rechazar **siempre** pasaria los dos primeros.
 
-      Va con la clave de servicio porque la 205 no es de Sofia y RLS la para
+      Va con la clave de servicio porque la 206 no es de Sofia y RLS la para
       antes de que la restriccion opine. Lo que se comprueba aqui es la
       restriccion, no la politica --esa tiene lo suyo-- y mezclarlas haria que
       este caso pasara en verde por el motivo equivocado.
@@ -131,7 +132,7 @@ describe("dos estancias en la misma vivienda", () => {
       .from("visita")
       .insert({
         condominio_id: CONDOMINIO,
-        unidad_id: U205,
+        unidad_id: U206,
         tipo: "huesped_temporal",
         estado: "programada",
         fecha_desde: isoEnDias(200),
@@ -166,7 +167,7 @@ describe("los días que la pantalla tacha", () => {
 
   it("y de una vivienda ajena no se ve nada", async () => {
     /*
-      La 205 tiene una estancia en esas mismas fechas --la creo la clave de
+      La 206 tiene una estancia en esas mismas fechas --la creo la clave de
       servicio en el caso de arriba-- y Sofia no la ve: no es suya. Asi que su
       calendario no tacha dias por reservas de otro piso, que ademas seria
       filtrar cuando esta ocupado el apartamento del vecino.
@@ -174,7 +175,7 @@ describe("los días que la pantalla tacha", () => {
       Vacio y no «todo libre por si acaso»: lo que la pantalla pinta de una
       vivienda ajena no deberia poder construirse, y de hecho no se puede.
     */
-    const dias = await diasOcupados(U205);
+    const dias = await diasOcupados(U206);
 
     expect(dias.size).toBe(0);
   });

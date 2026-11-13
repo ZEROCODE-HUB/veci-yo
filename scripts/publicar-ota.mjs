@@ -44,6 +44,26 @@ const novedad = cambios[0]?.puntos?.[0] ?? "";
 
 const correr = (comando) => execSync(comando, { cwd: raiz, stdio: "inherit" });
 
+/*
+  Antes de publicar, las comprobaciones (11/11/2026, pedido del cliente: «que
+  todo corra solo antes de cada actualización»): el typecheck, las unitarias,
+  las de componentes y los recorridos en el navegador. Si una falla, no sale
+  nada. La suite contra la base (`npm run test:rls`) tarda media hora y no va
+  aquí: se corre aparte cuando se toca la base.
+
+  SIN_PRUEBAS=1 se las salta, para una urgencia; lo dice bien grande.
+*/
+if (process.env.SIN_PRUEBAS === "1") {
+  console.warn("\n¡OJO! Se publica SIN correr las pruebas (SIN_PRUEBAS=1).\n");
+} else {
+  try {
+    correr("npm run verificar");
+  } catch {
+    console.error("\nLas pruebas fallaron: no se publica nada. Arréglalo y vuelve a correr `npm run ota`.");
+    process.exit(1);
+  }
+}
+
 writeFileSync(archivoNumero, `${JSON.stringify({ numero }, null, 2)}\n`);
 try {
   correr("node scripts/generar-version.mjs");

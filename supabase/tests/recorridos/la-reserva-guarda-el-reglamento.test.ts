@@ -60,6 +60,9 @@ beforeAll(async () => {
   const { data } = await servicio
     .from("zona_comun")
     .select("id, reglamento")
+    // Del edificio de prueba: con la clave de servicio se ven las zonas de
+    // todos los edificios (11/11/2026).
+    .eq("condominio_id", "11111111-1111-1111-1111-111111111111")
     .eq("activa", true)
     .not("reglamento", "is", null)
     .order("nombre")

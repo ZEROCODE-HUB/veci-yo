@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { deTurnoMientrasDure, entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   colgarLlamada,
   contestarLlamada,
@@ -36,11 +36,15 @@ async function permitirLlamadas(si: boolean) {
     .eq("rol", "guardia");
 }
 
+/** El guardia, de turno mientras dura el archivo: ver `deTurnoMientrasDure`. */
+let quitarTurno: (() => Promise<void>) | null = null;
+
 beforeAll(async () => {
   sofiaId = await entrarComo(VECINA);
   await salir();
   guardiaId = await entrarComo(GUARDIA);
   await salir();
+  quitarTurno = await deTurnoMientrasDure(guardiaId);
   const { data } = await servicio
     .from("membresia_condominio")
     .select("permisos")
@@ -51,6 +55,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  if (quitarTurno) await quitarTurno();
   await servicio
     .from("membresia_condominio")
     .update({ permisos: permisosCrudos })

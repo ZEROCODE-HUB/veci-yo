@@ -18,6 +18,11 @@ import {
  */
 
 const PISCINA = "55555555-5555-5555-5555-555555555551";
+/*
+  La lavandería, gratis: desde el 09/11/2026 la portería no reserva zonas de
+  pago (la piscina lo es), así que lo que hace la portería va aquí.
+*/
+const LAVANDERIA = "55555555-5555-5555-5555-555555555552";
 const U102 = "44444444-4444-4444-4444-444444444443";
 const VECINA = "vecino@veciyo.test"; // Sofía, 102
 const GUARDIA = "guardia@veciyo.test"; // Juan, portería del mismo edificio
@@ -120,7 +125,7 @@ describe("la portería reserva, cambia y cancela, y la vivienda se entera (15/10
   it("crea una reserva a nombre de una vivienda de su edificio", async () => {
     await entrarComo(GUARDIA);
     const creada = await crearReserva({
-      zonaId: PISCINA,
+      zonaId: LAVANDERIA,
       unidadId: U102,
       fecha: enDias(4),
       horaInicio: "18:00",
@@ -137,7 +142,7 @@ describe("la portería reserva, cambia y cancela, y la vivienda se entera (15/10
     await entrarComo(GUARDIA);
     await expect(
       crearReserva({
-        zonaId: PISCINA,
+        zonaId: LAVANDERIA,
         unidadId: U901,
         fecha: enDias(5),
         horaInicio: "18:00",
@@ -145,6 +150,21 @@ describe("la portería reserva, cambia y cancela, y la vivienda se entera (15/10
         comentarios: `${MARCA} otro edificio`,
       }),
     ).rejects.toThrow(/row-level security/);
+    await salir();
+  });
+
+  it("ni una zona de pago: esa la reserva la vivienda o la administración (09/11/2026)", async () => {
+    await entrarComo(GUARDIA);
+    await expect(
+      crearReserva({
+        zonaId: PISCINA,
+        unidadId: U102,
+        fecha: enDias(4),
+        horaInicio: "20:00",
+        horaFin: "21:00",
+        comentarios: `${MARCA} zona de pago`,
+      }),
+    ).rejects.toThrow(/zona es de pago/);
     await salir();
   });
 

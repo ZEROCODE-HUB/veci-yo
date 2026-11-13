@@ -84,9 +84,9 @@ describe("la lista de cuentas", () => {
   it("soporte ve la ficha pero no las acciones", () => {
     respuesta = { ...respuesta, esDueno: false };
     render(<PlataformaUsuariosScreen />);
-    fireEvent.click(screen.getByLabelText("Ficha de Persona 1"));
+    fireEvent.click(screen.getByLabelText("Ficha de Persona 2"));
     expect(screen.getByText("Las Barranqueras 246 · Propietario")).toBeTruthy();
-    expect(screen.queryByText("Suspender la cuenta")).toBeNull();
+    expect(screen.queryByText("Reactivar la cuenta")).toBeNull();
   });
 });
 
@@ -108,7 +108,15 @@ describe("la ficha de una cuenta", () => {
     expect(screen.getByText("Alta 20/10/2026 · nunca ha entrado")).toBeTruthy();
     expect(screen.getByText("Correo confirmado")).toBeTruthy();
     expect(screen.getByText("Las Barranqueras 246 · Propietario")).toBeTruthy();
-    expect(screen.getByText("Suspender la cuenta")).toBeTruthy();
+    // Ocultas el 13/11/2026 a pedido del cliente; el código sigue.
+    expect(screen.queryByText("Suspender la cuenta")).toBeNull();
+    expect(screen.queryByText("Enviar correo para poner contraseña")).toBeNull();
+  });
+
+  it("una cuenta ya suspendida se puede reactivar", () => {
+    render(<PlataformaUsuariosScreen />);
+    fireEvent.click(screen.getByLabelText("Ficha de Persona 2"));
+    expect(screen.getByText("Reactivar la cuenta")).toBeTruthy();
   });
 
   it("se cierra al volver a tocarla", () => {

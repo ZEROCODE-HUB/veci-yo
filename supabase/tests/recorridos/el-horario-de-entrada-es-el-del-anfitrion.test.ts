@@ -10,17 +10,18 @@ import { obtenerAlojamientoConfigRequest } from "@/features/huesped/services/hue
  * límite que ponga el edificio. Hasta entonces el huésped y la portería leían
  * solo el del edificio, y lo que el anfitrión configuraba no lo veía nadie.
  *
- * Va en la **205**, no en la 102: la 102 la escribe en paralelo
+ * Va en la **206**, no en la 102: la 102 la escribe en paralelo
  * `anfitrion-configura-alojamiento`, y dos archivos cambiando el mismo horario
  * a la vez dan un rojo que no es de ninguno. El límite del edificio se pone
- * con una fila propia de `permiso_vivienda` para la 205, que se retira por su
+ * con una fila propia de `permiso_vivienda` para la 206, que se retira por su
  * id; el horario del anfitrión se guarda crudo y se devuelve al terminar.
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U205 = "44444444-4444-4444-4444-444444444442";
+// La 206 desde el 11/11/2026: la 205 ya no se alquila por noches (vive Laura).
+const U206 = "44444444-4444-4444-4444-444444444445";
 const GUARDIA = "guardia@veciyo.test";
-const VECINA = "vecino@veciyo.test"; // vive en la 102, no en la 205
+const VECINA = "vecino@veciyo.test"; // vive en la 102, no en la 206
 
 let original: {
   checkin_desde: string | null;
@@ -50,10 +51,10 @@ async function anfitrion(
       checkin_hasta: hasta,
       checkin_24h: todoElDia,
     })
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .select("id");
   if (error) throw error;
-  if (!data?.length) throw new Error("La 205 no tiene renta corta");
+  if (!data?.length) throw new Error("La 206 no tiene renta corta");
 }
 
 /** El mismo límite para la estancia corta y la larga: aquí no es el asunto. */
@@ -69,14 +70,14 @@ async function edificio(desde: string | null, hasta: string | null) {
     .eq("id", permisoId)
     .select("id");
   if (error) throw error;
-  if (!data?.length) throw new Error("No se encontró el permiso de la 205");
+  if (!data?.length) throw new Error("No se encontró el permiso de la 206");
 }
 
 beforeAll(async () => {
   const { data: fila, error } = await servicio
     .from("suscripcion_renta_corta")
     .select("checkin_desde, checkin_hasta, checkin_24h")
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .single();
   if (error) throw error;
   original = fila;
@@ -84,7 +85,7 @@ beforeAll(async () => {
   const { data: existente, error: errorPermiso } = await servicio
     .from("permiso_vivienda")
     .select(`id, ${HORAS_DEL_EDIFICIO.join(", ")}`)
-    .eq("unidad_id", U205)
+    .eq("unidad_id", U206)
     .maybeSingle();
   if (errorPermiso) throw errorPermiso;
 
@@ -98,7 +99,7 @@ beforeAll(async () => {
   } else {
     const { data: creado, error: errorAlta } = await servicio
       .from("permiso_vivienda")
-      .insert({ condominio_id: CONDOMINIO, unidad_id: U205 })
+      .insert({ condominio_id: CONDOMINIO, unidad_id: U206 })
       .select("id")
       .single();
     if (errorAlta) throw errorAlta;
@@ -115,7 +116,7 @@ afterAll(async () => {
   const { error } = await servicio
     .from("suscripcion_renta_corta")
     .update(original)
-    .eq("unidad_id", U205);
+    .eq("unidad_id", U206);
   if (error) throw error;
 
   if (permisoEraNuestro) {
@@ -134,7 +135,7 @@ afterAll(async () => {
 });
 
 const horas = async () => {
-  const { desde, hasta } = await horarioDeCheckin(U205);
+  const { desde, hasta } = await horarioDeCheckin(U206);
   return [desde?.slice(0, 5) ?? null, hasta?.slice(0, 5) ?? null];
 };
 
@@ -148,7 +149,7 @@ describe("el horario de entrada de una vivienda", () => {
   });
 
   it("y el huésped lee el mismo en la ficha del alojamiento", async () => {
-    const ficha = await obtenerAlojamientoConfigRequest(U205);
+    const ficha = await obtenerAlojamientoConfigRequest(U206);
     expect([ficha?.checkinDesde, ficha?.checkinHasta]).toEqual([
       "15:00",
       "20:00",

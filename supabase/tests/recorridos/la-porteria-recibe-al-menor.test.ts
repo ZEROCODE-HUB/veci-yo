@@ -15,22 +15,23 @@ import {
  * el caso más grave el niño no entra hasta que el anfitrión lo apruebe.
  *
  * La estancia es de **hoy**, porque la portería solo ve hoy, mañana y a quien
- * está dentro. Va en la 205, de hoy a mañana: una sola noche, la de hoy, que
- * no pisa la de mañana que usa el recorrido de los recordatorios.
+ * está dentro. Va en la 102, de hoy a mañana: una sola noche, la de hoy. Era
+ * la 205 y luego la 206; desde el 11/11/2026 la 206 la usa, también hoy,
+ * `la-estancia-de-punta-a-punta-en-porteria`, y dos estancias no se pisan.
  */
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
-const U205 = "44444444-4444-4444-4444-444444444442";
-const ANFITRION = "propietario@veciyo.test"; // Guillermo, de la 205
+const U102 = "44444444-4444-4444-4444-444444444443";
+const ANFITRION = "vecino@veciyo.test"; // Sofía, de la 102
 const GUARDIA = "guardia@veciyo.test";
-const AJENA = "vecino@veciyo.test"; // Sofía, de la 102
+const AJENA = "propietario@veciyo.test"; // Guillermo, que no es de la 102
 
 const MARCA = "[prueba] el menor en porteria";
 
 let visitaId = "";
 let adultoId = "";
 let ninoId = "";
-let guillermoId = "";
+let anfitrionId = "";
 
 /*
   La llegada se marca directo en la fila, con la clave de servicio: la regla
@@ -49,10 +50,10 @@ async function llegar(id: string) {
 }
 
 beforeAll(async () => {
-  guillermoId = await entrarComo(ANFITRION);
+  anfitrionId = await entrarComo(ANFITRION);
   visitaId = await crearVisita({
     condominioId: CONDOMINIO,
-    unidadId: U205,
+    unidadId: U102,
     tipo: "huesped_temporal",
     fechaDesde: enDias(0),
     fechaHasta: enDias(1),
@@ -132,7 +133,7 @@ describe("el menor en portería", () => {
       .select("usuario_id, tipo")
       .eq("entidad_id", visitaId)
       .eq("tipo", "menor_por_revisar");
-    expect(avisos?.map((a) => a.usuario_id)).toContain(guillermoId);
+    expect(avisos?.map((a) => a.usuario_id)).toContain(anfitrionId);
   });
 
   it("nadie cambia lo anotado por fuera de su botón", async () => {

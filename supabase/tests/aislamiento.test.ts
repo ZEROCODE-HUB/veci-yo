@@ -358,7 +358,9 @@ describe("Reconocimientos", () => {
       insignia**, que es lo que de verdad hay que sujetar.
     */
     const guillermo = await entrar(CUENTA.propietario);
-    const sofia = await entrar(CUENTA.vecino);
+    // Quien recibe tiene que vivir en el edificio: desde el 29/10 Sofía no
+    // vive en la 102, que se alquila por noches. Laura vive en la 205.
+    const sofia = await entrar(CUENTA.laura);
     const insignias = await leer(guillermo, "insignia?select=id,clave");
     await apartarLosDelMes(guillermo.usuarioId);
 
@@ -412,9 +414,46 @@ describe("Cuadro de honor", () => {
       miembro del condominio leer sus reconocimientos.
     */
     const guillermo = await entrar(CUENTA.propietario);
+    const laura = await entrar(CUENTA.laura);
+    /*
+      Se trae su reconocimiento (11/11/2026): contaba con los que hubiera en la
+      base y, al vaciarse el 29/10, el control positivo de abajo se quedó sin
+      nada que mirar. Lo pone la clave de servicio: lo que se comprueba aquí es
+      el desglose, no quién puede dar uno.
+    */
+    const servicioHeaders = {
+      apikey: CLAVE_SERVICIO,
+      Authorization: `Bearer ${CLAVE_SERVICIO}`,
+      "Content-Type": "application/json",
+    };
+    const insignias = await leer(guillermo, "insignia?select=id&limit=1");
+    await fetch(`${URL}/rest/v1/reconocimiento?motivo=eq.[prueba] cuadro de honor`, {
+      method: "DELETE",
+      headers: servicioHeaders,
+    });
+    const alta = await fetch(`${URL}/rest/v1/reconocimiento`, {
+      method: "POST",
+      headers: { ...servicioHeaders, Prefer: "return=representation" },
+      body: JSON.stringify({
+        insignia_id: insignias.datos[0].id,
+        // Para Guillermo: el cuadro cuenta las del responsable de cada vivienda.
+        usuario_id: guillermo.usuarioId,
+        condominio_id: CONDOMINIO,
+        otorgado_por: laura.usuarioId,
+        motivo: "[prueba] cuadro de honor",
+      }),
+    });
+    if (!alta.ok) throw new Error(`No se pudo sembrar el reconocimiento: ${await alta.text()}`);
+    const [sembrado] = (await alta.json()) as { id: string }[];
+
     const filas = await rpc(guillermo, "cuadro_honor", {
       p_condominio_id: CONDOMINIO,
     });
+    const retirado = await fetch(`${URL}/rest/v1/reconocimiento?id=eq.${sembrado.id}`, {
+      method: "DELETE",
+      headers: servicioHeaders,
+    });
+    if (!retirado.ok) throw new Error(`No se pudo retirar el reconocimiento: ${await retirado.text()}`);
 
     expect(filas.estado).toBe(200);
     expect(filas.datos.length).toBeGreaterThan(0);

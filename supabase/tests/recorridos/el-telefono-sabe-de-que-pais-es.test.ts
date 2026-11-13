@@ -39,6 +39,8 @@ const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
 const SOFIA = "vecino@veciyo.test";
 const U102 = "44444444-4444-4444-4444-444444444443";
+const U205 = "44444444-4444-4444-4444-444444444442";
+const GUILLERMO = "propietario@veciyo.test";
 /** Una cuenta sin ningún rol en ningún edificio: ver `coadminCreado`. */
 const SIN_ROL = "invitado.prueba@veciyo.test";
 
@@ -262,11 +264,13 @@ describe("el país del teléfono llega a la base", () => {
       emergencia-- y **no el del teléfono del propio menor**: el del adulto que
       responde por él se guardaba y el del niño no.
     */
+    // En la 205, con Guillermo (11/11/2026): la 102 se alquila por noches y
+    // desde el 29/10 no puede tener residentes, tampoco un menor.
     await salir();
     try {
-      await entrarComo(SOFIA);
+      await entrarComo(GUILLERMO);
       await registrarMenor({
-        unidadId: U102,
+        unidadId: U205,
         nombre: `${MARCA} Tomasito`,
         telefono: "3105559999",
         codigoPais: "CO",

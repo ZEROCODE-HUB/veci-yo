@@ -143,11 +143,16 @@ export function PlataformaUsuariosScreen() {
     }
   };
 
+  /*
+    «Suspender la cuenta» y «Enviar correo para poner contraseña», ocultas
+    (13/11/2026, pedido del cliente). Su código sigue: para volver a
+    ofrecerlas, devolverlas a esta lista. «Reactivar» se queda, para poder
+    deshacer una suspensión que ya existe.
+  */
   const accionesDe = (c: CuentaEnElPanel): AccionSobreCuenta[] => {
-    const lista: AccionSobreCuenta[] = ["enviar_contrasena"];
+    const lista: AccionSobreCuenta[] = [];
     if (!c.correoConfirmado) lista.push("confirmar_correo");
-    if (c.usuarioId !== usuarioId)
-      lista.push(c.bloqueada ? "reactivar" : "suspender");
+    if (c.usuarioId !== usuarioId && c.bloqueada) lista.push("reactivar");
     return lista;
   };
 

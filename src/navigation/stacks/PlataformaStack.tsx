@@ -165,6 +165,14 @@ function MasStack() {
   );
 }
 
+/*
+  Ajustes, Soporte y Más, ocultas (13/11/2026, pedido del cliente: «solo debe
+  quedar la pantalla principal, usuarios, y nada más»). Siguen registradas y
+  su código intacto; para volver a enseñarlas basta quitar `OCULTA` de sus
+  opciones.
+*/
+const OCULTA = { tabBarButton: () => null, tabBarItemStyle: { display: "none" as const } };
+
 export function PlataformaStack() {
   const insets = useSafeAreaInsets();
 
@@ -209,6 +217,7 @@ export function PlataformaStack() {
         name="AjustesTab"
         component={PlataformaAjustesScreen}
         options={{
+          ...OCULTA,
           tabBarLabel: "Ajustes",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="options-outline" size={size} color={color} />
@@ -219,6 +228,7 @@ export function PlataformaStack() {
         name="SoporteTab"
         component={SoporteStack}
         options={{
+          ...OCULTA,
           tabBarLabel: "Soporte",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
@@ -238,6 +248,7 @@ export function PlataformaStack() {
         name="MasTab"
         component={MasStack}
         options={{
+          ...OCULTA,
           tabBarLabel: "Más",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ellipsis-horizontal" size={size} color={color} />

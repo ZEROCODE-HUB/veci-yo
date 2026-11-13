@@ -24,6 +24,7 @@ import {
 
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U102 = "44444444-4444-4444-4444-444444444443";
+const U101 = "44444444-4444-4444-4444-444444444441";
 const ADMIN = "admin@veciyo.test"; // Marcela, administradora
 const VECINA = "vecino@veciyo.test"; // Sofía, propietaria de la 102
 const OTRO = "propietario@veciyo.test"; // Guillermo, 101 y 205
@@ -140,7 +141,9 @@ describe("un anuncio con votación", () => {
     */
     await salir();
     await entrarComo(OTRO);
-    await votar(secreta, opcionesSecreta[0].id);
+    // Con su vivienda: desde el 29/10/2026 un voto sin vivienda es de la
+    // portería o de la administración, y Guillermo vota como dueño de la 101.
+    await votar(secreta, opcionesSecreta[0].id, U101);
     await salir();
 
     await entrarComo(ADMIN);

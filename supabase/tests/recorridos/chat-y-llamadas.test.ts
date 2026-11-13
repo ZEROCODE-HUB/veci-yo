@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, servicio, supabase } from "./cliente";
+import { deTurnoMientrasDure, entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   abrirConversacionArea,
   enviarMensaje,
@@ -51,17 +51,22 @@ let hiloPorteria = "";
 const mensajes: string[] = [];
 const llamadas: string[] = [];
 
+/** El guardia, de turno mientras dura el archivo: ver `deTurnoMientrasDure`. */
+let quitarTurno: (() => Promise<void>) | null = null;
+
 beforeAll(async () => {
   sofiaId = await entrarComo(SOFIA);
   await salir();
   guardiaId = await entrarComo(GUARDIA);
   await salir();
+  quitarTurno = await deTurnoMientrasDure(guardiaId);
   adminId = await entrarComo(ADMIN);
   await salir();
   await entrarComo(SOFIA);
 });
 
 afterAll(async () => {
+  if (quitarTurno) await quitarTurno();
   await salir();
 
   // Los mensajes y las llamadas, por `id` y de uno en uno. Nada de filtros
@@ -237,6 +242,22 @@ describe("el chat por áreas", () => {
       .eq("unidad_id", U102)
       .single();
     hiloPorteria = data!.id;
+
+    /*
+      El mensaje lo trae la prueba (11/11/2026): contaba con los que hubiera en
+      el hilo, y al vaciarse la base el control positivo se quedó sin nada.
+    */
+    await salir();
+    await entrarComo(SOFIA);
+    await enviarMensaje({
+      conversacionId: hiloPorteria,
+      texto: `${MARCA} — para la portería, de madrugada`,
+      usuarioId: sofiaId,
+      nombre: "Sofía",
+    });
+    await ultimoMensajeDe(hiloPorteria);
+    await salir();
+    await entrarComo(GUARDIA);
 
     const vistosPorPorteria = await obtenerMensajes(hiloPorteria, guardiaId);
     expect(vistosPorPorteria.length).toBeGreaterThan(0);
