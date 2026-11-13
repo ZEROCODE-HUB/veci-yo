@@ -40,6 +40,7 @@ export function InquilinoLiderHome() {
   const puedeAprobarReservas = usePuedeAprobarReservas();
   const {
     estacionamientos,
+    cargandoEstacionamientos,
     esAdmin,
     esGuardia,
     esResidente,
@@ -579,10 +580,22 @@ export function InquilinoLiderHome() {
                   <Text className="text-base font-semibold text-gray-900">
                     Estacionamientos de visita
                   </Text>
-                  <Text className="text-xs text-gray-500">
-                    {estacionamientos.total - estacionamientos.ocupados} de{" "}
-                    {estacionamientos.total} disponibles
-                  </Text>
+                  {cargandoEstacionamientos ? (
+                    <View
+                      accessibilityRole="progressbar"
+                      aria-busy
+                      role="status"
+                      accessibilityLabel="Cargando los estacionamientos"
+                      className="pt-1"
+                    >
+                      <Bloque ancho="45%" alto={12} />
+                    </View>
+                  ) : (
+                    <Text className="text-xs text-gray-500">
+                      {estacionamientos.total - estacionamientos.ocupados} de{" "}
+                      {estacionamientos.total} disponibles
+                    </Text>
+                  )}
                 </View>
               </View>
               <Pressable

@@ -153,9 +153,12 @@ export function Esqueleto({
     );
 
   return (
+    /*
+      El espacio va en `style` y no en `className`: un componente envuelto en
+      `Animated` pierde sus clases (AGENTS.md), y las líneas salían pegadas.
+    */
     <Animated.View
-      style={{ opacity: latido }}
-      className={forma === "lineas" ? "gap-2 py-2" : "gap-3"}
+      style={{ opacity: latido, gap: forma === "lineas" ? 8 : 12, paddingVertical: forma === "lineas" ? 8 : 0 }}
     >
       {contenido}
     </Animated.View>

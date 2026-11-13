@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useIsFetching, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useCondominioActivo, useUnidadActiva } from "@/shared/hooks";
 import {
   obtenerAgendaHoy,
@@ -48,6 +48,17 @@ export function useInquilinoLiderHome() {
   const estacionamientos = useAdminStore((state) => state.estacionamientosVisitantes);
   const { items: visitas } = useVisitas();
   const condominioId = useCondominioActivo() ?? "";
+  /*
+    El contador de estacionamientos sale del almacén, que llena
+    `useDatosCondominio` al llegar la arquitectura del edificio. Mientras no
+    ha llegado nunca, el almacén dice «0 de 0» y eso se leía como un edificio
+    sin estacionamientos (13/11/2026).
+  */
+  const clienteDeConsultas = useQueryClient();
+  const pidiendoArquitectura = useIsFetching({ queryKey: ["condominio", "arquitectura", condominioId] }) > 0;
+  const cargandoEstacionamientos =
+    clienteDeConsultas.getQueryData(["condominio", "arquitectura", condominioId]) === undefined &&
+    (pidiendoArquitectura || !condominioId);
   const usuarioId = useAuthStore((state) => state.usuarioId ?? "");
   const unidades = useAuthStore((state) => state.unidades);
 
@@ -145,6 +156,7 @@ export function useInquilinoLiderHome() {
   return {
     agendaHoy,
     estacionamientos,
+    cargandoEstacionamientos,
     esAdmin,
     esGuardia,
     esResidente,
