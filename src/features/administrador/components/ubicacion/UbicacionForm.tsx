@@ -2,20 +2,10 @@ import type React from "react";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Cargando,
-  CampoPais,
-  CampoTelefono,
-  Input,
-  Select,
-} from "@/shared/components";
-import { ZONAS_HORARIAS, policiaDelPais } from "@/shared/constants";
-import { useMonedas } from "@/shared/hooks/useMonedas";
+import { Button, Cargando, CampoTelefono, Input } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
 import { Text, View } from "react-native";
-import { useDatosDePaises, useParametrosDeLaBase } from "@/shared/hooks";
-import { FilaDeCampos } from "@/shared/layouts";
+import { useParametrosDeLaBase } from "@/shared/hooks";
 import { crearEsquemaUbicacion } from "../../schemas/ubicacion.schema";
 import type { UbicacionFormValues } from "../../types/ubicacion";
 
@@ -38,9 +28,6 @@ export function UbicacionForm({
 }) {
   // Los largos que se validan son los de la base; sin ellos no se pinta.
   const parametros = useParametrosDeLaBase();
-  // La moneda y la zona de cada país, de la tabla `pais` y no de una lista
-  // copiada en la app (Parametrización, 25/10/2026).
-  const { monedaDelPais, zonaHorariaDelPais, paisesDondeOpera } = useDatosDePaises();
   const esquema = useMemo(
     () =>
       parametros.listo
@@ -48,8 +35,6 @@ export function UbicacionForm({
             telefonoMin: parametros.numero("telefono_largo_minimo"),
             telefonoMax: parametros.numero("telefono_largo_maximo"),
             horarioMax: parametros.numero("horario_atencion_largo_maximo"),
-            emergenciasMin: parametros.numero("emergencias_largo_minimo"),
-            emergenciasMax: parametros.numero("emergencias_largo_maximo"),
           })
         : null,
     [parametros],
@@ -66,8 +51,6 @@ export function UbicacionForm({
   });
   const codigoPais = watch("codigoPais");
   const telefono = watch("telefono");
-  const monedas = useMonedas(watch("moneda"));
-  const pais = watch("pais");
   const field = (name: keyof UbicacionFormValues, label: string, type?: "email") => (
     <Controller
       key={name}
@@ -92,81 +75,13 @@ export function UbicacionForm({
       <AdminSectionCard title="Información del condominio">
         {field("nombre", "Nombre del condominio *")}
         {field("direccion", "Dirección *")}
-        <View className="flex-row gap-3">
-          <View className="flex-1">{field("ciudad", "Ciudad")}</View>
-          {/*
-            El pais, de una lista. Era texto libre y lo que se guardaba eran
-            **las dos primeras letras de lo que se escribiera**, asi que
-            «Estados Unidos» acababa en la base como `ES`, que es España. De
-            esta columna dependen el documento que se pide en la puerta, la
-            etiqueta del identificador fiscal y los reportes legales.
-          */}
-          <View className="flex-1">
-            <CampoPais
-              label="País"
-              value={pais}
-              // Solo donde opera Veciyo, y el que ya tenga, para no esconderlo.
-              codigos={[...new Set([...paisesDondeOpera, ...(pais ? [pais] : [])])]}
-              error={errors.pais?.message}
-              onChange={(codigo) => {
-                /*
-                  Al cambiar de pais se sugiere su numero de policia, salvo que
-                  la administracion haya puesto uno propio (15/10/2026).
-                */
-                const actual = watch("telefonoPolicia").trim();
-                if (actual === "" || actual === policiaDelPais(pais)) {
-                  setValue("telefonoPolicia", policiaDelPais(codigo), {
-                    shouldValidate: true,
-                  });
-                }
-                // Lo mismo con la moneda y la zona horaria (16/10/2026).
-                const moneda = monedaDelPais(codigo);
-                if (moneda && watch("moneda") === monedaDelPais(pais)) {
-                  setValue("moneda", moneda, { shouldValidate: true });
-                }
-                const zona = zonaHorariaDelPais(codigo);
-                if (zona && watch("zonaHoraria") === zonaHorariaDelPais(pais)) {
-                  setValue("zonaHoraria", zona, { shouldValidate: true });
-                }
-                setValue("pais", codigo, { shouldValidate: true });
-              }}
-            />
-          </View>
-        </View>
-        {field("ruc", "RUC / Identificación fiscal")}
         {/*
-          La moneda y la zona horaria existían en la base y no se podían
-          cambiar: la moneda se fijaba al crear el edificio y la zona horaria
-          se deducía del país (16/10/2026).
+          Ciudad, país, moneda y zona horaria salieron de aquí (13/11/2026,
+          pedido del cliente): los pone quien opera la plataforma al dar de
+          alta el edificio, y la base completa la moneda y la zona horaria a
+          partir del país (`condominio_completar_segun_su_pais`).
         */}
-        <FilaDeCampos gap={12}>
-          <Controller
-            control={control}
-            name="moneda"
-            render={({ field: campo, fieldState }) => (
-              <Select
-                label="Moneda"
-                value={campo.value}
-                options={monedas.opciones}
-                onChange={(valor) => campo.onChange(String(valor))}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="zonaHoraria"
-            render={({ field: campo, fieldState }) => (
-              <Select
-                label="Zona horaria"
-                value={campo.value}
-                options={ZONAS_HORARIAS.map((z) => ({ value: z.value, label: z.label }))}
-                onChange={(valor) => campo.onChange(String(valor))}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
-        </FilaDeCampos>
+        {field("ruc", "RUC / Identificación fiscal")}
         {/*
           El telefono con su pais. `condominio.codigo_pais` existe desde el
           primer dia y **nadie la escribia**: el numero se guardaba como texto
@@ -209,26 +124,10 @@ export function UbicacionForm({
             </View>
           )}
         />
-        <Controller
-          control={control}
-          name="telefonoPolicia"
-          render={({ field: campo, fieldState }) => (
-            <View className="gap-1">
-              <Input
-                label="Número de la policía"
-                value={campo.value}
-                onChangeText={campo.onChange}
-                soloCifras
-                error={fieldState.error?.message}
-              />
-              <Text className="text-xs text-gray-500">
-                {policiaDelPais(pais)
-                  ? `El que marca la portería en una emergencia. Sugerido para este país: ${policiaDelPais(pais)}.`
-                  : "El que marca la portería en una emergencia."}
-              </Text>
-            </View>
-          )}
-        />
+        {/*
+          El número de la policía salió de aquí (13/11/2026, pedido del
+          cliente): la portería marca el del país del edificio.
+        */}
         {/*
           `guardando` llegaba de las dos pantallas que usan este
           formulario y no se usaba: el boton no se bloqueaba mientras la
