@@ -76,7 +76,8 @@ export type Rol =
   | "residente"
   | "huesped-temporal"
   | "guardia"
-  | "administrador";
+  | "administrador"
+  | "plataforma";
 
 const sesiones = new Map<string, Record<string, unknown>>();
 
@@ -108,7 +109,7 @@ async function pedirSesion(correo: string): Promise<Record<string, unknown>> {
  * Abre la aplicación con la sesión de `correo` y con `rol` como rol activo.
  * Espera a que se vea la barra de abajo, que es lo que dice que ya entró.
  */
-export async function entrarComo(page: Page, correo: string, rol: Rol, ruta = "/") {
+export async function entrarComo(page: Page, correo: string, rol: Rol, ruta = "/", listo = "Inicio") {
   const sesion = await pedirSesion(correo);
   const usuario = sesion.user as { id: string };
   await page.addInitScript(
@@ -122,7 +123,7 @@ export async function entrarComo(page: Page, correo: string, rol: Rol, ruta = "/
     [`sb-${REF}-auth-token`, JSON.stringify(sesion), `veciyo.rol.${usuario.id}`, rol],
   );
   await page.goto(ruta);
-  await page.getByText("Inicio", { exact: true }).last().waitFor({ timeout: 60_000 });
+  await page.getByText(listo, { exact: true }).last().waitFor({ timeout: 60_000 });
   return usuario.id;
 }
 
@@ -137,4 +138,32 @@ export function enDias(n: number): string {
 export function sinError<T>(paso: string, r: { data: T; error: { message: string } | null }): T {
   if (r.error) throw new Error(`${paso}: ${r.error.message}`);
   return r.data;
+}
+
+/**
+ * Un dueño de la plataforma de usar y tirar, con su perfil (como
+ * `crearDuenoDePrueba` de la suite de la base). Se retira al terminar.
+ */
+export async function crearDuenoDePrueba(etiqueta: string) {
+  const correo = `${etiqueta}-${Date.now().toString(36)}@veciyo.test`;
+  const { data, error } = await servicio.auth.admin.createUser({
+    email: correo,
+    password: CLAVE_PRUEBA,
+    email_confirm: true,
+  });
+  if (error) throw new Error(`No se pudo crear ${correo}: ${error.message}`);
+  const id = data.user!.id;
+  sinError("perfil", await servicio.from("perfil").insert({ id, nombre: "Dueño", apellido: "de prueba" }));
+  sinError(
+    "staff",
+    await servicio.from("staff_plataforma").insert({ usuario_id: id, rol: "dueno", activo: true, nota: `[prueba] ${etiqueta}` }),
+  );
+  return {
+    correo,
+    retirar: async () => {
+      await servicio.from("bitacora_plataforma").delete().eq("actor_id", id);
+      const { error: e } = await servicio.auth.admin.deleteUser(id);
+      if (e) throw new Error(`No se pudo retirar ${correo}: ${e.message}`);
+    },
+  };
 }
