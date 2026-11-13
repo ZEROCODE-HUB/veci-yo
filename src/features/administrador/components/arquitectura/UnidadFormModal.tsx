@@ -50,10 +50,10 @@ type Props = {
   parkings?: EstacionamientoDeTorre[];
   deposits?: Deposito[];
   propietarioActual?: string;
-  onCreateParking?: (form: EstacionamientoFormValues) => void;
-  onUpdateParking?: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => void;
-  onCreateDeposit?: (form: DepositFormValues) => void;
-  onUpdateDeposit?: (deposit: Deposito, form: DepositFormValues) => void;
+  onCreateParking?: (form: EstacionamientoFormValues) => unknown;
+  onUpdateParking?: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => unknown;
+  onCreateDeposit?: (form: DepositFormValues) => unknown;
+  onUpdateDeposit?: (deposit: Deposito, form: DepositFormValues) => unknown;
 };
 
 export function UnidadFormModal({
@@ -172,7 +172,11 @@ export function UnidadFormModal({
               onCreateDeposit={onCreateDeposit}
               onUpdateDeposit={onUpdateDeposit}
             />
-            <AsignarPropietario unidadId={editing.uuid} propietarioActual={propietarioActual} />
+            <AsignarPropietario
+              unidadId={editing.uuid}
+              propietarioActual={propietarioActual}
+              onAsignado={onClose}
+            />
           </>
         ) : (
           <>
