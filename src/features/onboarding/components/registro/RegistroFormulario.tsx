@@ -1,5 +1,6 @@
 import { theme } from "@/config";
-import { View, Text, Pressable } from "react-native";
+import { useRef } from "react";
+import { View, Text, Pressable, type TextInput } from "react-native";
 import { Controller } from "react-hook-form";
 import {
   Button,
@@ -37,6 +38,18 @@ export function RegistroFormulario({
     contrasenaMin,
     tiposDocumento,
   } = useRegistro();
+
+  /*
+    El botón «Siguiente» del teclado pasa al campo de abajo (13/11/2026,
+    pedido del cliente). El tipo de documento es un desplegable y no recibe
+    el foco: del teléfono se salta a la identificación.
+  */
+  const apellidoRef = useRef<TextInput>(null);
+  const correoRef = useRef<TextInput>(null);
+  const telefonoRef = useRef<TextInput>(null);
+  const identificacionRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
 
   /*
     La cuenta existe y falta confirmarla. Se dice aquí, en lugar del
@@ -81,6 +94,8 @@ export function RegistroFormulario({
             onChangeText={onChange}
             placeholder="Ej: María José"
             error={errors.nombre?.message}
+            returnKeyType="next"
+            onSubmitEditing={() => apellidoRef.current?.focus()}
             showEditIcon={false}
           />
         )}
@@ -96,6 +111,9 @@ export function RegistroFormulario({
             onChangeText={onChange}
             placeholder="Ej: Rodríguez Paz"
             error={errors.apellido?.message}
+            ref={apellidoRef}
+            returnKeyType="next"
+            onSubmitEditing={() => correoRef.current?.focus()}
             showEditIcon={false}
           />
         )}
@@ -111,6 +129,9 @@ export function RegistroFormulario({
             placeholder="tu@correo.com"
             type="email"
             error={errors.correo?.message}
+            ref={correoRef}
+            returnKeyType="next"
+            onSubmitEditing={() => telefonoRef.current?.focus()}
             showEditIcon={false}
           />
         )}
@@ -128,6 +149,9 @@ export function RegistroFormulario({
         }
         placeholder="300 123 4567"
         error={errors.telefono?.message ?? errors.codigoPais?.message}
+        ref={telefonoRef}
+        returnKeyType="next"
+        onSubmitEditing={() => identificacionRef.current?.focus()}
       />
 
       <View className="flex-row gap-2.5 items-start">
@@ -162,7 +186,10 @@ export function RegistroFormulario({
                 onChangeText={onChange}
                 placeholder="N° de documento"
                 error={errors.identificacion?.message}
-                showEditIcon={false}
+                ref={identificacionRef}
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current?.focus()}
+            showEditIcon={false}
               />
             )}
           />
@@ -180,6 +207,9 @@ export function RegistroFormulario({
             placeholder={contrasenaMin ? `Mínimo ${contrasenaMin} caracteres` : ""}
             type="password"
             error={errors.password?.message}
+            ref={passwordRef}
+            returnKeyType="next"
+            onSubmitEditing={() => confirmRef.current?.focus()}
             showEditIcon={false}
           />
         )}
@@ -195,6 +225,11 @@ export function RegistroFormulario({
             placeholder="Repite tu contraseña"
             type="password"
             error={errors.confirmPassword?.message}
+            ref={confirmRef}
+            returnKeyType="done"
+            onSubmitEditing={() => {
+              if (terminosAceptados) void handleSubmit(onSubmit)();
+            }}
             showEditIcon={false}
           />
         )}
