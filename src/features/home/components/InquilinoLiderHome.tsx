@@ -21,6 +21,7 @@ import { useNavegacion } from "@/shared/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerReservas } from "@/features/zonas/services/zonas.repo";
 import { ahora, formatDateInput } from "@/shared/utils";
+import { usePuedeAprobarReservas } from "@/features/zonas/hooks/usePuedeAprobarReservas";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
@@ -28,6 +29,8 @@ const imagenGratitud = require("@/assets/imagenes/gratitud.jpg");
 
 export function InquilinoLiderHome() {
   const navigation = useNavegacion();
+  // «Aprobaciones» solo con el permiso de aprobar reservas (13/11/2026).
+  const puedeAprobarReservas = usePuedeAprobarReservas();
   const {
     estacionamientos,
     esAdmin,
@@ -638,7 +641,7 @@ export function InquilinoLiderHome() {
                   </Pressable>
                 )}
                 {/* Las reservas de zonas, a mano de la portería (29/10/2026). */}
-                {esGuardia ? (
+                {esGuardia && puedeAprobarReservas ? (
                   <Pressable
                     hitSlop={8}
                     onPress={() => navigateToRoute(navigation, "ReservasPorteria")}
