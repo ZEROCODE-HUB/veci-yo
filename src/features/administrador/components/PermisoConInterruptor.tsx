@@ -28,7 +28,10 @@ export function PermisoConInterruptor({
       <AdminSectionCard>
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1 flex-row items-center gap-1">
-            <Text className="text-base font-semibold text-gray-900">{etiqueta}</Text>
+            {/* Que el texto largo se parta y no empuje la (i) encima del interruptor (13/11/2026). */}
+            <Text className="text-base font-semibold text-gray-900" style={{ flexShrink: 1 }}>
+              {etiqueta}
+            </Text>
             {ayuda ? <InfoButton titulo={ayuda.titulo} descripcion={ayuda.descripcion} size={16} /> : null}
           </View>
           <Toggle

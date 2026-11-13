@@ -30,10 +30,10 @@ export function RecursosDeLaVivienda({
   unidadId: string;
   parkings: EstacionamientoDeTorre[];
   deposits: Deposito[];
-  onCreateParking: (form: EstacionamientoFormValues) => void;
-  onUpdateParking: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => void;
-  onCreateDeposit: (form: DepositFormValues) => void;
-  onUpdateDeposit: (deposit: Deposito, form: DepositFormValues) => void;
+  onCreateParking: (form: EstacionamientoFormValues) => unknown;
+  onUpdateParking: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => unknown;
+  onCreateDeposit: (form: DepositFormValues) => unknown;
+  onUpdateDeposit: (deposit: Deposito, form: DepositFormValues) => unknown;
 }) {
   const suyos = parkings.filter((p) => p.unidadId === unidadId);
   const libres = parkings.filter((p) => p.tipo === "privado" && !p.unidadId);
@@ -91,15 +91,28 @@ export function Bloque({
   nombre,
 }: {
   titulo: string;
-  asignados: Array<{ clave: string; texto: string; quitar: () => void }>;
+  asignados: Array<{ clave: string; texto: string; quitar: () => unknown }>;
   libres: Array<{ clave: string; texto: string }>;
-  onAsignar: (clave: string) => void;
-  onCrear: (codigo: string, ubicacion: string) => void;
+  onAsignar: (clave: string) => unknown;
+  onCrear: (codigo: string, ubicacion: string) => unknown;
   nombre: string;
 }) {
   const [creando, setCreando] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [ubicacion, setUbicacion] = useState("");
+  /*
+    Lo que se está guardando ahora (13/11/2026, tester: «al asignar no hay un
+    estado de carga»): «asignar», «crear» o la clave de lo que se quita.
+  */
+  const [ocupado, setOcupado] = useState<string | null>(null);
+  const hacer = async (que: string, accion: () => unknown) => {
+    setOcupado(que);
+    try {
+      await accion();
+    } finally {
+      setOcupado(null);
+    }
+  };
 
   return (
     <View className="gap-2 rounded-xl border border-gray-200 p-3">
@@ -110,19 +123,30 @@ export function Bloque({
         asignados.map((a) => (
           <View key={a.clave} className="flex-row items-center gap-2">
             <Text className="flex-1 text-sm text-gray-900">{a.texto}</Text>
-            <Button size="sm" variant="ghost" onPress={a.quitar}>
+            <Button
+              size="sm"
+              variant="ghost"
+              loading={ocupado === a.clave}
+              disabled={ocupado !== null}
+              onPress={() => void hacer(a.clave, a.quitar)}
+            >
               Quitar
             </Button>
           </View>
         ))
       )}
+      {ocupado === "asignar" ? (
+        <Text className="text-xs font-semibold text-gray-600">{`Asignando el ${nombre}…`}</Text>
+      ) : null}
       {libres.length > 0 ? (
         <Select
           label={`Asignar un ${nombre} libre (opcional)`}
           value=""
           placeholder="Elegir…"
           options={libres.map((l) => ({ value: l.clave, label: l.texto }))}
-          onChange={(valor) => valor && onAsignar(String(valor))}
+          onChange={(valor) => {
+            if (valor && ocupado === null) void hacer("asignar", () => onAsignar(String(valor)));
+          }}
         />
       ) : (
         <Text className="text-xs text-gray-500">{`No hay ningún ${nombre} libre en la torre.`}</Text>
@@ -134,13 +158,15 @@ export function Bloque({
           <View className="flex-row gap-2">
             <Button
               size="sm"
-              disabled={!codigo.trim()}
-              onPress={() => {
-                onCrear(codigo.trim(), ubicacion.trim());
-                setCodigo("");
-                setUbicacion("");
-                setCreando(false);
-              }}
+              disabled={!codigo.trim() || ocupado !== null}
+              loading={ocupado === "crear"}
+              onPress={() =>
+                void hacer("crear", () => onCrear(codigo.trim(), ubicacion.trim())).then(() => {
+                  setCodigo("");
+                  setUbicacion("");
+                  setCreando(false);
+                })
+              }
             >
               Crear y asignar
             </Button>

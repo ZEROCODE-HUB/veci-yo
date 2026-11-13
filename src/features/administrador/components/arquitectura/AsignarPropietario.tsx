@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
 import { Button, Input } from "@/shared/components";
 import { asignarPropietario } from "@/features/propietario/services/invitacionesUnidad.repo";
+import { useUIStore } from "@/stores";
 
 /**
  * La administración asigna el propietario de una vivienda, desde la vivienda
@@ -27,6 +28,7 @@ export function AsignarPropietario({
   onAsignado?: () => void;
 }) {
   const queryClient = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [aviso, setAviso] = useState<string | null>(null);
@@ -47,10 +49,16 @@ export function AsignarPropietario({
       const queSePaso = resultado.asignado
         ? `${quien} verá la invitación en Inicio la próxima vez que entre a la app; queda propietario cuando la acepte.`
         : `${quien} verá la invitación cuando cree su cuenta en la app con ${conCorreo}; queda propietario cuando la acepte.`;
-      setAviso(
+      /*
+        Un aviso claro y se cierra la ventana (13/11/2026, tester: «debería salir
+        algo que indique que ya se envió la invitación, y cerrar el modal»).
+        Antes quedaba un texto suelto al final del formulario, que no se veía.
+      */
+      addToast(
         resultado.correoEnviado
-          ? `${queSePaso} Le avisamos por correo.`
-          : `${queSePaso} No salió el correo (${resultado.motivo}): avísale tú.`,
+          ? `Invitación enviada a ${quien}. ${queSePaso}`
+          : `Invitación creada para ${quien}, pero no salió el correo (${resultado.motivo}): avísale tú.`,
+        resultado.correoEnviado ? "success" : "info",
       );
       void queryClient.invalidateQueries({ queryKey: ["unidad"] });
       void queryClient.invalidateQueries({ queryKey: ["administrador"] });
