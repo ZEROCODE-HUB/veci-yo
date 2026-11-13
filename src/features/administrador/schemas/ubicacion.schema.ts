@@ -8,20 +8,11 @@ import { z } from "zod";
  * y en cada correo--, un correo sin arroba y un teléfono de dos cifras
  * (13/10/2026).
  *
- * Los largos del teléfono y del horario de atención los pone la base; quien
- * arma el formulario los lee y los pasa.
+ * Desde el 13/11/2026 solo se editan nombre, dirección e identificación
+ * fiscal: el resto lo pone la plataforma al crear el edificio, o sale de la
+ * cuenta del administrador.
  */
-export interface LimitesDeUbicacion {
-  telefonoMin: number;
-  telefonoMax: number;
-  horarioMax: number;
-}
-
-export function crearEsquemaUbicacion({
-  telefonoMin,
-  telefonoMax,
-  horarioMax,
-}: LimitesDeUbicacion) {
+export function crearEsquemaUbicacion() {
   /*
     Ciudad, país, moneda, zona horaria y número de la policía ya no se editan
     aquí (13/11/2026): los pone la plataforma al dar de alta el edificio.
@@ -37,26 +28,10 @@ export function crearEsquemaUbicacion({
     zonaHoraria: z.string(),
     telefonoPolicia: z.string(),
     ruc: z.string(),
-    // Opcional; si se escribe, tiene que poderse marcar.
-    telefono: z.string().refine((valor) => {
-      const cifras = valor.replace(/[^0-9]/g, "");
-      return (
-        valor.trim() === "" ||
-        (cifras.length >= telefonoMin && cifras.length <= telefonoMax)
-      );
-    }, `Revisa el teléfono: tiene que tener entre ${telefonoMin} y ${telefonoMax} cifras.`),
-    horarioAtencion: z
-      .string()
-      .max(
-        horarioMax,
-        `El horario de atención es muy largo: hasta ${horarioMax} caracteres.`,
-      ),
-    email: z
-      .string()
-      .trim()
-      .refine(
-        (valor) => valor === "" || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valor),
-        "Ese correo no parece válido.",
-      ),
+    // Ya no se editan aquí (13/11/2026): el contacto es el de la cuenta del
+    // administrador. Viajan sin tocarse y el guardado no los escribe.
+    telefono: z.string(),
+    horarioAtencion: z.string(),
+    email: z.string(),
   });
 }

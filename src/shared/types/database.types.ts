@@ -5919,6 +5919,15 @@ export type Database = {
           vencimiento_suplementarias: string
         }[]
       }
+      contacto_de_la_administracion: {
+        Args: { p_condominio_id: string }
+        Returns: {
+          codigo_pais: string
+          email: string
+          nombre: string
+          telefono: string
+        }[]
+      }
       contacto_de_soporte: {
         Args: never
         Returns: {

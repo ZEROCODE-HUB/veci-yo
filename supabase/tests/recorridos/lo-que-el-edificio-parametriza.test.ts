@@ -132,47 +132,35 @@ afterAll(async () => {
   if (errores.length) throw new Error(`La limpieza falló: ${errores.join(" | ")}`);
 });
 
-describe("la zona horaria la elige el edificio", () => {
-  const zonaDeLaBase = async () => {
-    const { data, error } = await supabase.rpc("zona_horaria_del_condominio", {
-      p_condominio_id: CONDOMINIO,
-    });
-    if (error) throw new Error(error.message);
-    return data as string;
-  };
-
-  it("la que guarda la administración es la que usan las reglas de «hoy»", async () => {
+/*
+  Hasta el 13/11/2026 la administración elegía en Arquitectura la zona
+  horaria, la moneda y el horario de atención, y aquí se comprobaba que se
+  guardaban. Desde ese día los pone la plataforma al crear el edificio (la
+  base completa moneda y zona según el país) y el horario se retiró: lo que
+  se comprueba ahora es que el guardado de Arquitectura **no los toca**.
+*/
+describe("Arquitectura no cambia la zona horaria ni la moneda", () => {
+  it("aunque le lleguen otras, se quedan las del edificio", async () => {
+    const { data: antes } = await servicio
+      .from("condominio")
+      .select("zona_horaria, moneda, horario_atencion")
+      .eq("id", CONDOMINIO)
+      .single();
     await entrarComo(MARCELA);
     const leido = await obtenerCondominio(CONDOMINIO);
     await actualizarCondominio(CONDOMINIO, {
       ...leido!.valores,
       zonaHoraria: "America/Mexico_City",
-    });
-    expect(await zonaDeLaBase()).toBe("America/Mexico_City");
-    await salir();
-  });
-
-  it("una zona que no existe no se guarda", async () => {
-    await entrarComo(MARCELA);
-    const leido = await obtenerCondominio(CONDOMINIO);
-    await expect(
-      actualizarCondominio(CONDOMINIO, { ...leido!.valores, zonaHoraria: "Marte/Base" }),
-    ).rejects.toThrow(/no existe/);
-    await salir();
-  });
-
-  it("la moneda y el horario de atención se leen como se guardaron", async () => {
-    await entrarComo(MARCELA);
-    const leido = await obtenerCondominio(CONDOMINIO);
-    await actualizarCondominio(CONDOMINIO, {
-      ...leido!.valores,
       moneda: "USD",
       horarioAtencion: `${MARCA} lunes a viernes`,
     });
-    const otra = await obtenerCondominio(CONDOMINIO);
-    expect(otra!.valores.moneda).toBe("USD");
-    expect(otra!.valores.horarioAtencion).toBe(`${MARCA} lunes a viernes`);
     await salir();
+    const { data: despues } = await servicio
+      .from("condominio")
+      .select("zona_horaria, moneda, horario_atencion")
+      .eq("id", CONDOMINIO)
+      .single();
+    expect(despues).toEqual(antes);
   });
 });
 
