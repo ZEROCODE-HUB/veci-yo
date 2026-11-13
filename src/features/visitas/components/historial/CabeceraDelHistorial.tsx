@@ -16,6 +16,11 @@ interface Props {
   onElegirTipo: (tipo: VisitaItem["tipo"]) => void;
   /** El consumo del paquete de verificaciones, en la pestaña de huéspedes. */
   verificaciones: React.ComponentProps<typeof VerificacionesConsumo>;
+  /**
+   * Si el edificio permite la renta corta (13/11/2026). Si no, ni la tarjeta
+   * «Huésped Temporal» ni el aviso de que hace falta suscribirse.
+   */
+  rentaCortaPermitida?: boolean;
 }
 
 /**
@@ -24,11 +29,17 @@ interface Props {
  *
  * Salió de `VisitasHistorialScreen` el 26/10/2026; hace lo mismo que hacía allí.
  */
-export function CabeceraDelHistorial({ permisos: p, historial, onElegirTipo, verificaciones }: Props) {
+export function CabeceraDelHistorial({
+  permisos: p,
+  historial,
+  onElegirTipo,
+  verificaciones,
+  rentaCortaPermitida = true,
+}: Props) {
   const { tipoTab, setTipoTab, vistaSub, setVistaSub } = historial;
   return (
     <View className="gap-2.5">
-      {!p.huespedDisponible && <AvisoSinRentaCorta />}
+      {!p.huespedDisponible && rentaCortaPermitida && <AvisoSinRentaCorta />}
 
       {p.huespedSinPermisoDeVisitas ? (
         <Text className="text-sm text-gray-500">
@@ -38,7 +49,11 @@ export function CabeceraDelHistorial({ permisos: p, historial, onElegirTipo, ver
 
       {p.puedeCrear && (
         <AccesosRapidosDeVisita
-          tipos={p.tiposDisponibles}
+          tipos={
+            rentaCortaPermitida
+              ? p.tiposDisponibles
+              : p.tiposDisponibles.filter((t) => t !== "huesped-temporal")
+          }
           huespedDisponible={p.huespedDisponible}
           onElegir={onElegirTipo}
         />

@@ -1,4 +1,5 @@
 import { obtenerLimitesRentaCorta } from "@/features/administrador/services/condominio.repo";
+import { useRentaCortaPermitida } from "@/features/propietario/hooks/useRentaCortaPermitida";
 import { useQueryClient } from "@tanstack/react-query";
 import { VISITAS_QUERY_KEY } from "./useVisitas";
 import { useEffect, useRef, useState } from "react";
@@ -122,9 +123,12 @@ export function useVisitasNuevo() {
   const esHuesped = rolActivo === "huesped-temporal";
   const esGuardiaOAdmin = esGuardia || esAdmin;
 
+  const rentaCortaPermitida = useRentaCortaPermitida(unidadDeLaSesion?.unidadId);
   const tiposDisponibles = TIPOS_VISITA.filter((t) => {
     // La porteria no registra visitas (Para Claude 200, 01/11/2026).
     if (esGuardia) return false;
+    // Sin renta corta en el edificio, no se ofrece el huésped (13/11/2026).
+    if (t === "huesped-temporal" && !rentaCortaPermitida) return false;
     if (esHuesped) return t === "amigos" || t === "temporal";
     // La administración registra solo personal permanente y profesionales
     // temporales, en Inicio y en Viviendas › Visitas (Para Claude 199, 30/10/2026).
