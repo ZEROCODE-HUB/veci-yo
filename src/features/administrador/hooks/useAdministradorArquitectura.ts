@@ -226,9 +226,15 @@ export function useAdministradorArquitectura() {
       editarUnidad.mutate({ uuid, datos }),
     deleteUnit: borrarUnidad.mutate,
 
-    createDeposit: nuevoDeposito.mutate,
+    /*
+      Estas cuatro devuelven una promesa (13/11/2026): el bloque de la
+      vivienda espera a que terminen para enseñar «Asignando…». El error ya
+      lo avisa cada mutación; aquí se calla para no repetirlo.
+    */
+    createDeposit: (datos: Parameters<typeof nuevoDeposito.mutateAsync>[0]) =>
+      nuevoDeposito.mutateAsync(datos).catch(() => undefined),
     updateDeposit: (uuid: string, datos: Parameters<typeof actualizarDeposito>[1]) =>
-      editarDeposito.mutate({ uuid, datos }),
+      editarDeposito.mutateAsync({ uuid, datos }).catch(() => undefined),
     deleteDeposit: borrarDeposito.mutate,
 
     createPorteria: nuevaPorteria.mutate,
@@ -236,11 +242,12 @@ export function useAdministradorArquitectura() {
       editarPorteria.mutate({ uuid, datos }),
     deletePorteria: borrarPorteria.mutate,
 
-    createEstacionamiento: nuevoEstacionamiento.mutate,
+    createEstacionamiento: (datos: Parameters<typeof nuevoEstacionamiento.mutateAsync>[0]) =>
+      nuevoEstacionamiento.mutateAsync(datos).catch(() => undefined),
     updateEstacionamiento: (
       uuid: string,
       datos: Parameters<typeof actualizarEstacionamiento>[1],
-    ) => editarEstacionamiento.mutate({ uuid, datos }),
+    ) => editarEstacionamiento.mutateAsync({ uuid, datos }).catch(() => undefined),
     deleteEstacionamiento: borrarEstacionamiento.mutate,
   };
 }
