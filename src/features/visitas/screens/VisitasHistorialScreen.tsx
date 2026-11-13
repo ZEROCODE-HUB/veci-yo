@@ -375,7 +375,14 @@ export function VisitasHistorialScreen() {
         onClose={() => setShowSuscripcionModal(false)}
         onSuscribirse={() => {
           setShowSuscripcionModal(false);
-          renta.setShowPayment(true);
+          /*
+            Por el mismo paso previo que la configuración (13/11/2026): «no
+            vivo aquí» y comprobar que el edificio lo permite. Iba directo al
+            pago y fallaba al final con un aviso que no decía por qué.
+          */
+          void renta.prepararYPagar().then((motivo) => {
+            if (motivo) addToast(motivo, "error");
+          });
         }}
       />
 

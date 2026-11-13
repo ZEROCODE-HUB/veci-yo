@@ -129,6 +129,13 @@ export async function obtenerLimites(
  * corta (29/10/2026, D-70): deja de ser residente y queda como anfitrión
  * primario. La base lo rechaza si alguien más vive en ella.
  */
+/** Si el edificio deja alquilar por noches esta vivienda (13/11/2026). */
+export async function edificioAutorizaRentaCorta(unidadId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("autorizacion_renta_corta", { p_unidad_id: unidadId });
+  if (error) throw error;
+  return data !== false;
+}
+
 export async function prepararParaAlquilar(unidadId: string): Promise<void> {
   const { error } = await supabase.rpc("preparar_para_alquilar", { p_unidad_id: unidadId });
   if (error) throw error;

@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Las invitaciones del edificio (guardia, coadministración) salen en el Inicio para aceptarlas o rechazarlas. Antes quien creaba su cuenta en la app no las veía.",
+      "Renta corta: si el edificio no la permite, se avisa antes de pagar. Y al activarla desde Visitas se hace el mismo paso previo que desde la configuración.",
+      "El aviso de un fallo al activar la renta corta dice el motivo."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Chat en Android: el teclado ya no tapa la caja de escribir.",
       "Llamar: «Portería (guardia)» solo aparece si el edificio tiene una portería registrada o algún guardia."
     ]
