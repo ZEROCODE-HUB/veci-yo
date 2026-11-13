@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Chat en Android: el teclado ya no tapa la caja de escribir.",
+      "Llamar: «Portería (guardia)» solo aparece si el edificio tiene una portería registrada o algún guardia."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Editar departamento: si el propietario tiene una invitación sin aceptar, se ve arriba de «Asignar propietario», con su nombre, su correo y la fecha, igual que en el detalle."
     ]
   },
