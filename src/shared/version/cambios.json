@@ -2,6 +2,12 @@
   {
     "fecha": "2026-11-13",
     "puntos": [
+      "Editar departamento: si el propietario tiene una invitación sin aceptar, se ve arriba de «Asignar propietario», con su nombre, su correo y la fecha, igual que en el detalle."
+    ]
+  },
+  {
+    "fecha": "2026-11-13",
+    "puntos": [
       "Editar departamento: al asignar, quitar o crear un estacionamiento o depósito se ve que se está guardando («Asignando…»).",
       "Al asignar un propietario sale un aviso claro de que la invitación se envió, y la ventana se cierra.",
       "Permisos de viviendas: el botón de información ya no choca con el interruptor cuando el texto es largo."
