@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/config";
 import { Button, Input } from "@/shared/components";
-import { asignarPropietario } from "@/features/propietario/services/invitacionesUnidad.repo";
+import {
+  asignarPropietario,
+  propietarioPendiente,
+} from "@/features/propietario/services/invitacionesUnidad.repo";
+import { desdeLaBase, formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores";
 
 /**
@@ -32,6 +36,16 @@ export function AsignarPropietario({
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [aviso, setAviso] = useState<string | null>(null);
+  /*
+    La invitación que espera respuesta, igual que en el detalle (13/11/2026,
+    cliente: «al abrir detalles sí sale que se envió una invitación, pero al
+    editar no»). La misma consulta, así que se refresca a la vez.
+  */
+  const pendiente = useQuery({
+    queryKey: ["unidad", "detalle", "propietario-pendiente", unidadId],
+    queryFn: () => propietarioPendiente(unidadId),
+    enabled: Boolean(unidadId),
+  });
 
   const falta = !nombre.trim()
     ? "Falta el nombre del propietario"
@@ -72,6 +86,17 @@ export function AsignarPropietario({
   return (
     <View style={{ gap: 10 }}>
       <Text className="text-base font-bold text-gray-900">Asignar propietario (opcional)</Text>
+      {pendiente.data ? (
+        <View
+          className="rounded-xl p-3"
+          style={{ backgroundColor: theme.colors.warningSoft, gap: 2 }}
+        >
+          <Text className="text-sm font-bold text-gray-900">Invitación enviada, sin aceptar todavía</Text>
+          <Text className="text-sm text-gray-900">
+            {`${pendiente.data.nombre} (${pendiente.data.correo}), el ${formatDate(desdeLaBase(pendiente.data.desde))}. Queda propietario cuando la acepte en la app.`}
+          </Text>
+        </View>
+      ) : null}
       {propietarioActual ? (
         <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
           Ya figura {propietarioActual}. Si la vivienda tiene otro dueño, asígnalo aquí.
