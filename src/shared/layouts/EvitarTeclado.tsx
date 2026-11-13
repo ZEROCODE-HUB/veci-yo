@@ -17,6 +17,13 @@ type Props = {
   pointerEvents?: "box-none" | "none" | "box-only" | "auto";
   /** Solo Android: lo que hay encima de la caja (la cabecera). En iPhone se mide. */
   keyboardVerticalOffset?: number;
+  /**
+   * En Android, medir dónde está el teclado como en el iPhone, en vez de
+   * `KeyboardAvoidingView` (13/11/2026). En el chat el teclado seguía tapando
+   * la caja de escribir: entre la barra de la app, la cabecera y el aviso de
+   * arriba, el desplazamiento fijo se quedaba corto.
+   */
+  medirEnAndroid?: boolean;
 };
 
 /**
@@ -36,8 +43,15 @@ type Props = {
  * En Android y en la web se queda el `KeyboardAvoidingView` de siempre, que
  * ahí ya funciona y está comprobado en el celular del cliente.
  */
-export function EvitarTeclado({ children, style, className, pointerEvents, keyboardVerticalOffset }: Props) {
-  if (Platform.OS !== "ios") {
+export function EvitarTeclado({
+  children,
+  style,
+  className,
+  pointerEvents,
+  keyboardVerticalOffset,
+  medirEnAndroid,
+}: Props) {
+  if (Platform.OS !== "ios" && !(medirEnAndroid && Platform.OS === "android")) {
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === "web" ? undefined : "padding"}
@@ -84,9 +98,17 @@ function HuecoDelTecladoIos({ children, style, className, pointerEvents }: Props
       setHueco(0);
     };
     const subs = [
-      Keyboard.addListener("keyboardWillShow", alMoverse),
-      Keyboard.addListener("keyboardWillChangeFrame", alMoverse),
-      Keyboard.addListener("keyboardWillHide", alCerrarse),
+      // Android no avisa antes: solo cuando ya salió o ya se fue.
+      ...(Platform.OS === "android"
+        ? [
+            Keyboard.addListener("keyboardDidShow", alMoverse),
+            Keyboard.addListener("keyboardDidHide", alCerrarse),
+          ]
+        : [
+            Keyboard.addListener("keyboardWillShow", alMoverse),
+            Keyboard.addListener("keyboardWillChangeFrame", alMoverse),
+            Keyboard.addListener("keyboardWillHide", alCerrarse),
+          ]),
     ];
     return () => subs.forEach((s) => s.remove());
   }, []);

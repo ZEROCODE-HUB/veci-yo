@@ -26,10 +26,17 @@ export const PORTERIA_DEL_EDIFICIO = "porteria:edificio";
 export function destinosDeLlamada(
   porterias: Array<{ id: string; nombre: string; numero: string }>,
   administracion: { numero: string },
+  /**
+   * Si el edificio tiene portería o algún guardia (13/11/2026): sin ninguna de
+   * las dos, «Portería» no se ofrece. Por defecto sí, como hasta hoy.
+   */
+  hayPorteria = true,
 ): DestinoDeLlamada[] {
   const deLaPorteria: DestinoDeLlamada[] = porterias.length
     ? porterias.map((p) => ({ clave: `porteria:${p.id}`, etiqueta: p.nombre, numero: p.numero }))
-    : [{ clave: PORTERIA_DEL_EDIFICIO, etiqueta: "Portería (guardia)", numero: "" }];
+    : hayPorteria
+      ? [{ clave: PORTERIA_DEL_EDIFICIO, etiqueta: "Portería (guardia)", numero: "" }]
+      : [];
   return [
     ...deLaPorteria,
     { clave: "administracion", etiqueta: "Administración", numero: administracion.numero },

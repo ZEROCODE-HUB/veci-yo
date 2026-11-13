@@ -6286,6 +6286,10 @@ export type Database = {
         Args: { p_invitado: Database["public"]["Tables"]["invitado"]["Row"] }
         Returns: number
       }
+      el_edificio_tiene_porteria: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       elegir_unidad_activa: {
         Args: { p_unidad_id: string }
         Returns: undefined

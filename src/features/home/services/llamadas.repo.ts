@@ -19,7 +19,7 @@ export type { DestinoDeLlamada };
 export async function destinosDelEdificio(
   condominioId: string,
 ): Promise<DestinoDeLlamada[]> {
-  const [porterias, edificio] = await Promise.all([
+  const [porterias, edificio, conPorteria] = await Promise.all([
     supabase
       .from("porteria")
       .select("id, nombre, telefono, codigo_pais")
@@ -28,6 +28,8 @@ export async function destinosDelEdificio(
       .order("nombre"),
     // El teléfono de la cuenta del administrador principal (13/11/2026).
     supabase.rpc("contacto_de_la_administracion", { p_condominio_id: condominioId }),
+    // Sin portería ni guardias no se ofrece «Portería» (13/11/2026).
+    supabase.rpc("el_edificio_tiene_porteria", { p_condominio_id: condominioId }),
   ]);
   if (porterias.error) throw porterias.error;
   if (edificio.error) throw edificio.error;
@@ -40,6 +42,8 @@ export async function destinosDelEdificio(
       numero: telefonoInternacional(p.codigo_pais, p.telefono),
     })),
     { numero: admin?.telefono ? telefonoInternacional(admin.codigo_pais, admin.telefono) : "" },
+    // Si la consulta falla, se ofrece como antes: mejor de más que dejar sin portería.
+    conPorteria.error ? true : conPorteria.data !== false,
   );
 }
 
