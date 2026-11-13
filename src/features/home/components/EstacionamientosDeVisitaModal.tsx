@@ -5,6 +5,7 @@ import { Button, Modal, Select } from "@/shared/components";
 import type { VisitaItem } from "@/shared/types";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
 import { visitasParaEstacionar } from "@/features/visitas/helpers/visitasParaEstacionar";
+import { TIPO_LABELS } from "@/features/visitas/constants";
 
 interface Props {
   visible: boolean;
@@ -28,8 +29,26 @@ export function EstacionamientosDeVisitaModal({
   const { cupos, cargando, asignar, asignando, liberar, liberando } =
     useEstacionamientosVisita();
   const opciones = visitasParaEstacionar(visitas);
-  const nombreDe = (visitaId: string | null) =>
-    visitas.find((visita) => visita.uuid === visitaId)?.nombre || "Ocupado";
+  const visitaDe = (visitaId: string | null) =>
+    visitas.find((visita) => visita.uuid === visitaId) ?? null;
+  /*
+    Lo que la portería necesita de quien ocupa el cupo (13/11/2026, cliente:
+    «debería salir en qué departamento está, qué tipo de visita es, cuándo
+    ingresó»): vivienda y tipo en una línea; ingreso y placa en otra.
+  */
+  const detalleDe = (visita: VisitaItem | null): string[] => {
+    if (!visita) return [];
+    const vivienda = [visita.torre ? `Torre ${visita.torre}` : null, visita.depto ? `Depto ${visita.depto}` : null]
+      .filter(Boolean)
+      .join(" · ");
+    const primera = [vivienda || null, TIPO_LABELS[visita.tipo] ?? null].filter(Boolean).join(" · ");
+    const placas = (visita.vehiculos ?? []).map((v) => v.placa).filter(Boolean);
+    const ingreso = visita.horaIngreso
+      ? `Ingresó ${visita.fechaIngreso ? `el ${visita.fechaIngreso} ` : ""}a las ${visita.horaIngreso}`
+      : "Todavía no ingresa";
+    const segunda = [ingreso, placas.length ? `🚗 ${placas.join(", ")}` : null].filter(Boolean).join(" · ");
+    return [primera, segunda].filter(Boolean);
+  };
 
   return (
     <Modal
@@ -66,12 +85,16 @@ export function EstacionamientosDeVisitaModal({
               </View>
               {cupo.ocupado ? (
                 <>
-                  <Text
-                    numberOfLines={1}
-                    className="flex-1 text-sm text-gray-900"
-                  >
-                    {nombreDe(cupo.visitaId)}
-                  </Text>
+                  <View className="flex-1" style={{ gap: 2 }}>
+                    <Text numberOfLines={1} className="text-sm font-semibold text-gray-900">
+                      {visitaDe(cupo.visitaId)?.nombre || "Ocupado"}
+                    </Text>
+                    {detalleDe(visitaDe(cupo.visitaId)).map((linea) => (
+                      <Text key={linea} className="text-xs text-gray-600">
+                        {linea}
+                      </Text>
+                    ))}
+                  </View>
                   <Pressable
                     onPress={() => liberar(cupo.uuid)}
                     disabled={liberando}
