@@ -102,14 +102,14 @@ export function DirectorioPropiedadesScreen() {
                     key={String(item.id)}
                     item={item}
                     contactos={contactosFor(item)}
-                    depositos={depositosPorUnidad.get(String(item.id)) ?? 0}
+                    depositos={depositosPorUnidad.get(String(item.id)) ?? []}
                     vehiculos={vehiculosDe(item)}
                     onPress={() =>
                       setDetalle({
                         tipo: "departamento",
                         datos: item,
                         contactos: contactosFor(item),
-                        depositos: depositosPorUnidad.get(String(item.id)) ?? 0,
+                        depositos: depositosPorUnidad.get(String(item.id)) ?? [],
                         vehiculos: vehiculosDe(item),
                       })
                     }

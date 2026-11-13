@@ -15,24 +15,27 @@ export interface LimitesDeUbicacion {
   telefonoMin: number;
   telefonoMax: number;
   horarioMax: number;
-  /** Cifras del número de emergencias (`emergencias_largo_*`, 28/10/2026). */
-  emergenciasMin: number;
-  emergenciasMax: number;
 }
 
 export function crearEsquemaUbicacion({
   telefonoMin,
   telefonoMax,
   horarioMax,
-  emergenciasMin,
-  emergenciasMax,
 }: LimitesDeUbicacion) {
+  /*
+    Ciudad, país, moneda, zona horaria y número de la policía ya no se editan
+    aquí (13/11/2026): los pone la plataforma al dar de alta el edificio.
+  */
   return z.object({
     nombre: z.string().trim().min(1, "Escribe el nombre del condominio."),
     direccion: z.string().trim().min(1, "Escribe la dirección."),
-    ciudad: z.string(),
-    pais: z.string().regex(/^[A-Z]{2}$/, "Elige el país."),
     codigoPais: z.string(),
+    // Viajan sin tocarse: ya no se editan aquí y el guardado no los escribe.
+    ciudad: z.string(),
+    pais: z.string(),
+    moneda: z.string(),
+    zonaHoraria: z.string(),
+    telefonoPolicia: z.string(),
     ruc: z.string(),
     // Opcional; si se escribe, tiene que poderse marcar.
     telefono: z.string().refine((valor) => {
@@ -42,18 +45,6 @@ export function crearEsquemaUbicacion({
         (cifras.length >= telefonoMin && cifras.length <= telefonoMax)
       );
     }, `Revisa el teléfono: tiene que tener entre ${telefonoMin} y ${telefonoMax} cifras.`),
-    // Un numero corto de emergencias, con el largo de la base. Vacio = el del pais.
-    telefonoPolicia: z
-      .string()
-      .trim()
-      .refine(
-        (valor) =>
-          valor === "" ||
-          (/^[0-9]+$/.test(valor) && valor.length >= emergenciasMin && valor.length <= emergenciasMax),
-        `El número de la policía tiene que tener entre ${emergenciasMin} y ${emergenciasMax} cifras.`,
-      ),
-    moneda: z.string().regex(/^[A-Z]{3}$/, "Elige la moneda."),
-    zonaHoraria: z.string().min(1, "Elige la zona horaria."),
     horarioAtencion: z
       .string()
       .max(

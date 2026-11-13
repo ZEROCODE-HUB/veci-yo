@@ -137,7 +137,14 @@ export function DatosPersona({
             </Text>
           ) : null}
         </View>
+        {/*
+          Mayúscula al empezar cada palabra (`soloLetras`, 13/11/2026): sin
+          ella el teclado solo la ponía en la primera. Y en la estancia, su
+          rótulo encima, que el campo es opcional (observaciones del tester).
+        */}
         <Input
+          label={esEstancia ? "Nombre y Apellido (opcional)" : undefined}
+          soloLetras
           value={nombre}
           onChangeText={setNombre}
           placeholder={

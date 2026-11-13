@@ -24,7 +24,7 @@ import { ahora, formatDateInput } from "@/shared/utils";
 
 const iconReputacion = require("@/assets/icons/inquilino-lider/reputacion.png");
 const iconRegalos = require("@/assets/icons/inquilino-lider/regalos.png");
-const imagenGratitud = require("@/assets/imagenes/gratitud.png");
+const imagenGratitud = require("@/assets/imagenes/gratitud.jpg");
 
 export function InquilinoLiderHome() {
   const navigation = useNavegacion();

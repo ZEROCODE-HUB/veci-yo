@@ -26,8 +26,8 @@ export function DirectorioDepartamentoCard({
 }: {
   item: Unidad;
   contactos: DirectorioContactos;
-  /** Cuántos depósitos tiene esta vivienda. */
-  depositos: number;
+  /** Los códigos de los depósitos de esta vivienda. */
+  depositos: string[];
   /** Los de la vivienda y los de las visitas que están dentro. */
   vehiculos?: VehiculoDelDirectorio[];
   onPress: () => void;
@@ -66,16 +66,16 @@ export function DirectorioDepartamentoCard({
         </View>
         <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
       </View>
-      {estacionamientos.length || depositos || vehiculos.length ? (
+      {estacionamientos.length || depositos.length || vehiculos.length ? (
         <View className="flex-row flex-wrap" style={{ marginTop: 8, gap: 6 }}>
           {estacionamientos.length ? (
             <Etiqueta icono="car-outline">
               {`${estacionamientos.length === 1 ? "Estacionamiento" : "Estacionamientos"}: ${estacionamientos.join(", ")}`}
             </Etiqueta>
           ) : null}
-          {depositos ? (
+          {depositos.length ? (
             <Etiqueta icono="cube-outline">
-              {depositos === 1 ? "1 depósito" : `${depositos} depósitos`}
+              {`${depositos.length === 1 ? "Depósito" : "Depósitos"}: ${depositos.join(", ")}`}
             </Etiqueta>
           ) : null}
           {propios.length ? (

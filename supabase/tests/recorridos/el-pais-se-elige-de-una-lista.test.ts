@@ -74,17 +74,19 @@ afterAll(async () => {
 });
 
 describe("el país del edificio es un código, de principio a fin", () => {
-  it("lo que se guarda es el código, no el nombre recortado", async () => {
+  /*
+    Desde el 13/11/2026 el país no se cambia desde Arquitectura: lo pone la
+    plataforma al dar de alta el edificio. Este caso comprobaba que el
+    formulario guardaba el código; ahora comprueba que **no lo toca**, aunque
+    le llegue otro.
+  */
+  it("el guardado de Arquitectura ya no toca el país", async () => {
+    // Sembrado crudo: Estados Unidos, el que el recorte viejo volvía `ES`.
+    await servicio.from("condominio").update({ pais: "US" }).eq("id", CONDOMINIO);
     const antes = await obtenerCondominio(CONDOMINIO);
     expect(antes).toBeTruthy();
 
-    /*
-      Estados Unidos es el caso que lo delata: su nombre empieza por «Es», así
-      que el recorte daba `ES` --España-- y las dos letras encajaban en la
-      columna sin protestar. Si en vez del código viajara el nombre, aquí
-      saldría `ES`.
-    */
-    await actualizarCondominio(CONDOMINIO, { ...antes!.valores, pais: "US" });
+    await actualizarCondominio(CONDOMINIO, { ...antes!.valores, pais: "CO" });
 
     const { data } = await servicio
       .from("condominio")
@@ -93,7 +95,6 @@ describe("el país del edificio es un código, de principio a fin", () => {
       .single();
 
     expect(data!.pais).toBe("US");
-    expect(data!.pais).not.toBe("ES");
   });
 
   it("y la pantalla lo vuelve a leer como código", async () => {

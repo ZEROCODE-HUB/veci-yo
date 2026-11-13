@@ -19,7 +19,8 @@ export const TIPOS_VISITA = [
 ] as const;
 
 export const TIPO_LABELS: Record<string, string> = {
-  amigos: "Amigos Familiares",
+  // «Amigos - Familiares» (13/11/2026, observación del tester).
+  amigos: "Amigos - Familiares",
   temporal: "Profesional Temporal",
   permanente: "Profesional Permanente",
   "huesped-temporal": "Huésped Temporal",

@@ -270,6 +270,13 @@ export function DirectorioAdminPagos({
               })();
             }}
             onCambiarImporte={() => abrirImporte(unidad)}
+            onDeshacerPago={() => {
+              if (!uuid) return;
+              void cuotas.anularPago(uuid).catch(() => {
+                // El motivo ya salió en el aviso.
+              });
+            }}
+            deshaciendo={cuotas.anulando === uuid}
             onComite={(enComite) => uuid && cuotas.cambiarComite(uuid, enComite)}
           />
         );

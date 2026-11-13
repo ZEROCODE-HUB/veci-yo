@@ -5627,6 +5627,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      anular_pago_de_cuota: {
+        Args: { p_cuota_id: string; p_unidad_id: string }
+        Returns: undefined
+      }
       aprobar_documento_a_mano: {
         Args: { p_invitado_id: string; p_observaciones?: string }
         Returns: boolean

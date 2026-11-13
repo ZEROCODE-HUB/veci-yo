@@ -267,8 +267,12 @@ export function useDirectorio() {
     Se cuenta como ya lo hace el filtro de abajo: por `unidadId` o, si el
     deposito no lo trae, por el codigo del departamento.
   */
+  /*
+    13/11/2026 (tester): el código de cada depósito, no solo cuántos hay,
+    igual que se hace con los estacionamientos.
+  */
   const depositosPorUnidad = useMemo(() => {
-    const cuenta = new Map<string, number>();
+    const cuenta = new Map<string, string[]>();
     for (const deposito of depositos) {
       const unidad = unidades.find(
         (item) =>
@@ -277,7 +281,7 @@ export function useDirectorio() {
       );
       if (!unidad) continue;
       const clave = String(unidad.id);
-      cuenta.set(clave, (cuenta.get(clave) ?? 0) + 1);
+      cuenta.set(clave, [...(cuenta.get(clave) ?? []), deposito.codigo]);
     }
     return cuenta;
   }, [depositos, unidades]);
