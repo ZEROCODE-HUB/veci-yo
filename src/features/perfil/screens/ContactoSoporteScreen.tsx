@@ -10,10 +10,10 @@ export function ContactoSoporteScreen() {
   const { contacto, contactos, cargando } = useContactoSoporte();
   const hayContacto = Boolean(
     contacto &&
-    (contacto.telefono ||
+    (contacto.nombre ||
+      contacto.telefono ||
       contacto.email ||
-      contacto.ubicacion ||
-      contacto.horarios),
+      contacto.ubicacion),
   );
 
   return (

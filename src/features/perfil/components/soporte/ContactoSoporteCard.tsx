@@ -9,10 +9,10 @@ export function ContactoSoporteCard({
 }) {
   // Un dato que la administración no cargó no se muestra vacío: se omite.
   const filas = [
+    { label: "Administra:", value: contacto.nombre },
     { label: "Teléfono:", value: contacto.telefono },
     { label: "Email:", value: contacto.email },
     { label: "Ubicación:", value: contacto.ubicacion },
-    { label: "Horarios:", value: contacto.horarios },
   ].filter((fila): fila is { label: string; value: string } => !!fila.value);
   return (
     <View

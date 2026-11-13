@@ -85,13 +85,11 @@ export async function actualizarCondominio(
         alta el edificio: si se escribieran aquí, un formulario abierto con
         datos viejos los pisaría.
       */
+      // Teléfono, correo y horario tampoco desde el 13/11/2026: el contacto
+      // es el de la cuenta del administrador.
       nombre: valores.nombre,
       direccion: valores.direccion,
       identificacion_fiscal: valores.ruc || null,
-      telefono: valores.telefono || null,
-      codigo_pais: valores.codigoPais || null,
-      email: valores.email || null,
-      horario_atencion: valores.horarioAtencion.trim() || null,
     })
     .eq("id", condominioId);
   if (error) throw error;
