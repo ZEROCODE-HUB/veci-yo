@@ -1,4 +1,3 @@
-import { theme } from "@/config";
 import { useRef } from "react";
 import { View, Text, Pressable, type TextInput } from "react-native";
 import { Controller } from "react-hook-form";
@@ -12,6 +11,7 @@ import {
   Select,
 } from "@/shared/components";
 import { useRegistro } from "../../hooks/useRegistro";
+import { CodigoDeConfirmacion } from "./CodigoDeConfirmacion";
 interface RegistroFormularioProps {
   onAbrirTerminos: () => void;
 }
@@ -32,8 +32,7 @@ export function RegistroFormulario({
     onSubmit,
     registrando,
     correoPorConfirmar,
-    yaConfirme,
-    comprobando,
+    cambiarDeCorreo,
     listo,
     contrasenaMin,
     tiposDocumento,
@@ -56,26 +55,7 @@ export function RegistroFormulario({
     formulario: dejarlo a la vista invita a registrarse otra vez.
   */
   if (correoPorConfirmar) {
-    return (
-      <View
-        className="gap-2 rounded-2xl p-4"
-        style={{ backgroundColor: theme.colors.successLight }}
-      >
-        <Text className="text-base font-bold text-gray-900">
-          Revisa tu correo
-        </Text>
-        <Text className="text-sm text-gray-700">
-          Te enviamos un mensaje a {correoPorConfirmar}. Ábrelo y pulsa el
-          enlace para confirmar tu cuenta. Al volver aquí, entras solo.
-        </Text>
-        <Text className="text-xs text-gray-500">
-          Si no llega en unos minutos, mira en la carpeta de correo no deseado.
-        </Text>
-        <Button variant="secondary" fullWidth loading={comprobando} onPress={yaConfirme}>
-          Ya confirmé mi correo
-        </Button>
-      </View>
-    );
+    return <CodigoDeConfirmacion correo={correoPorConfirmar} onCambiarDeCorreo={cambiarDeCorreo} />;
   }
 
   // Los largos que valida el formulario vienen de la base.

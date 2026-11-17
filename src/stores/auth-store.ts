@@ -9,6 +9,7 @@ import {
   leerMiSuspension,
   iniciarSesionConCorreo,
   registrarConCorreo,
+  confirmarCorreoConCodigo,
   type MembresiaCondominio,
   type MembresiaUnidad,
   type RolPlataforma,
@@ -56,6 +57,11 @@ interface AuthState {
     identificacion?: string;
     volverA?: string;
   }) => Promise<boolean>;
+  /**
+   * Confirma el correo con el código que llega al registrarse y deja la
+   * sesión abierta (17/11/2026).
+   */
+  confirmarCorreoReal: (correo: string, codigo: string) => Promise<void>;
   /** Carga perfil, membresias y ubicaciones del usuario autenticado. */
   sincronizarContexto: () => Promise<void>;
   /**
@@ -142,6 +148,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await get().sincronizarContexto();
     set({ mostrarBienvenida: true });
     return true;
+  },
+
+  confirmarCorreoReal: async (correo, codigo) => {
+    await confirmarCorreoConCodigo(correo, codigo);
+    await get().sincronizarContexto();
+    set({ mostrarBienvenida: true });
   },
 
   sincronizarContexto: async () => {

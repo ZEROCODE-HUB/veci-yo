@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { AppState } from "react-native";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,43 +98,12 @@ export function useRegistro() {
     `registrarReal` y no la llamaba nadie.
   */
   /*
-    Lo que escribió al registrarse, solo en memoria y solo mientras espera a
-    confirmar el correo: al volver a la app se entra con eso, sin pedirle que
-    lo escriba otra vez (QA 23/10/2026: «después de registrarse quiero que el
-    usuario ya esté logueado»).
+    Hasta el 17/11/2026 la contraseña se guardaba en memoria para entrar sola
+    al volver de pulsar el enlace del correo, y si el celular cerraba la app
+    mientras tanto se perdía. Ahora el correo trae un código que se escribe en
+    esta misma pantalla (`CodigoDeConfirmacion`), y al confirmarlo la sesión
+    queda abierta: no hace falta recordar nada más que el correo.
   */
-  const credenciales = useRef<{ correo: string; password: string } | null>(null);
-  const [comprobando, setComprobando] = useState(false);
-  const iniciarSesionReal = useAuthStore((s) => s.iniciarSesionReal);
-
-  const entrarSiYaConfirmo = useCallback(
-    async (avisarSiNo: boolean) => {
-      const c = credenciales.current;
-      if (!c) return;
-      setComprobando(true);
-      try {
-        await iniciarSesionReal(c.correo, c.password);
-        credenciales.current = null;
-        void olvidarCorreoPorConfirmar();
-      } catch {
-        if (avisarSiNo) {
-          addToast("Todavía no vemos tu correo confirmado. Abre el mensaje y pulsa el enlace.", "info");
-        }
-      } finally {
-        setComprobando(false);
-      }
-    },
-    [iniciarSesionReal, addToast],
-  );
-
-  // Al volver a la app (después de abrir el correo), se intenta entrar.
-  useEffect(() => {
-    if (!correoPorConfirmar) return;
-    const suscripcion = AppState.addEventListener("change", (estado) => {
-      if (estado === "active") void entrarSiYaConfirmo(false);
-    });
-    return () => suscripcion.remove();
-  }, [correoPorConfirmar, entrarSiYaConfirmo]);
 
   const mutation = useMutation({
     mutationFn: async (data: RegistroFormData) => {
@@ -153,11 +121,10 @@ export function useRegistro() {
         // Si venía de una invitación, el correo de confirmación vuelve a ella.
         volverA: await enlaceDeLaInvitacionPendiente(),
       });
-      return { sesionAbierta, correo: data.correo.trim(), password: data.password };
+      return { sesionAbierta, correo: data.correo.trim() };
     },
-    onSuccess: ({ sesionAbierta, correo, password }) => {
+    onSuccess: ({ sesionAbierta, correo }) => {
       if (!sesionAbierta) {
-        credenciales.current = { correo, password };
         // Por si el celular cierra la app mientras va al correo (16/11/2026).
         void recordarCorreoPorConfirmar(correo);
         setCorreoPorConfirmar(correo);
@@ -241,8 +208,11 @@ export function useRegistro() {
     onSubmit,
     registrando: mutation.isPending,
     correoPorConfirmar,
-    yaConfirme: () => void entrarSiYaConfirmo(true),
-    comprobando,
+    /** «Usar otro correo»: vuelve al formulario. */
+    cambiarDeCorreo: () => {
+      setCorreoPorConfirmar(null);
+      void olvidarCorreoPorConfirmar();
+    },
     listo: esquema !== null,
     tiposDocumento: opcionesDeDocumento(documentos.reglas),
     // Para el texto del campo: decía «Mínimo 8» escrito a mano.
