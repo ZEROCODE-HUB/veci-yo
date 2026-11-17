@@ -36,9 +36,23 @@ export function CorrespondenciaScreen() {
   const [deleteItem, setDeleteItem] = useState<CorrespondenciaItem | null>(
     null,
   );
-  const [detailItem, setDetailItem] = useState<CorrespondenciaItem | null>(
-    null,
-  );
+  /*
+    El detalle guarda **cuál** envío, no una copia (17/11/2026). Con la copia,
+    después de notificar o entregar seguía enseñando el estado de cuando se
+    abrió, y ofrecía otra vez lo que ya estaba hecho. Leído de la lista, se
+    pone al día solo --también si lo cambia otro--, y si lo borran se cierra.
+  */
+  const [detalleId, setDetalleId] = useState<string | null>(null);
+  const detailItem = detalleId
+    ? (items.find((i) => (i.uuid ?? String(i.id)) === detalleId) ?? null)
+    : null;
+  const abrirDetalle = (item: CorrespondenciaItem) =>
+    setDetalleId(item.uuid ?? String(item.id));
+  const cerrarDetalle = () => {
+    setDetalleId(null);
+    setEntregaItem(null);
+    setDeleteItem(null);
+  };
   const [entregaItem, setEntregaItem] = useState<CorrespondenciaItem | null>(
     null,
   );
@@ -83,19 +97,18 @@ export function CorrespondenciaScreen() {
     });
   }, [navigation, puedeCrear]);
 
-  const cerrarMenus = () => {
-    setMenuItem(null);
-    setDetailItem(null);
-  };
-
-  /** Espera a la base y solo cierra lo abierto si salió bien. */
+  /**
+   * Espera a la base y, si salió, cierra el menú de los tres puntos. El
+   * detalle se queda abierto: ahí se ve el progreso nuevo (17/11/2026; antes
+   * se cerraba y no se sabía qué había pasado).
+   */
   const esperarAccion = async (
     accion: AccionDeCorrespondencia,
     guardar: () => Promise<boolean>,
   ) => {
     setEnCurso(accion);
     try {
-      if (await guardar()) cerrarMenus();
+      if (await guardar()) setMenuItem(null);
     } finally {
       setEnCurso(null);
     }
@@ -106,7 +119,7 @@ export function CorrespondenciaScreen() {
     // Desde los tres puntos o desde el detalle (Para Claude 167).
     const item = desde ?? menuItem;
     if (!item) {
-      cerrarMenus();
+      setMenuItem(null);
       return;
     }
 
@@ -118,7 +131,8 @@ export function CorrespondenciaScreen() {
       void esperarAccion(accion, () => actualizarEstado(item.uuid ?? "", "En Portería"));
       return;
     }
-    cerrarMenus();
+    // Del menú se pasa a otra ventana; desde el detalle se sigue en él.
+    setMenuItem(null);
 
     if (accion === "entregar") {
       /*
@@ -135,6 +149,7 @@ export function CorrespondenciaScreen() {
       return;
     }
     if (accion === "informar") {
+      cerrarDetalle();
       navigation.navigate("CorrespondenciaAgregar", { informar: item });
       return;
     }
@@ -160,7 +175,10 @@ export function CorrespondenciaScreen() {
         setTimeout(() => setShowDeleteSuccess(false), 2000);
       },
     });
-    if (ok) setDeleteItem(null);
+    if (ok) {
+      setDeleteItem(null);
+      setDetalleId(null);
+    }
   };
   if (accesoBloqueado)
     return (
@@ -238,7 +256,7 @@ export function CorrespondenciaScreen() {
           <CorrespondenciaCard
             item={item}
             puedeModificarEstado={puedeModificarEstado}
-            onPress={() => setDetailItem(item)}
+            onPress={() => abrirDetalle(item)}
             onMenuPress={() => setMenuItem(item)}
           />
         )}
@@ -260,7 +278,7 @@ export function CorrespondenciaScreen() {
         onNombreChange={setEntregaNombre}
         onConfirmEntrega={confirmarEntrega}
         detailItem={detailItem}
-        onCloseDetail={() => setDetailItem(null)}
+        onCloseDetail={cerrarDetalle}
         puedeModificarEstado={puedeModificarEstado}
         onAccionDesdeDetalle={(accion, item) => handleAccion(accion, item)}
         showDeleteSuccess={showDeleteSuccess}

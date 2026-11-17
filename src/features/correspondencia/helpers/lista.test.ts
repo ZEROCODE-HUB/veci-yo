@@ -129,6 +129,14 @@ describe("qué se puede hacer con un envío", () => {
     expect(acciones("No Recibido")).toEqual(["recibir", "informar", "eliminar"]);
   });
 
+  it("ya notificado, no se vuelve a ofrecer notificar", () => {
+    expect(opcionesDeCorrespondencia("En Portería", true).map((o) => o.accion)).toEqual([
+      "entregar",
+      "informar",
+      "eliminar",
+    ]);
+  });
+
   it("eliminar es la única marcada como peligrosa", () => {
     const peligrosas = opcionesDeCorrespondencia("En Portería").filter(
       (o) => o.peligrosa,
