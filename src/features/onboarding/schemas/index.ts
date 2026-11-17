@@ -4,3 +4,5 @@ export { crearEsquemaRegistro } from './registro.schema';
 export type { RegistroFormData } from './registro.schema';
 export { recuperacionSchema } from './recuperacion.schema';
 export type { RecuperacionFormData } from './recuperacion.schema';
+export { crearEsquemaDatosPersonales } from './registro.schema';
+export type { DatosPersonalesFormData } from './registro.schema';

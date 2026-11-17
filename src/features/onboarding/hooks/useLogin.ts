@@ -4,6 +4,7 @@ import { useUIStore } from "@/stores/ui-store";
 import type { LoginFormData } from "../schemas";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { iniciarSesionConGoogle } from "@/shared/services/sesion";
+import { olvidarCorreoPorConfirmar } from "@/shared/services/correoPorConfirmar";
 import { iniciarSesionConGoogleNativo } from "../services/googleNativo";
 
 /**
@@ -36,6 +37,8 @@ export function useLogin() {
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) =>
       iniciarSesionReal(data.correo, data.password),
+    // Ya entró: el correo que esperaba confirmación no hace falta recordarlo.
+    onSuccess: () => void olvidarCorreoPorConfirmar(),
     onError: (error) => addToast(mensajeDeLogin(error), "error"),
   });
 

@@ -26,6 +26,7 @@ export type RootStackParamList = {
   AceptarInvitacion: { token: string };
   /** La cuenta está suspendida desde el panel de la app (24/10/2026). */
   CuentaSuspendida: undefined;
+  CompletarDatos: undefined;
 };
 
 /** Las pantallas del panel de la plataforma. */

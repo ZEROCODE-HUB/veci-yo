@@ -92,7 +92,6 @@ describe("la administración", () => {
 describe("el propietario", () => {
   const activar = vi.fn();
   const BASE: DatosDelPropietario = {
-    telefono: "",
     tieneVivienda: true,
     enAlquiler: false,
     hayQuienViva: false,
@@ -101,18 +100,12 @@ describe("el propietario", () => {
     avisos: { disponible: true, permiso: false, activar },
   };
 
-  it("teléfono, quién vive, vehículos y avisos", () => {
+  it("quién vive, vehículos y avisos (el teléfono ya lo pide el registro)", () => {
     expect(pasosDelPropietario(BASE).map((p) => p.id)).toEqual([
-      "telefono",
       "residentes",
       "vehiculos",
       "avisos",
     ]);
-  });
-
-  it("un teléfono de puros espacios no cuenta", () => {
-    expect(pasosDelPropietario({ ...BASE, telefono: "   " })[0].hecho).toBe(false);
-    expect(pasosDelPropietario({ ...BASE, telefono: "3105551001" })[0].hecho).toBe(true);
   });
 
   it("sin estacionamiento no se le piden vehículos", () => {
@@ -141,7 +134,7 @@ describe("el guardia", () => {
   const avisos = { disponible: false, permiso: false, activar: () => {} };
 
   it("sin garita ni turno, le dice que se lo pida a la administración y no lleva a ninguna parte", () => {
-    const pasos = pasosDelGuardia({ garita: "", turnos: 0, telefono: "", avisos });
+    const pasos = pasosDelGuardia({ garita: "", turnos: 0, avisos });
     for (const id of ["garita", "turno"]) {
       const paso = pasos.find((p) => p.id === id);
       expect(paso?.hecho).toBe(false);
@@ -152,7 +145,7 @@ describe("el guardia", () => {
   });
 
   it("con garita, la nombra", () => {
-    const paso = pasosDelGuardia({ garita: "Garita principal", turnos: 2, telefono: "1", avisos })[0];
+    const paso = pasosDelGuardia({ garita: "Garita principal", turnos: 2, avisos })[0];
     expect(paso.texto).toBe("Tu garita: Garita principal");
     expect(paso.hecho).toBe(true);
   });

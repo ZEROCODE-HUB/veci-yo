@@ -115,14 +115,11 @@ export interface AvisosDelCelular {
   activar: () => void;
 }
 
-function pasoDelTelefono(telefono: string): PasoParaEmpezar {
-  return {
-    id: "telefono",
-    texto: "Agrega tu teléfono",
-    hecho: telefono.trim() !== "",
-    destino: { ruta: "Configuracion" },
-  };
-}
+/*
+  Sin paso del teléfono (17/11/2026, cliente: «¿acaso eso no se pide al
+  crear cuenta?»). Se pide: el registro lo exige, quien entra con Google lo da
+  en «Completa tus datos», y a las cuentas viejas sin él se les puso uno.
+*/
 
 function pasoDeAvisos(avisos: AvisosDelCelular): PasoParaEmpezar[] {
   if (!avisos.disponible) return [];
@@ -142,7 +139,6 @@ function pasoDeAvisos(avisos: AvisosDelCelular): PasoParaEmpezar[] {
 // ---------------------------------------------------------------------------
 
 export interface DatosDelPropietario {
-  telefono: string;
   /** Sin vivienda activa no hay residentes ni vehículos que pedir. */
   tieneVivienda: boolean;
   /**
@@ -159,7 +155,7 @@ export interface DatosDelPropietario {
 }
 
 export function pasosDelPropietario(d: DatosDelPropietario): PasoParaEmpezar[] {
-  const pasos: PasoParaEmpezar[] = [pasoDelTelefono(d.telefono)];
+  const pasos: PasoParaEmpezar[] = [];
   if (d.tieneVivienda && !d.enAlquiler) {
     pasos.push({
       id: "residentes",
@@ -188,7 +184,6 @@ export interface DatosDelGuardia {
   /** El nombre de su garita; vacío si no tiene. */
   garita: string;
   turnos: number;
-  telefono: string;
   avisos: AvisosDelCelular;
 }
 
@@ -210,7 +205,6 @@ export function pasosDelGuardia(d: DatosDelGuardia): PasoParaEmpezar[] {
       hecho: d.turnos > 0,
       nota: d.turnos > 0 ? undefined : PEDIRSELO,
     },
-    pasoDelTelefono(d.telefono),
     ...pasoDeAvisos(d.avisos),
   ];
 }
