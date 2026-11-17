@@ -29,6 +29,8 @@ export function destinoDeAviso(aviso: {
   entidadId?: string | null;
 }): Destino | null {
   const id = aviso.entidadId ?? undefined;
+  // Te marcaron como no residente (17/11/2026): se cambia en Configuración.
+  if (aviso.tipo === "residencia_cambiada") return { pantalla: "PropietarioConfiguracion" };
   switch (aviso.entidadTipo) {
     case "conversacion":
       return id ? { pantalla: "ChatConversacion", parametros: { conversationId: id } } : null;

@@ -82,7 +82,7 @@ const ROL_EN_EDIFICIO: Record<string, string> = {
   propietario: "Propietario",
   inquilino_lider: "Inquilino líder",
   residente: "Residente",
-  corresidente: "Corresidente",
+  corresidente: "Residente",
   huesped_temporal: "Huésped",
   administrador: "Administración",
   coadministrador: "Coadministración",

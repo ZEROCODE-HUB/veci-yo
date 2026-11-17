@@ -9,6 +9,8 @@ interface Props {
   /** Los que viven hoy (y los huéspedes de hoy), ya filtrados por fecha. */
   deHoy: ResidenteDeUnidad[];
   mostrarPermisoDeVisitas: boolean;
+  /** Un residente mira la lista sin las casillas de quien gestiona (17/11/2026). */
+  soloLectura?: boolean;
   onMarcarAnfitrion: (r: ResidenteDeUnidad) => void;
   onMarcarAdministrador: (r: ResidenteDeUnidad) => void;
   onCambiarPermisoDeVisitas: (r: ResidenteDeUnidad) => void;
@@ -27,6 +29,7 @@ interface Props {
 export function ResidentesDeLaVivienda({
   deHoy,
   mostrarPermisoDeVisitas,
+  soloLectura = false,
   onMarcarAnfitrion,
   onMarcarAdministrador,
   onCambiarPermisoDeVisitas,
@@ -73,6 +76,7 @@ export function ResidentesDeLaVivienda({
                 key={r.id}
                 residente={r}
                 mostrarPermisoDeVisitas={mostrarPermisoDeVisitas}
+                soloLectura={soloLectura}
                 onMarcarAnfitrion={() => onMarcarAnfitrion(r)}
                 onMarcarAdministrador={() => onMarcarAdministrador(r)}
                 onCambiarPermisoDeVisitas={() => onCambiarPermisoDeVisitas(r)}

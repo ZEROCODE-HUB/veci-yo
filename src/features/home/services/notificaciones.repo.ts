@@ -57,6 +57,8 @@ const EMOJI: Record<MotivoNotificacion, string> = {
   app_actualizada: "⬆️",
   // El día elegido para recordar el pago de un servicio (25/10/2026).
   servicio_por_pagar: "💡",
+  // Con inquilino líder, el propietario pasa a no residente (17/11/2026).
+  residencia_cambiada: "🏠",
 };
 
 /** "Hoy" y "Ayer" leen mejor que la fecha en una bandeja. */
@@ -264,6 +266,7 @@ const ETIQUETA_MOTIVO: Record<MotivoNotificacion, string> = {
   prorroga_respondida: "Responden la prórroga de turno que pedí",
   app_actualizada: "La app se actualiza a una versión nueva",
   servicio_por_pagar: "Llega el día de pagar un servicio de mi vivienda",
+  residencia_cambiada: "Me marcan como no residente porque llega un inquilino líder",
 };
 
 export async function obtenerPreferenciasDeAviso(): Promise<PreferenciaDeAviso[]> {

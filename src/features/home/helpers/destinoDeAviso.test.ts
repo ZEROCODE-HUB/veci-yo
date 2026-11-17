@@ -16,6 +16,12 @@ describe("a dónde lleva tocar un aviso", () => {
     });
   });
 
+  it("«te marcamos como no residente» lleva a Configuración, donde se cambia (17/11/2026)", () => {
+    expect(destinoDeAviso({ tipo: "residencia_cambiada", entidadTipo: "unidad", entidadId: "u1" })).toEqual({
+      pantalla: "PropietarioConfiguracion",
+    });
+  });
+
   it("una visita que entró lleva a la lista, no a la ficha de estancia", () => {
     expect(destinoDeAviso({ tipo: "visita_ingreso", entidadTipo: "visita", entidadId: "v1" })).toEqual({
       pantalla: "Visitas",

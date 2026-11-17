@@ -5,7 +5,7 @@ export const ROL_COLORES: Record<string, { bg: string; color: string }> = {
   "Inquilino Lider": { bg: theme.colors.warningSoft, color: theme.colors.badgeAmberText },
   Residente: { bg: theme.colors.badgeSkyBg, color: theme.colors.badgeSkyText },
   Corresidente: { bg: theme.colors.badgeSkyBg, color: theme.colors.badgeSkyText },
-  Coadministrador: { bg: theme.colors.accentPink, color: theme.colors.accentPinkText },
+  "Anfitrión": { bg: theme.colors.accentPink, color: theme.colors.accentPinkText },
   Familiar: { bg: theme.colors.successSoft, color: theme.colors.badgeGreenText },
 };
 
@@ -17,8 +17,9 @@ export const ROL_COLORES: Record<string, { bg: string; color: string }> = {
 */
 export const GRUPOS_JERARQUIA = [
   { titulo: "Residente Inquilino Lider", roles: ["Inquilino Lider"], indent: false },
-  { titulo: "Residente", roles: ["Residente", "Corresidente"], indent: true },
-  { titulo: "Coadministrador", roles: ["Coadministrador"], indent: false },
+  { titulo: "Residente", roles: ["Residente"], indent: true },
+  // El `coadministrador` de la vivienda se llama «Anfitrión» desde el 17/11/2026.
+  { titulo: "Anfitrión", roles: ["Anfitrión"], indent: false },
   { titulo: "Propietario", roles: ["Propietario"], indent: false },
   // Al final y con su propio título: no son residentes (16/10/2026).
   { titulo: "Huésped Temporal", roles: ["Huesped Temporal"], indent: true },

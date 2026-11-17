@@ -302,10 +302,15 @@ export function TorreDetailView({
                   try {
                     const r = await asignarPropietario({ unidadId: uuid, ...propietario });
                     addToast(
-                      r.asignado
-                        ? `${propietario.nombre} ya es propietario${r.correoEnviado ? ". Le avisamos por correo." : "."}`
-                        : `${propietario.nombre} queda como propietario en cuanto cree su cuenta con ${propietario.correo}.`,
-                      "success",
+                      /*
+                        Decía «ya es propietario»: desde el 30/10/2026 lo es
+                        cuando acepta la invitación (17/11/2026). Mismo aviso
+                        que al asignarlo desde «Editar».
+                      */
+                      r.correoEnviado
+                        ? `Invitación enviada a ${propietario.nombre}. Queda propietario cuando la acepte en la app.`
+                        : `Invitación creada para ${propietario.nombre}, pero no salió el correo (${r.motivo}): avísale tú.`,
+                      r.correoEnviado ? "success" : "info",
                     );
                   } catch (e) {
                     addToast(

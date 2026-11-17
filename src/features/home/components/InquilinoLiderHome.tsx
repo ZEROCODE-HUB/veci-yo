@@ -48,6 +48,7 @@ export function InquilinoLiderHome() {
     sinPropiedades,
     esHuesped,
     noResidente,
+    esSoloResidente,
     puedeVerTrafico,
     nombre,
     planDia,
@@ -806,7 +807,8 @@ export function InquilinoLiderHome() {
         y no arriba del todo: en la maqueta el Inicio abre con Reputación
         (comparación con la maqueta, 16/10/2026).
       */}
-      {!esGuardia && !esAdmin ? <AvisosDeMisHuespedes /> : null}
+      {/* Un residente no tiene huéspedes: es del dueño o del anfitrión (17/11/2026). */}
+      {!esGuardia && !esAdmin && !esSoloResidente ? <AvisosDeMisHuespedes /> : null}
 
       <EstacionamientosDeVisitaModal
         visible={parkingOpen}
