@@ -620,3 +620,23 @@ export async function completarMisDatos(datos: {
   });
   if (errorTerminos) throw errorTerminos;
 }
+
+/**
+ * Confirma el correo con el código de 6 cifras que llega al registrarse
+ * (17/11/2026). Deja la sesión abierta: la persona queda dentro en el momento.
+ */
+export async function confirmarCorreoConCodigo(correo: string, codigo: string): Promise<void> {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: correo.trim().toLowerCase(),
+    token: codigo.replace(/\D/g, ""),
+    type: "signup",
+  });
+  if (error) throw error;
+  if (!data.session) throw new Error("No se pudo abrir la sesión. Vuelve a intentarlo.");
+}
+
+/** Manda otra vez el código de confirmación. */
+export async function reenviarCodigoDeConfirmacion(correo: string): Promise<void> {
+  const { error } = await supabase.auth.resend({ type: "signup", email: correo.trim().toLowerCase() });
+  if (error) throw error;
+}

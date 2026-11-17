@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { correoPorConfirmar } from "@/shared/services/correoPorConfirmar";
+import { correoPorConfirmar, olvidarCorreoPorConfirmar } from "@/shared/services/correoPorConfirmar";
+import { CodigoDeConfirmacion } from "../components/registro/CodigoDeConfirmacion";
 import { ScreenLayout } from "@/shared/layouts";
 import { OnboardingHeader } from "@/features/onboarding/components";
 import {
@@ -19,9 +20,9 @@ export function LoginScreen() {
   const route = useRoute<RouteProp<AuthStackParamList, "Login">>();
   const recuperacion = useRecuperacion();
   /*
-    Se registró y fue a confirmar su correo; si el celular cerró la app
-    mientras tanto, vuelve aquí: el correo va puesto y se le dice qué falta
-    (16/11/2026). Solo se recuerda el correo, nunca la contraseña.
+    Se registró y fue a buscar el código a su correo; si el celular cerró la
+    app mientras tanto, vuelve aquí y se le pide el código, que la deja dentro
+    (17/11/2026). Solo se recuerda el correo, nunca la contraseña.
   */
   const [pendiente, setPendiente] = useState<string | null>(null);
   useEffect(() => {
@@ -39,11 +40,13 @@ export function LoginScreen() {
       <View className="px-4 gap-4 pb-8">
         <LoginHero />
         {pendiente && !route.params?.correo ? (
-          <View className="rounded-xl bg-blue-50 p-3">
-            <Text className="text-sm text-blue-700">
-              {`Creaste tu cuenta con ${pendiente}. Si ya pulsaste el enlace del correo, escribe tu contraseña para entrar.`}
-            </Text>
-          </View>
+          <CodigoDeConfirmacion
+            correo={pendiente}
+            onCambiarDeCorreo={() => {
+              setPendiente(null);
+              void olvidarCorreoPorConfirmar();
+            }}
+          />
         ) : null}
         <LoginFormulario
           onRegistrar={() => navigation.navigate("Registro")}
