@@ -18,6 +18,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
 import { CuentaSuspendidaScreen } from '@/features/onboarding/screens/CuentaSuspendidaScreen';
+import { CompletarDatosScreen } from '@/features/onboarding/screens/CompletarDatosScreen';
 import { AuthStack } from './stacks/AuthStack';
 import { AppTabs } from './AppTabs';
 import { PlataformaStack } from './stacks/PlataformaStack';
@@ -60,6 +61,17 @@ export function RootNavigator() {
   useAlCambiarDeRol();
   const rolesDisponibles = useAuthStore((s) => s.rolesDisponibles);
   const suspension = useAuthStore((s) => s.suspension);
+  const usuario = useAuthStore((s) => s.usuario);
+  /*
+    Quien entra con Google no pasó por el registro: hasta dar su teléfono y su
+    documento ve «Completa tus datos» (16/11/2026, cliente: «quien entra con
+    Google debe completar ese mismo formulario»). Quien se registró con correo
+    ya los dio al crear la cuenta.
+  */
+  const faltanDatos =
+    autenticado &&
+    usuario?.proveedor === 'google' &&
+    (!usuario.telefono?.trim() || !usuario.identificacion?.trim());
 
   // Trae del condominio real las torres, unidades, depositos, porterias,
   // tipologias y guardias que media docena de pantallas leen del store de
@@ -151,6 +163,8 @@ export function RootNavigator() {
         {/* Suspendida desde el panel: antes que nada, su pantalla (24/10/2026). */}
         {suspension ? (
           <Stack.Screen name="CuentaSuspendida" component={CuentaSuspendidaScreen} />
+        ) : faltanDatos ? (
+          <Stack.Screen name="CompletarDatos" component={CompletarDatosScreen} />
         ) : !autenticado ? (
           <Stack.Screen name="Auth" component={AuthStack} />
         ) : debeElegirRol ? (

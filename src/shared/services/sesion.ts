@@ -288,6 +288,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     identificacion: perfil?.identificacion ?? undefined,
     verificado: perfil?.verificado ?? false,
     alias: perfil?.alias ?? undefined,
+    proveedor: String(user.app_metadata?.provider ?? "email"),
   };
 
   const condominios: MembresiaCondominio[] = (condominiosRes.data ?? []).map(
@@ -580,4 +581,42 @@ export async function solicitarRecuperacion(correo: string) {
 export async function cerrarSesionSupabase() {
   const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) throw error;
+}
+
+/**
+ * Guarda «Completa tus datos» (16/11/2026): quien entró con Google llena el
+ * mismo formulario que el registro, sin correo ni contraseña. Los términos
+ * quedan donde los deja el registro, en los metadatos de la cuenta.
+ */
+export async function completarMisDatos(datos: {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  codigoPais: string;
+  tipoDocumento: string;
+  identificacion: string;
+}): Promise<void> {
+  const { data: sesion } = await supabase.auth.getUser();
+  const id = sesion.user?.id;
+  if (!id) throw new Error("Tu sesión se cerró. Vuelve a entrar.");
+  const tipo = TIPOS_DE_DOCUMENTO.find((t) => t === datos.tipoDocumento) ?? null;
+  const { data, error } = await supabase
+    .from("perfil")
+    .update({
+      nombre: datos.nombre.trim(),
+      apellido: datos.apellido.trim(),
+      telefono: datos.telefono.replace(/\D/g, ""),
+      codigo_pais: datos.codigoPais,
+      tipo_documento: tipo,
+      identificacion: datos.identificacion.trim(),
+    })
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  // Un update de cero filas no es un error: se dice (AGENTS.md).
+  if (!data?.length) throw new Error("No se pudieron guardar tus datos.");
+  const { error: errorTerminos } = await supabase.auth.updateUser({
+    data: { terminos_aceptados_en: haciaLaBase(ahora()) },
+  });
+  if (errorTerminos) throw errorTerminos;
 }

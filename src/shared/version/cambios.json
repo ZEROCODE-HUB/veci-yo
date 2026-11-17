@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-17",
     "puntos": [
+      "Quien entra con Google completa el mismo formulario del registro (nombre, teléfono, documento y términos) antes de entrar. El correo no se confirma, porque Google ya lo verificó.",
+      "Si después de registrarte el celular cierra la app mientras confirmas el correo, al volver el inicio de sesión ya trae tu correo y te dice que solo falta la contraseña.",
+      "La tarjeta «paso a paso» del propietario y de la portería ya no pide el teléfono: se da al crear la cuenta."
+    ]
+  },
+  {
+    "fecha": "2026-11-17",
+    "puntos": [
       "En Inicio, una tarjeta «paso a paso» dice qué falta para tener listo tu edificio (administración), tu vivienda (propietario) o tu puesto (portería). Cada paso lleva a la pantalla donde se hace, y la tarjeta desaparece cuando todo está listo.",
       "Crear torre: dices desde qué piso hasta qué piso y cuántos departamentos hay por piso, con numeración 501… o 5A…, y ves cuántos se van a crear. Si un piso es distinto, después agregas o quitas departamentos uno por uno.",
       "Estacionamientos por nivel (Sótano 1 · S1…): en Arquitectura › Estacionamientos se crean los niveles, y al crear la torre se generan sus estacionamientos (S1-01…). El nivel es obligatorio y se ve junto al código.",

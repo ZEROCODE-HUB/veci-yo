@@ -7,6 +7,12 @@ export interface Usuario {
   identificacion?: string;
   verificado: boolean;
   alias?: string;
+  /**
+   * Con qué entró: `email` (correo y contraseña) o `google`. Quien entra con
+   * Google no pasó por el formulario de registro y lo completa al entrar
+   * (16/11/2026).
+   */
+  proveedor?: string;
 }
 
 /**

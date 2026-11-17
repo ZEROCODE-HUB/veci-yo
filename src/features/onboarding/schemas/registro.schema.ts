@@ -35,32 +35,14 @@ export function crearEsquemaRegistro({
   contrasenaMin,
   documentos,
 }: LimitesDelRegistro) {
-  const nombre = z
-    .string()
-    .trim()
-    .min(nombreMin, `Mínimo ${nombreMin} caracteres`)
-    .max(nombreMax, `Máximo ${nombreMax} caracteres`);
   return z
     .object({
-      nombre,
-      apellido: nombre,
+      ...camposPersonales({ nombreMin, nombreMax, telefonoMin, telefonoMax }),
       correo: z
         .string()
         .trim()
         .min(1, "Escribe tu correo")
         .email("Ese correo no parece válido"),
-      codigoPais: z.string().min(2, "Elige el país del número"),
-      telefono: z
-        .string()
-        .refine(
-          (v) => {
-            const cifras = v.replace(/\D/g, "");
-            return cifras.length >= telefonoMin && cifras.length <= telefonoMax;
-          },
-          `Entre ${telefonoMin} y ${telefonoMax} cifras`,
-        ),
-      tipoDocumento: z.string().min(1, "Elige el tipo"),
-      identificacion: z.string().trim().min(1, "Escribe el número del documento"),
       // El mínimo de `contrasena_largo_minimo` (el inicio de sesión no pide
       // largo: solo que no esté vacía), que tiene que coincidir con lo que
       // exige el servidor de cuentas: con
@@ -84,3 +66,50 @@ export function crearEsquemaRegistro({
 }
 
 export type RegistroFormData = z.infer<ReturnType<typeof crearEsquemaRegistro>>;
+
+/** Los datos de la persona, iguales en el registro y en «Completa tus datos». */
+function camposPersonales({
+  nombreMin,
+  nombreMax,
+  telefonoMin,
+  telefonoMax,
+}: Pick<LimitesDelRegistro, "nombreMin" | "nombreMax" | "telefonoMin" | "telefonoMax">) {
+  const nombre = z
+    .string()
+    .trim()
+    .min(nombreMin, `Mínimo ${nombreMin} caracteres`)
+    .max(nombreMax, `Máximo ${nombreMax} caracteres`);
+  return {
+    nombre,
+    apellido: nombre,
+    codigoPais: z.string().min(2, "Elige el país del número"),
+    telefono: z
+      .string()
+      .refine(
+        (v) => {
+          const cifras = v.replace(/\D/g, "");
+          return cifras.length >= telefonoMin && cifras.length <= telefonoMax;
+        },
+        `Entre ${telefonoMin} y ${telefonoMax} cifras`,
+      ),
+    tipoDocumento: z.string().min(1, "Elige el tipo"),
+    identificacion: z.string().trim().min(1, "Escribe el número del documento"),
+  };
+}
+
+/**
+ * «Completa tus datos» (16/11/2026): quien entra con Google no pasó por el
+ * registro, y el cliente pidió que llene el mismo formulario. Sin correo --ya
+ * lo dio Google, verificado-- ni contraseña.
+ */
+export function crearEsquemaDatosPersonales(
+  limites: Omit<LimitesDelRegistro, "contrasenaMin">,
+) {
+  return z.object(camposPersonales(limites)).superRefine((data, ctx) => {
+    const regla = limites.documentos.find((d) => d.tipo === data.tipoDocumento);
+    const error = errorDeDocumento(data.identificacion, regla);
+    if (error) ctx.addIssue({ code: "custom", message: error, path: ["identificacion"] });
+  });
+}
+
+export type DatosPersonalesFormData = z.infer<ReturnType<typeof crearEsquemaDatosPersonales>>;
