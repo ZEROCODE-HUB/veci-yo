@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,22 +10,36 @@ import { GoogleIcon } from "./GoogleIcon";
 interface LoginFormularioProps {
   onRegistrar: () => void;
   onRecuperar: () => void;
+  /**
+   * El correo de la invitación que se estaba mirando (16/11/2026): quien llega
+   * desde ella solo tiene que poner su contraseña.
+   */
+  correoInicial?: string;
 }
 
 export function LoginFormulario({
   onRegistrar,
   onRecuperar,
+  correoInicial,
 }: LoginFormularioProps) {
   const { handleLogin, handleGoogle, ingresando, entrandoConGoogle } =
     useLogin();
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(esquemaLogin),
-    defaultValues: { correo: "", password: "" },
+    defaultValues: { correo: correoInicial ?? "", password: "" },
   });
+  /*
+    El inicio de sesión puede estar ya montado debajo de la invitación: el
+    valor inicial no le llega, así que se pone al cambiar.
+  */
+  useEffect(() => {
+    if (correoInicial) setValue("correo", correoInicial);
+  }, [correoInicial, setValue]);
 
   return (
     <>

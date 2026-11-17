@@ -138,3 +138,40 @@ export async function responderInvitacionDelEdificio(invitacionId: string, acept
   });
   if (error) throw error;
 }
+
+/** Una invitación a una vivienda que no es de propietario ni de huésped. */
+export interface MiInvitacionDeLaVivienda {
+  id: string;
+  edificio: string;
+  torre: number;
+  unidad: string;
+  /** `inquilino_lider`, `residente`, `corresidente` o `coadministrador`. */
+  rol: string;
+  invitadaPor: string | null;
+}
+
+/**
+ * Las invitaciones a una vivienda (inquilino líder, residente, corresidente,
+ * coadministración) pendientes para mi correo (16/11/2026). Solo se aceptaban
+ * abriendo el enlace del correo: quien se registraba sin pulsarlo no las veía.
+ */
+export async function obtenerMisInvitacionesDeLaVivienda(): Promise<MiInvitacionDeLaVivienda[]> {
+  const { data, error } = await supabase.rpc("mis_invitaciones_de_la_vivienda");
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    edificio: f.condominio,
+    torre: f.torre,
+    unidad: f.unidad,
+    rol: f.rol,
+    invitadaPor: f.invitada_por ?? null,
+  }));
+}
+
+export async function responderInvitacionDeLaVivienda(invitacionId: string, acepta: boolean) {
+  const { error } = await supabase.rpc("responder_mi_invitacion_de_la_vivienda", {
+    p_invitacion_id: invitacionId,
+    p_acepta: acepta,
+  });
+  if (error) throw error;
+}

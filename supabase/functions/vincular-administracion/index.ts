@@ -1,29 +1,51 @@
 /**
- * vincular-administracion · el panel de la app le da un edificio a alguien
+ * vincular-administracion · el panel de la app invita a la administración de
+ * un edificio
  *
- * Hasta el 29/10/2026 el primer administrador de un edificio recibía una
- * invitación y tenía que aceptarla. El cliente: «es mucha vaina». Ahora queda
- * vinculado en el acto y solo se le avisa por correo:
+ * Historia, porque ha cambiado dos veces:
  *
- *   · si ya tiene cuenta, el correo le dice que ya administra el edificio;
- *   · si no, se le crea con el correo confirmado y el correo trae el enlace
- *     para poner su contraseña (uno solo, no dos correos).
+ *   · Hasta el 29/10/2026 era una invitación que había que aceptar.
+ *   · El 29/10/2026 (cliente: «es mucha vaina») pasó a vincular en el acto: si
+ *     no tenía cuenta se le creaba y el correo traía el enlace de la **web**
+ *     para poner su contraseña. La app no participaba.
+ *   · El 16/11/2026 (cliente: «necesito que unifiquemos el tema de
+ *     invitaciones para todos… se abre la app, le muestra la invitación y la
+ *     app decide si debe crear cuenta o iniciar sesión») vuelve a ser una
+ *     invitación, **igual que la del guardia**: el correo abre la app, la app
+ *     dice «Iniciar sesión» o «Crear cuenta» según ese correo tenga cuenta, y
+ *     se acepta con un toque. Ya no se crean cuentas sin contraseña ni se
+ *     manda a la web.
  *
  * Lo primero es comprobar, **con la sesión de quien llama**, que es dueño de la
  * plataforma. Y se mantiene el límite de siempre: solo un edificio **sin
  * administración**. Sin eso, el dueño de la plataforma podría ponerse a sí
  * mismo, o a quien quisiera, de administración de un edificio con vecinos
  * dentro y leerlo todo.
+ *
+ * Volver a invitar a un edificio con una invitación pendiente la reemplaza: la
+ * anterior se revoca y su enlace deja de valer.
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { CORS, responderPreflight } from "../_compartido/cors.ts";
-import { clienteRpcPorFetch, parametro } from "../_compartido/parametros.ts";
+import { clienteRpcPorFetch, parametro, parametroEntero } from "../_compartido/parametros.ts";
 
 const json = (cuerpo: unknown, status: number) =>
   new Response(JSON.stringify(cuerpo), {
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
+
+/** 32 bytes al azar en hexadecimal, como `crear_invitacion`. */
+function tokenNuevo(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** El hash que se guarda: el token en claro solo viaja en el correo. */
+async function sha256(texto: string): Promise<string> {
+  const resumen = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+  return Array.from(new Uint8Array(resumen), (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 Deno.serve(async (req: Request) => {
   const previo = responderPreflight(req);
@@ -79,71 +101,55 @@ Deno.serve(async (req: Request) => {
   }
 
   let web: string;
+  let dias: number;
   try {
-    web = (await parametro(clienteRpcPorFetch(url, claveServicio), "url_web")).replace(/\/$/, "");
+    const rpc = clienteRpcPorFetch(url, claveServicio);
+    web = (await parametro(rpc, "url_web")).replace(/\/$/, "");
+    dias = await parametroEntero(rpc, "invitacion_admin_dias_validez");
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 
-  // La cuenta: la que ya tiene ese correo, o una nueva.
-  const { data: existente, error: errorBusqueda } = await servicio.rpc("cuenta_por_correo", {
-    p_correo: correo,
-  });
-  if (errorBusqueda) return json({ error: errorBusqueda.message }, 500);
-  let usuarioId = (existente as string | null) ?? null;
-  const cuentaNueva = !usuarioId;
-  let enlace = web;
-
-  if (cuentaNueva) {
-    const { data: creada, error } = await servicio.auth.admin.createUser({
-      email: correo,
-      email_confirm: true,
-      user_metadata: { nombre },
-    });
-    if (error || !creada?.user) return json({ error: error?.message ?? "No se pudo crear la cuenta" }, 502);
-    usuarioId = creada.user.id;
-    // El perfil lo inserta quien da de alta (no hay disparador que lo haga).
-    const { error: errorPerfil } = await servicio
-      .from("perfil")
-      .upsert({ id: usuarioId, nombre }, { onConflict: "id", ignoreDuplicates: true });
-    if (errorPerfil) return json({ error: errorPerfil.message }, 500);
-    const { data: link, error: errorLink } = await servicio.auth.admin.generateLink({
-      type: "recovery",
-      email: correo,
-      options: { redirectTo: `${web}/nueva-contrasena` },
-    });
-    if (errorLink || !link?.properties?.action_link) {
-      return json({ error: errorLink?.message ?? "No se pudo generar el enlace de la contraseña" }, 502);
-    }
-    enlace = link.properties.action_link;
-  }
-
-  const { error: errorMembresia } = await servicio
-    .from("membresia_condominio")
-    .upsert(
-      { condominio_id: edificio.id, usuario_id: usuarioId, rol: "administrador", nombre, activo: true },
-      { onConflict: "condominio_id,usuario_id,rol" },
-    );
-  if (errorMembresia) return json({ error: errorMembresia.message }, 500);
-
-  // Las invitaciones de administrador que quedaran vivas ya no hacen falta.
-  await servicio
+  // La invitación anterior a este edificio, si la hay, deja de valer.
+  const { error: errorRevocar } = await servicio
     .from("invitacion")
     .update({ estado: "revocada", updated_at: new Date().toISOString() })
     .eq("condominio_id", edificio.id)
     .eq("ambito", "condominio")
     .eq("rol_condominio", "administrador")
     .eq("estado", "pendiente");
+  if (errorRevocar) return json({ error: errorRevocar.message }, 500);
+
+  const token = tokenNuevo();
+  const { data: invitacion, error: errorInvitacion } = await servicio
+    .from("invitacion")
+    .insert({
+      condominio_id: edificio.id,
+      ambito: "condominio",
+      rol_condominio: "administrador",
+      correo,
+      nombre,
+      token_hash: await sha256(token),
+      invitada_por: quien.user.id,
+      expira_en: new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    .select("id")
+    .single();
+  if (errorInvitacion || !invitacion) {
+    return json({ error: errorInvitacion?.message ?? "No se pudo crear la invitación" }, 500);
+  }
+
+  const enlace = `${web}/invitacion?token=${token}`;
 
   const { error: errorBitacora } = await servicio.from("bitacora_plataforma").insert({
     actor_id: quien.user.id,
-    accion: "administracion_asignada",
+    accion: "administracion_invitada",
     condominio_id: edificio.id,
-    detalle: { correo, usuario_id: usuarioId, cuenta_nueva: cuentaNueva },
+    detalle: { correo, invitacion_id: invitacion.id },
   });
   if (errorBitacora) console.error("bitácora:", errorBitacora.message);
 
-  // El aviso. Si no sale, la vinculación ya está hecha: se dice, no se deshace.
+  // El aviso. Si no sale, la invitación ya existe: se dice y se enseña el enlace.
   const respuesta = await fetch(`${url}/functions/v1/enviar-correo`, {
     method: "POST",
     headers: {
@@ -152,16 +158,24 @@ Deno.serve(async (req: Request) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      tipo: "administracion-asignada",
+      tipo: "invitacion",
+      rol: "administrador",
       correo,
       nombre,
       condominio: edificio.nombre,
       enlace,
-      cuentaNueva,
     }),
   });
   const datos = await respuesta.json().catch(() => ({}));
-  const envio = { enviado: Boolean(datos.enviado), motivo: datos.enviado ? null : (datos.motivo ?? datos.error ?? null) };
+  const enviado = Boolean(datos.enviado);
+  if (enviado) {
+    await servicio
+      .from("invitacion")
+      .update({ enviada_en: new Date().toISOString() })
+      .eq("id", invitacion.id);
+  }
+  const envio = { enviado, motivo: enviado ? null : (datos.motivo ?? datos.error ?? null) };
 
-  return json({ ok: true, usuarioId, cuentaNueva, correo: envio }, 200);
+  // Sin correo, el enlace vuelve al panel para poder pasarlo a mano.
+  return json({ ok: true, invitacionId: invitacion.id, enlace: enviado ? null : enlace, correo: envio }, 200);
 });

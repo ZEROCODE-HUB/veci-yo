@@ -1,5 +1,15 @@
 [
   {
+    "fecha": "2026-11-16",
+    "puntos": [
+      "Invitaciones: una sola forma para todos los roles. El correo dice como qué te invitan y su botón «Ver la invitación» abre la app con ella (o la tienda, si no tienes la app).",
+      "La app sabe si ese correo ya tiene cuenta: muestra solo «Iniciar sesión», con el correo ya puesto, o solo «Crear cuenta», ya rellenada. Al entrar vuelves a la invitación y la aceptas con un toque.",
+      "La administración de un edificio también se invita así: ya no se manda a la web a poner contraseña. En el panel, el edificio dice «Invitación pendiente» hasta que la acepten, y se puede reenviar o cambiar el correo.",
+      "Inquilino líder, residente y corresidente ven su invitación en Inicio aunque no hayan pulsado el enlace del correo.",
+      "Propietario: el correo ahora lleva su invitación, como los demás."
+    ]
+  },
+  {
     "fecha": "2026-11-13",
     "puntos": [
       "Mientras una pantalla carga, ahora se ven bloques grises con la forma de lo que va a llegar, en vez de «No hay visitas», «Sin propietario», «No pagado» u otros mensajes que todavía no eran verdad.",
