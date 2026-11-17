@@ -124,7 +124,15 @@ export async function setup() {
     }
   }
 
-  for (const dueno of duenos205 ?? []) {
+  /*
+    Desde el 17/11/2026 un propietario no vuelve a ser residente mientras haya
+    un inquilino líder activo (`propietario_no_reside_mientras_haya_inquilino_lider`),
+    y Laura lo es en la 205 durante toda la suite: devolverle «residente» a
+    Guillermo ya no se puede, y la base lo rechazaría. Se devuelve solo lo que
+    la regla deja; quien necesite al dueño residente quita antes al inquilino
+    líder (lo hace `inquilino-lider-y-propietario`).
+  */
+  for (const dueno of (duenos205 ?? []).filter((d) => !d.es_residente)) {
     comprobar(
       "residencia del propietario de la 205",
       (await servicio.from("membresia_unidad").update({ es_residente: dueno.es_residente }).eq("id", dueno.id)).error,

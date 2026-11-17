@@ -16,6 +16,7 @@ const persona = (p: Partial<ContactoDeLaVivienda>): ContactoDeLaVivienda => ({
   alterno: null,
   recibeLlamadasApp: false,
   tieneCuenta: true,
+  usuarioId: null,
   ...p,
 });
 

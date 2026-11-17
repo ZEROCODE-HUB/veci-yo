@@ -184,7 +184,12 @@ describe("con un mes elegido", () => {
     expect(cuotas.abonar).not.toHaveBeenCalled();
   });
 
-  it("no deja registrar más de lo que falta", () => {
+  /*
+    Desde el 17/11/2026 un pago mayor que lo del mes sí se registra: la base lo
+    reparte desde la cuota más antigua y lo que sobra queda a favor (el
+    cliente: «si alguien paga después, su cuota se va al mes que debe»).
+  */
+  it("un pago mayor que lo del mes se registra entero", () => {
     cuotas.estados = [sinPagar("u-101", "101", 350000), sinPagar("u-102", "102", 500000)];
     pintar();
 
@@ -194,8 +199,8 @@ describe("con un mes elegido", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Registrar pago" }));
 
-    expect(cuotas.abonar).not.toHaveBeenCalled();
-    expect(screen.getByText(/No puede pasar de lo que falta: 500\.000 COP/)).toBeTruthy();
+    expect(cuotas.abonar).toHaveBeenCalledWith("u-102", 600000);
+    expect(screen.queryByText(/No puede pasar de lo que falta/)).toBeNull();
   });
 
   it("mientras se guarda un pago, esa vivienda no se puede volver a pulsar", () => {

@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
   // La llamada y a quién avisar. Si la borraron, la base manda la lista.
   const { data: llamada } = await admin
     .from("llamada_internet")
-    .select("id, origen, de_usuario_id, de:de_unidad_id ( codigo ), edificio:condominio_id ( pais )")
+    .select("id, origen, estado, de_usuario_id, contestada_por, de:de_unidad_id ( codigo ), edificio:condominio_id ( pais )")
     .eq("id", llamadaId)
     .maybeSingle();
   let para: string[] = Array.isArray(cuerpo.para) ? cuerpo.para : [];
@@ -95,6 +95,14 @@ Deno.serve(async (req: Request) => {
     if (error) return json({ error: error.message }, 500);
     para = ((data ?? []) as { usuario_id: string }[]).map((f) => f.usuario_id);
   }
+  /*
+    Con «Todos» contesta el primero (17/11/2026): el «ya no suena» va a los
+    demás --con el motivo, «Ya contestó otra persona»-- y no a quien contestó,
+    que está hablando.
+  */
+  const contestadaPor = (llamada?.contestada_por as string | null | undefined) ?? null;
+  const contestoOtro = evento === "fin" && llamada?.estado === "en_curso" && Boolean(contestadaPor);
+  if (contestoOtro) para = para.filter((id) => id !== contestadaPor);
   if (para.length === 0) return json({ enviado: false, motivo: "nadie a quien avisar" }, 200);
 
   const de = (llamada?.de as { codigo: string } | null | undefined)?.codigo ?? null;
@@ -209,7 +217,10 @@ Deno.serve(async (req: Request) => {
       );
     } else {
       resultado.onesignal = await mandar(
-        armarPushDeLlamada({ appId, evento, llamadaId, deQuien, para: porOneSignal, segundos, citofono }),
+        armarPushDeLlamada({
+          appId, evento, llamadaId, deQuien, para: porOneSignal, segundos, citofono,
+          textoFin: contestoOtro ? "Ya contestó otra persona" : undefined,
+        }),
       );
     }
   } else if (!clave) {

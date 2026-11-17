@@ -16,6 +16,7 @@ import { AvisoDePermisosDeLlamada } from "@/features/intercom/components/AvisoDe
 import { TOPE_DE_LETRA } from "@/app/topeDeLetra";
 import { useFueraDeTurno } from "@/features/perfil/hooks/useFueraDeTurno";
 import { AvisoFueraDeTurno } from "@/features/perfil/components/turno/AvisoFueraDeTurno";
+import { veLasPantallasDeLaVivienda } from "@/shared/services/capacidadesDelRol";
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 
@@ -50,7 +51,12 @@ export function AppTabs() {
     Portería hasta que empiece (Para Claude 164, 29/10/2026).
   */
   const { fueraDeTurno, horario } = useFueraDeTurno();
-  const soloPerfil = esGuardia && fueraDeTurno;
+  /*
+    El trabajador permanente (17/11/2026) no ve nada de la vivienda: solo
+    Perfil, y el intercomunicador, que suena encima de cualquier pestaña. Lo
+    dice la misma lista que el resumen «Podrá / No podrá» al invitarlo.
+  */
+  const soloPerfil = (esGuardia && fueraDeTurno) || !veLasPantallasDeLaVivienda(rolActivo);
   const insets = useSafeAreaInsets();
   /*
     Con 65 fijos la etiqueta tenía 10 px y necesita 15: salía cortada por
@@ -71,7 +77,7 @@ export function AppTabs() {
     <Intercomunicador />
     {/* Si a este celular le falta algo para que suenen con la app cerrada (28/10/2026). */}
     <AvisoDePermisosDeLlamada />
-    <AvisoFueraDeTurno fueraDeTurno={soloPerfil} horario={horario} />
+    <AvisoFueraDeTurno fueraDeTurno={esGuardia && fueraDeTurno} horario={horario} />
     <Tab.Navigator
       screenOptions={{
         header: ({ navigation }) => <TopBar navigation={navigation} />,

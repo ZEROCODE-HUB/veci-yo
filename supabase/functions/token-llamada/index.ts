@@ -25,13 +25,24 @@ const json = (cuerpo: unknown, status: number) =>
     headers: { "Content-Type": "application/json", ...CORS },
   });
 
+/**
+ * La dirección del túnel, recordada un minuto (17/11/2026): preguntarla cuesta
+ * ~0,5 s por llamada, y quien contesta pide su permiso justo después que quien
+ * llama. Un minuto es poco para que un reinicio del túnel deje una dirección
+ * vieja mucho tiempo.
+ */
+let tunelRecordado: { direccion: string; hasta: number } | null = null;
+
 /** La dirección segura de la voz: fija, o la que el túnel publica ahora. */
 async function direccionDeLaVoz(servidor: string): Promise<string | null> {
   if (!servidor.startsWith("http://")) return servidor;
+  if (tunelRecordado && tunelRecordado.hasta > Date.now()) return tunelRecordado.direccion;
   try {
     const r = await fetch(servidor, { signal: AbortSignal.timeout(5000) });
     const { hostname } = (await r.json()) as { hostname?: string };
-    return hostname ? `wss://${hostname}` : null;
+    if (!hostname) return null;
+    tunelRecordado = { direccion: `wss://${hostname}`, hasta: Date.now() + 60_000 };
+    return tunelRecordado.direccion;
   } catch {
     return null;
   }
@@ -63,32 +74,11 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const direccion = await direccionDeLaVoz(servidor);
-  if (!direccion) {
-    return json({ error: "El servidor de voz no responde ahora" }, 503);
-  }
-
   const comoLaPersona = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: autorizacion } }, auth: { persistSession: false } },
   );
-
-  const { data: usuario } = await comoLaPersona.auth.getUser();
-  if (!usuario?.user) return json({ error: "Sesión no válida" }, 401);
-
-  // Con la sesión de quien pide: RLS solo le deja ver sus llamadas.
-  const { data: llamada, error } = await comoLaPersona
-    .from("llamada_internet")
-    .select("id, sala, estado")
-    .eq("id", cuerpo.llamadaId)
-    .maybeSingle();
-  if (error) return json({ error: error.message }, 500);
-  if (!llamada) return json({ error: "Esa llamada no es tuya" }, 403);
-  if (llamada.estado !== "sonando" && llamada.estado !== "en_curso") {
-    return json({ error: "Esa llamada ya terminó" }, 409);
-  }
-
   /*
     Cuánto dura el permiso para estar en la sala --en la práctica, lo más que
     puede durar una llamada-- es el parámetro `llamada_permiso_horas` (hasta
@@ -100,12 +90,41 @@ Deno.serve(async (req: Request) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
-  let horasDePermiso: number;
-  try {
-    horasDePermiso = await parametroEntero(admin, "llamada_permiso_horas");
-  } catch (e) {
-    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+
+  /*
+    Las cuatro preguntas a la vez (17/11/2026): antes iban en fila y el permiso
+    tardaba lo que las cuatro juntas, mientras la persona esperaba a oír.
+  */
+  const [direccion, usuarioPedido, llamadaPedida, horas] = await Promise.all([
+    direccionDeLaVoz(servidor),
+    comoLaPersona.auth.getUser(),
+    // Con la sesión de quien pide: RLS solo le deja ver sus llamadas.
+    comoLaPersona
+      .from("llamada_internet")
+      .select("id, sala, estado")
+      .eq("id", cuerpo.llamadaId)
+      .maybeSingle(),
+    parametroEntero(admin, "llamada_permiso_horas").then(
+      (valor) => ({ valor, error: null as string | null }),
+      (e: unknown) => ({ valor: 0, error: e instanceof Error ? e.message : String(e) }),
+    ),
+  ]);
+
+  if (!direccion) {
+    return json({ error: "El servidor de voz no responde ahora" }, 503);
   }
+  const usuario = usuarioPedido.data;
+  if (!usuario?.user) return json({ error: "Sesión no válida" }, 401);
+
+  const { data: llamada, error } = llamadaPedida;
+  if (error) return json({ error: error.message }, 500);
+  if (!llamada) return json({ error: "Esa llamada no es tuya" }, 403);
+  if (llamada.estado !== "sonando" && llamada.estado !== "en_curso") {
+    return json({ error: "Esa llamada ya terminó" }, 409);
+  }
+
+  if (horas.error) return json({ error: horas.error }, 500);
+  const horasDePermiso = horas.valor;
 
   const token = new AccessToken(clave, secreto, {
     identity: usuario.user.id,

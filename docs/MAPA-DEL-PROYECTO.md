@@ -237,3 +237,16 @@ Detalle en `docs/archivo/CORRECCIONES-16.10.md`. Pantallas y piezas nuevas:
 - `Reclamos`: el «+» también para la administración.
 - `Reglas`: la lista de renta corta solo para portería y administración.
 - Web del preregistro: tres opciones al inicio (`ComoEntrar`), «Aún no sé» en las horas (`CampoHora`), fotos obligatorias, el acompañante con los mismos campos y opciones, pantalla final con tiendas, y `/qr/:codigo` (el QR del correo de ingreso aprobado).
+
+## 9. Lo que cambió el 17/11/2026 (pedido del cliente, tanda grande)
+
+- **Arquitectura › Torres:** «Nueva Torre» ya no pide sótanos ni estacionamientos. Tope por piso: parámetro `torre_viviendas_por_piso_maximo` (20). Editar departamento lleva «Índice de votación» (`unidad.indice_votacion`).
+- **Arquitectura › Estacionamientos:** cada nivel/sótano es de una torre (`nivel_estacionamiento.torre_id`); sin torres no se puede crear. El estacionamiento de una torre solo ofrece sus niveles.
+- **Portería:** la visita que registra el guardia nace `ingresada`, anunciada y con el documento verificado (`visita.registrada_en_porteria`); aviso «Nueva visita» a la vivienda.
+- **Anuncios:** «Dirigido a» en `AnuncioResumenCard`. Encuestas: quién vota, cómo se cuenta y regla de aprobación (parámetros `encuesta_*_por_defecto`); resultado con `resultado_de_encuesta`, métricas con `participacion_de_encuesta_por_torre`.
+- **Chat:** «Canales del chat» lleva el interruptor «Chat entre vecinos» (`condominio.chat_entre_vecinos`, apagado). Chat nuevo del vecino: elige persona de la portería con `personal_de_porteria`; fuera de turno, en gris con su horario. Seguridad › ficha del guardia: «Cargo» (catálogo `cargos_de_porteria`).
+- **Cuadro de honor:** fuera para huéspedes; recaudación solo propietarios, residentes y administración (`puede_ver_recaudacion`). Puntualidad del mes en la base; los pagos se reparten desde la cuota más antigua y lo que sobra queda a favor.
+- **Reglamento:** tarjeta del archivo con «Ver documento» (descarga y abre con las apps del celular).
+- **Propietario:** con inquilino líder activo no puede volver a ser residente (lo impide la base).
+- **Invitar › «Agregar trabajador permanente»:** tabla `trabajador_de_la_vivienda`; con app entra con el rol `trabajador` (solo Perfil e intercomunicador). El resumen «Podrá / No podrá» sale de `capacidadesDelRol.ts`.
+- **Llamadas:** «¿A quién de la vivienda?» (`llamar_a_quien`, `llamada_internet.a_usuario_id`); botón Altavoz (parámetro `llamada_empieza_en_altavoz`). Pendiente nativo para iPhone en segundo plano: ver el commit de este día.

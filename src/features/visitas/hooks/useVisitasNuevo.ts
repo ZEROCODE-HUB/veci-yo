@@ -994,12 +994,10 @@ export function useVisitasNuevo() {
     });
   };
 
-  // Si lo que registra la portería nace ya dentro o por llegar (T-025).
+  // Lo que registra la portería nace ya dentro, siempre (17/11/2026).
   const nacenDentro = entraAlRegistrar({
     esGuardia,
     esEstancia: tipoSeleccionado === "huesped-temporal",
-    exigeDocumento: verificaEsta,
-    documentos: [identificacion, ...acompanantes.map((a) => a.ci)],
   });
 
   const cancelarVisitaDeAmigos = async (visitaId: string) => {

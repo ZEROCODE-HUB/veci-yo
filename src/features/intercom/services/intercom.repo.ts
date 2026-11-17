@@ -26,11 +26,13 @@ export interface LlamadaInternet {
   /** Nombre y apellido de quien llama, si se puede leer su perfil (29/10/2026). */
   deNombre?: string | null;
   aUnidad: string | null;
+  /** Quién la contestó, si ya la contestaron (17/11/2026: «contestó otra persona»). */
+  contestadaPor: string | null;
   creadaEn: string;
 }
 
 const SELECT = `
-  id, destino, origen, estado, de_usuario_id, created_at,
+  id, destino, origen, estado, de_usuario_id, contestada_por, created_at,
   de:de_unidad_id ( codigo ), a:a_unidad_id ( codigo )
 ` as const;
 
@@ -40,6 +42,7 @@ function mapear(fila: {
   origen: OrigenLlamada | null;
   estado: EstadoLlamada;
   de_usuario_id: string;
+  contestada_por: string | null;
   created_at: string;
   de: { codigo: string } | null;
   a: { codigo: string } | null;
@@ -52,6 +55,7 @@ function mapear(fila: {
     deUsuarioId: fila.de_usuario_id,
     deUnidad: fila.de?.codigo ?? null,
     aUnidad: fila.a?.codigo ?? null,
+    contestadaPor: fila.contestada_por,
     creadaEn: fila.created_at,
   };
 }
@@ -65,23 +69,26 @@ export interface DatosDeLlamada {
   desdeUnidadId?: string | null;
   /** El edificio, cuando no se llama desde una vivienda ni a una. */
   condominioId?: string | null;
-}
-
-function parametrosDe(datos: DatosDeLlamada) {
-  return {
-    p_destino: datos.destino,
-    p_a_unidad_id: datos.aUnidadId || undefined,
-    p_desde_unidad_id: datos.desdeUnidadId || undefined,
-    p_condominio_id: datos.condominioId || undefined,
-  };
+  /**
+   * La persona de la vivienda a la que se llama (17/11/2026). Vacío: «Todos»,
+   * suena en todos y contesta el primero.
+   */
+  aUsuarioId?: string | null;
 }
 
 /**
  * Empieza una llamada por la app. La base decide si quien llama puede llamar
- * a ese destino, y falla si allí nadie recibe llamadas por la app.
+ * a ese destino, y falla si allí nadie recibe llamadas por la app (o si la
+ * persona elegida no las recibe).
  */
 export async function llamarPorInternet(datos: DatosDeLlamada): Promise<string> {
-  const { data, error } = await supabase.rpc("llamar_por_internet", parametrosDe(datos));
+  const { data, error } = await supabase.rpc("llamar_a_quien", {
+    p_destino: datos.destino,
+    p_a_usuario_id: datos.aUsuarioId || undefined,
+    p_a_unidad_id: datos.aUnidadId || undefined,
+    p_desde_unidad_id: datos.desdeUnidadId || undefined,
+    p_condominio_id: datos.condominioId || undefined,
+  });
   if (error) throw error;
   return data as string;
 }
@@ -91,9 +98,12 @@ export function llamarAPorteria(desdeUnidadId: string): Promise<string> {
   return llamarPorInternet({ destino: "porteria", desdeUnidadId });
 }
 
-/** La portería (o la administración) llama a una vivienda. */
-export function llamarAVivienda(unidadId: string): Promise<string> {
-  return llamarPorInternet({ destino: "vivienda", aUnidadId: unidadId });
+/**
+ * La portería (o la administración) llama a una vivienda: a una persona de
+ * ella, o a todos si no se dice a quién.
+ */
+export function llamarAVivienda(unidadId: string, aUsuarioId?: string | null): Promise<string> {
+  return llamarPorInternet({ destino: "vivienda", aUnidadId: unidadId, aUsuarioId });
 }
 
 /**
@@ -171,15 +181,55 @@ export async function llamadasQueMeSuenan(miUsuarioId: string): Promise<LlamadaI
   return conNombres((data ?? []).map(mapear));
 }
 
-/** El permiso para entrar a la sala de voz, firmado por el servidor. */
-export async function permisoDeVoz(
-  llamadaId: string,
-): Promise<{ servidor: string; token: string }> {
+export interface PermisoDeVoz {
+  servidor: string;
+  token: string;
+}
+
+async function pedirPermisoDeVoz(llamadaId: string): Promise<PermisoDeVoz> {
   const { data, error } = await supabase.functions.invoke("token-llamada", {
     body: { llamadaId },
   });
   if (error) {
     throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo conectar la llamada");
   }
-  return data as { servidor: string; token: string };
+  return data as PermisoDeVoz;
+}
+
+/**
+ * Los permisos ya pedidos, por llamada (17/11/2026). Pedirlo cuesta 1,5–3 s
+ * (la función firma el permiso y pregunta la dirección del servidor de voz):
+ * quien recibe la llamada lo pide **mientras suena**, y al contestar ya lo
+ * tiene. Uno que falló no se guarda, para volver a pedirlo.
+ */
+const permisos = new Map<string, Promise<PermisoDeVoz>>();
+
+/** El permiso para entrar a la sala de voz, firmado por el servidor. */
+export function permisoDeVoz(llamadaId: string): Promise<PermisoDeVoz> {
+  const guardado = permisos.get(llamadaId);
+  if (guardado) return guardado;
+  const pedido = pedirPermisoDeVoz(llamadaId).catch((e: unknown) => {
+    permisos.delete(llamadaId);
+    throw e;
+  });
+  permisos.set(llamadaId, pedido);
+  return pedido;
+}
+
+/** La llamada terminó: su permiso ya no sirve. */
+export function olvidarPermisoDeVoz(llamadaId: string): void {
+  permisos.delete(llamadaId);
+}
+
+/**
+ * Por qué no se pudo contestar, cuando no hay nada que reintentar: ya no
+ * suena o la contestó otra persona (`contestar_llamada`, 17/11/2026). Otro
+ * fallo --la sesión todavía no está lista al abrir la app-- sí se reintenta.
+ */
+export function contestarYaNoSePuede(e: unknown): string | null {
+  const mensaje =
+    e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "";
+  if (/ya contestó otra persona/i.test(mensaje)) return "Ya contestó otra persona";
+  if (/ya no está sonando/i.test(mensaje)) return "Esa llamada ya no está sonando";
+  return null;
 }

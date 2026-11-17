@@ -25,6 +25,7 @@ import { DeclaracionDeResidencia } from "../components/configuracion/Declaracion
 import { useRentaCortaPermitida } from "../hooks/useRentaCortaPermitida";
 import { DarAccesoALaApp } from "../components/invitar/DarAccesoALaApp";
 import { loQueVeEnLaVivienda } from "../helpers/loQueVeEnLaVivienda";
+import { porQueNoPuedeSerResidente } from "../helpers/porQueNoPuedeSerResidente";
 
 type Nav = NativeStackNavigationProp<
   PropietarioStackParamList & SharedStackParamList,
@@ -77,6 +78,7 @@ export function PropietarioConfiguracionScreen() {
     rentaCortaEnMarcha,
     quitarAnfitrionPrimario,
     viviendaEnAlquiler,
+    hayInquilinoLider,
   } = usePropietarioConfiguracion();
 
   /*
@@ -185,6 +187,7 @@ export function PropietarioConfiguracionScreen() {
                 esResidente={esResidente}
                 rentaCortaEnMarcha={rentaCortaEnMarcha}
                 viviendaEnAlquiler={viviendaEnAlquiler}
+                hayInquilinoLider={hayInquilinoLider}
                 onCambiarResidencia={() => {
                   setPendienteResidenteValue(!esResidente);
                   setShowResidentePopup(true);
@@ -286,6 +289,13 @@ export function PropietarioConfiguracionScreen() {
         residente={pendienteResidenteValue}
         onClose={() => setShowResidentePopup(false)}
         guardando={declarando}
+        motivoQueLoImpide={porQueNoPuedeSerResidente({
+          esResidente,
+          viviendaEnAlquiler,
+          anfitrionPrimario: propietarioAnfitrionPrimario,
+          rentaCortaEnMarcha,
+          hayInquilinoLider,
+        })}
         onConfirmar={() => {
           if (declarando) return;
           // Se cierra cuando se guardó; si falla, sigue abierta con el aviso.

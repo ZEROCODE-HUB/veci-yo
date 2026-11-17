@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import { useEffect, useMemo } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pressable, Text, View } from "react-native";
 import {
@@ -12,12 +12,12 @@ import {
   Modal,
   Select,
   Tabs,
-  Toggle,
 } from "@/shared/components";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useLista } from "@/shared/hooks/useLista";
 import { ahora, formatDateInput, parseFechaIso } from "@/shared/utils";
 import { crearEsquemaAnuncio } from "../../schemas/anuncios.schema";
+import { SeccionesDeEncuesta } from "./SeccionesDeEncuesta";
 import {
   anuncioFormVacio,
   tiposAnuncio,
@@ -65,6 +65,32 @@ export function AnuncioFormModal({
     [limites],
   );
   const opcionesMin = limites?.opcionesMin ?? null;
+  /*
+    Cómo vota y cuándo se aprueba una encuesta nueva: lo que propone la base
+    (`encuesta_*_por_defecto`, 17/11/2026), que el administrador cambia en el
+    panel. Nada escrito aquí.
+  */
+  const reglasIniciales = useMemo(
+    () =>
+      parametros.listo
+        ? {
+            quienVota:
+              parametros.texto("encuesta_quien_vota_por_defecto") === "residente"
+                ? ("residente" as const)
+                : ("vivienda" as const),
+            comoSeCuenta:
+              parametros.texto("encuesta_como_se_cuenta_por_defecto") === "indice"
+                ? ("indice" as const)
+                : ("igual" as const),
+            reglaAprobacion:
+              parametros.texto("encuesta_regla_por_defecto") === "umbral"
+                ? ("umbral" as const)
+                : ("mayoria" as const),
+            umbralAprobacion: String(parametros.numero("encuesta_umbral_por_defecto")),
+          }
+        : null,
+    [parametros],
+  );
   const {
     control,
     handleSubmit,
@@ -76,24 +102,19 @@ export function AnuncioFormModal({
       resolver: esquema ? zodResolver(esquema) : undefined,
       defaultValues: anuncioFormVacio(),
     });
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "opcionesVotacion",
-  });
   const tipo = watch("tipo");
   const fechaPublicada = watch("fechaPublicada");
-  const fechaFinalizacion = watch("fechaFinalizacion");
-  const votacionMultiple = watch("votacionMultiple");
   useEffect(() => {
     if (!visible || opcionesMin === null) return;
     // Una encuesta nueva abre con tantas cajas de opción como pide la base.
     reset({
       ...anuncioFormVacio(),
+      ...reglasIniciales,
       opcionesVotacion: Array.from({ length: opcionesMin }, () => ({
         valor: "",
       })),
     });
-  }, [reset, visible, opcionesMin]);
+  }, [reset, visible, opcionesMin, reglasIniciales]);
   if (opcionesMin === null) {
     return (
       <Modal visible={visible} onClose={onClose} title="Crear anuncio">
@@ -242,177 +263,11 @@ export function AnuncioFormModal({
             */}
           </View>
         ) : (
-          <>
-            <View>
-              <Text className="text-sm text-gray-500 mb-1.5 font-medium">
-                Opciones de votación
-              </Text>
-              {fields.map((field, index) => (
-                <View
-                  key={field.id}
-                  className="flex-row gap-2 mb-2 items-center"
-                >
-                  <View className="flex-1">
-                    <Controller
-                      control={control}
-                      name={`opcionesVotacion.${index}.valor`}
-                      render={({ field: optionField, fieldState }) => (
-                        <Input
-                          value={optionField.value}
-                          onChangeText={optionField.onChange}
-                          placeholder={`Opción ${index + 1}`}
-                        error={fieldState.error?.message}
-                        />
-                      )}
-                    />
-                  </View>
-                  {fields.length > opcionesMin && (
-                    <Pressable
-                      accessibilityLabel="Quitar esta opción"
-                      onPress={() => remove(index)}>
-                      <Text
-                        style={{ fontSize: 18, color: theme.colors.danger }}
-                      >
-                        ×
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-              ))}
-              <Pressable
-                onPress={() => append({ valor: "" })}
-                className="items-center py-2 rounded-lg"
-                style={{
-                  borderWidth: 1,
-                  borderColor: theme.colors.borderStrong,
-                  borderStyle: "dashed",
-                }}
-              >
-                <Text className="text-sm text-gray-500">+ Agregar opción</Text>
-              </Pressable>
-            </View>
-            <Controller
-              control={control}
-              name="ocultarResultados"
-              render={({ field }) => (
-                <Toggle
-                  value={field.value}
-                  onChange={field.onChange}
-                  labelRight="Ocultar resultados hasta el cierre"
-                />
-              )}
-            />
-            <View>
-              <Text className="text-sm text-gray-500 mb-1.5 font-medium">
-                Tipo de selección
-              </Text>
-              <View className="flex-row gap-2">
-                <Pressable
-                  onPress={() => setValue("votacionMultiple", false)}
-                  className="flex-1 items-center py-2 rounded-full"
-                  style={{
-                    borderWidth: 1.5,
-                    borderColor: !votacionMultiple
-                      ? theme.colors.warning
-                      : theme.colors.border,
-                    backgroundColor: !votacionMultiple
-                      ? theme.colors.warning
-                      : theme.colors.bgCard,
-                  }}
-                >
-                  <Text
-                    className="text-sm font-semibold"
-                    style={{
-                      color: !votacionMultiple
-                        ? theme.colors.textInverse
-                        : theme.colors.textSecondary,
-                    }}
-                  >
-                    Única
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setValue("votacionMultiple", true)}
-                  className="flex-1 items-center py-2 rounded-full"
-                  style={{
-                    borderWidth: 1.5,
-                    borderColor: votacionMultiple
-                      ? theme.colors.warning
-                      : theme.colors.border,
-                    backgroundColor: votacionMultiple
-                      ? theme.colors.warning
-                      : theme.colors.bgCard,
-                  }}
-                >
-                  <Text
-                    className="text-sm font-semibold"
-                    style={{
-                      color: votacionMultiple
-                        ? theme.colors.textInverse
-                        : theme.colors.textSecondary,
-                    }}
-                  >
-                    Múltiple
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Controller
-                  control={control}
-                  name="umbral"
-                  render={({ field, fieldState }) => (
-                    /*
-                      Ponia «Umbral mínimo» y nada mas: ni etiqueta ni unidad.
-                      Es el porcentaje de viviendas que se espera que voten
-                      (hueco 26, 21/10/2026; antes, el 29/09, eran votos).
-                      Vacío, la encuesta no enseña barra de avance.
-
-                      Numerico, ademas: `AnunciosScreen` hace `Number(...)` con
-                      lo que se escriba, y un texto suelto llegaba a la base
-                      como `NaN`.
-                    */
-                    <Input
-                      label="Participación esperada, en % de viviendas (opcional)"
-                      soloCifras
-                      value={field.value}
-                      onChangeText={(texto) =>
-                        field.onChange(texto.replace(/[^0-9]/g, ""))
-                      }
-                      placeholder="Ej. 60"
-                    error={fieldState.error?.message}
-                    />
-                  )}
-                />
-              </View>
-              {/*
-                Aqui estaba «Tiempo máximo» (R-38). Se pedia, se validaba y se
-                tiraba: `publicacion` no tiene columna para el y la pantalla no
-                lo enviaba. Y ademas sobraba, porque el plazo de una encuesta ya
-                se pone dos campos mas abajo en «Fecha de finalización», que si
-                se guarda y si cierra la votacion.
-
-                Quien administra lo rellenaba creyendo que limitaba algo.
-              */}
-            </View>
-            <View className="gap-2">
-              <DateField
-                label="Fecha de publicación*"
-                value={fechaPublicada}
-                onChange={(fecha) =>
-                setValue("fechaPublicada", fecha, { shouldValidate: true })
-              }
-              />
-              <DateField
-                label="Fecha de finalización"
-                value={fechaFinalizacion}
-                onChange={(fecha) =>
-                setValue("fechaFinalizacion", fecha, { shouldValidate: true })
-              }
-              />
-            </View>
-          </>
+          <SeccionesDeEncuesta
+            control={control}
+            setValue={setValue}
+            opcionesMin={opcionesMin}
+          />
         )}
         {/*
           Aqui habia dos botones --«Adjuntar Documento» y «Adjuntar Imagen»--
@@ -461,6 +316,7 @@ export function AnuncioFormModal({
             errors.paraPropietarios?.message,
             errors.urlVideo?.message,
             errors.umbral?.message,
+            errors.umbralAprobacion?.message,
             errors.fechaFinalizacion?.message,
             errors.opcionesVotacion?.message,
             errors.opcionesVotacion?.root?.message,

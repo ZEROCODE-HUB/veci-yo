@@ -156,11 +156,12 @@ describe("la portería registra a un profesional temporal", () => {
       unidadId: U101,
       tipo: "temporal",
       /*
-        Como la pantalla (`entraAlRegistrar`, T-025): el edificio de pruebas
-        verifica el documento de los profesionales, así que con documento
-        nace por llegar y el guardia lo verifica antes de marcar la entrada.
+        Como la pantalla (`entraAlRegistrar`): desde el 17/11/2026 nace
+        dentro siempre. El edificio de pruebas verifica el documento de los
+        profesionales, y aun así entra: el guardia lo copió con la persona
+        delante y la base lo da por verificado.
       */
-      estado: documento ? "programada" : "ingresada",
+      estado: "ingresada",
       fechaDesde: enDias(0),
       fechaHasta: enDias(0),
       instruccionDocumento: "verificar",
@@ -175,10 +176,38 @@ describe("la portería registra a un profesional temporal", () => {
     creadas.add(id);
     const { data } = await servicio
       .from("visita")
-      .select("estado, registrada_por")
+      .select("estado, registrada_por, registrada_en_porteria, anunciada_por")
       .eq("id", id)
       .single();
-    expect(data).toEqual({ estado: "programada", registrada_por: guardiaId });
+    // Nace dentro, marcada por la base y ya anunciada (17/11/2026).
+    expect(data).toEqual({
+      estado: "ingresada",
+      registrada_por: guardiaId,
+      registrada_en_porteria: true,
+      anunciada_por: guardiaId,
+    });
+
+    // Su documento cuenta como verificado, con quién lo verificó.
+    const { data: persona } = await servicio
+      .from("invitado")
+      .select("llego, verificacion:verificacion_documento ( estado, verificado_por, coincidio_por )")
+      .eq("visita_id", id)
+      .single();
+    expect(persona?.llego).toBe(true);
+    expect(persona?.verificacion).toMatchObject({
+      estado: "verificado",
+      verificado_por: guardiaId,
+      coincidio_por: "tecleado",
+    });
+
+    // Y a la vivienda le llega «Nueva visita», una vez.
+    const { data: avisos } = await servicio
+      .from("notificacion")
+      .select("titulo, mensaje")
+      .eq("entidad_id", id);
+    expect(avisos?.length).toBeGreaterThan(0);
+    expect(avisos?.every((a) => a.titulo === "Nueva visita")).toBe(true);
+    expect(avisos?.[0]?.mensaje).toContain("ingresó al 101");
   });
 
   it("sin documento, no: al profesional se le pide siempre", async () => {

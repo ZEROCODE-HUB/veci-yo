@@ -267,6 +267,14 @@ export function VisitaGuardiaDetail({
           <Text className="text-xs font-semibold text-green-700">
             ✓ Documento verificado
           </Text>
+        ) : item.registradaEnPorteria ? (
+          /*
+            La registró la portería con la persona delante (17/11/2026): no
+            hay nada que verificar después, y el botón invitaba a hacerlo.
+          */
+          <Text className="text-xs text-gray-500">
+            Registrada en portería al llegar.
+          </Text>
         ) : huesped ? (
           // 09/11/2026 (Correcciones fila 22): al huésped lo verifica el
           // interruptor «Registrar llegada»; aquí ya no hay botón aparte.

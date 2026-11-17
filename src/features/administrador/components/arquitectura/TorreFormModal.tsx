@@ -7,15 +7,7 @@ import { towerSchema } from "../../schemas";
 import type { Torre } from "@/stores/admin-store";
 import { emptyTower, type TowerFormValues } from "../../types";
 import { TorreFieldGrid } from "./TorreFieldGrid";
-import { EstacionamientosPorNivel } from "./EstacionamientosPorNivel";
-import {
-  nivelesDelAlta,
-  pedidoDeCocheras,
-  planDeEstacionamientos,
-  planDeTorre,
-  resumenDeEstacionamientos,
-  resumenDeTorre,
-} from "../../helpers/arquitectura.helpers";
+import { planDeTorre, resumenDeTorre } from "../../helpers/arquitectura.helpers";
 import type { ConstruccionDeTorre } from "../../services/arquitectura.repo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 
@@ -24,12 +16,6 @@ type Props = {
   editing: Torre | null;
   nextNumber: number;
   initial: TowerFormValues;
-  /** Los niveles de estacionamiento del edificio, para las filas del alta. */
-  niveles: Array<{ nombre: string; nomenclatura: string }>;
-  /** Los sótanos de la torre que más tiene, para sugerir niveles. */
-  sotanosMaximo: number;
-  /** Los códigos de estacionamiento que ya hay: la numeración sigue desde ahí. */
-  codigosExistentes: string[];
   onClose: () => void;
   onSave: (form: TowerFormValues, construccion: ConstruccionDeTorre) => unknown;
 };
@@ -44,9 +30,6 @@ export function TorreFormModal({
   editing,
   nextNumber,
   initial,
-  niveles,
-  sotanosMaximo,
-  codigosExistentes,
   onClose,
   onSave,
 }: Props) {
@@ -56,7 +39,6 @@ export function TorreFormModal({
     handleSubmit,
     reset,
     watch,
-    setValue,
     // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
     formState: { isSubmitting },
   } = useForm<TowerFormValues>({
@@ -79,31 +61,34 @@ export function TorreFormModal({
     porPiso: watch("porPiso"),
     numeracion: watch("numeracion"),
   };
-  const plan = parametrosDeLaBase.listo
-    ? planDeTorre(pedidoDepartamentos, parametrosDeLaBase.numero("torre_viviendas_maximo"))
+  // El tope por piso es del panel (17/11/2026, el cliente: «cuántos máximo
+  // por piso al crear torre»); se dice junto al campo y lo aplica el plan.
+  const topePorPiso = parametrosDeLaBase.listo
+    ? parametrosDeLaBase.numero("torre_viviendas_por_piso_maximo")
     : null;
+  const plan =
+    parametrosDeLaBase.listo && topePorPiso !== null
+      ? planDeTorre(
+          pedidoDepartamentos,
+          parametrosDeLaBase.numero("torre_viviendas_maximo"),
+          topePorPiso,
+        )
+      : null;
   const vistaPrevia = plan ? plan.motivo || resumenDeTorre(plan.viviendas) : "";
 
-  const filasDeNiveles = nivelesDelAlta(
-    niveles,
-    Math.max(sotanosMaximo, Number(watch("sotanos")) || 0),
-    watch("nivelesNuevos"),
-  );
-  const cantidades = watch("cocherasPorNivel");
-  const pedidoCocheras = pedidoDeCocheras(filasDeNiveles, cantidades);
-  const resumenCocheras = resumenDeEstacionamientos(
-    planDeEstacionamientos(pedidoCocheras, codigosExistentes),
-  );
 
   const guardar = (form: TowerFormValues) =>
     onSave(
       form,
       editing
         ? {}
-        : {
-            departamentos: pedidoDepartamentos,
-            estacionamientos: pedidoCocheras.filter((f) => f.privados > 0 || f.visita > 0),
-          },
+        : /*
+            Los estacionamientos ya no se piden aquí (17/11/2026): el cliente
+            quiere «primero se crea la torre, luego recién el sótano». Se
+            agregan después en Estacionamientos (el sótano, con su torre) y
+            en la torre (cada estacionamiento).
+          */
+          { departamentos: pedidoDepartamentos, estacionamientos: [] },
     );
 
   return (
@@ -144,7 +129,7 @@ export function TorreFormModal({
                 [
                   ["pisoDesde", "¿Desde qué piso empiezan?", "5"],
                   ["pisoHasta", "¿Hasta qué piso?", "7"],
-                  ["porPiso", "¿Cuántos por piso?", "3"],
+                  ["porPiso", topePorPiso ? `¿Cuántos por piso? (máx. ${topePorPiso})` : "¿Cuántos por piso?", "3"],
                 ] as const
               ).map(([nombre, etiqueta, ejemplo]) => (
                 <View key={nombre} className="flex-1">
@@ -190,17 +175,6 @@ export function TorreFormModal({
           </View>
         )}
         <TorreFieldGrid control={control} conCocheras={Boolean(editing)} />
-        {editing ? null : (
-          <EstacionamientosPorNivel
-            filas={filasDeNiveles}
-            cantidades={cantidades}
-            onCantidades={(valor) => setValue("cocherasPorNivel", valor, { shouldValidate: true })}
-            onNivelNuevo={(nivel) =>
-              setValue("nivelesNuevos", [...watch("nivelesNuevos"), nivel])
-            }
-            resumen={resumenCocheras}
-          />
-        )}
         <Button
           fullWidth
           loading={isSubmitting}

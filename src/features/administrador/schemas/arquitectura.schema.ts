@@ -60,6 +60,13 @@ export const unitSchema = z.object({
   piso: z.string().min(1, "El piso es requerido"),
   estado: z.enum(Constants.public.Enums.estado_unidad),
   tipologiaId: z.string(),
+  // Índice de votación (17/11/2026): mayor que cero; 1 = como todas.
+  indiceVotacion: z
+    .string()
+    .refine((v) => {
+      const n = Number(v.replace(",", "."));
+      return v.trim() !== "" && Number.isFinite(n) && n > 0;
+    }, "El índice de votación tiene que ser un número mayor que 0"),
 });
 
 export const depositSchema = z.object({

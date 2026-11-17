@@ -8,6 +8,7 @@ import {
   type ArchivoElegido,
 } from "@/shared/services/archivos";
 import type { Database } from "@/shared/types/database.types";
+import { desdeLaBaseSiHay } from "@/shared/utils";
 import type { ReglaContenido, TipoRegla } from "../types/reglas";
 
 type TipoReglaDB = Database["public"]["Enums"]["tipo_regla"];
@@ -49,7 +50,7 @@ export async function obtenerReglamento(
 
   const { data, error } = await supabase
     .from("reglamento")
-    .select("titulo, contenido, archivo_path, version")
+    .select("titulo, contenido, archivo_path, archivo_nombre, archivo_subido_en, version")
     .eq("condominio_id", condominioId)
     .eq("tipo", HACIA_BASE[tipo])
     .eq("vigente", true)
@@ -67,6 +68,8 @@ export async function obtenerReglamento(
     // `file` era el nombre de un PDF que no existía en ningún sitio. Ahora es
     // la ruta en el bucket, y sin ruta no hay descarga que ofrecer.
     file: data.archivo_path ?? "",
+    fileName: data.archivo_nombre ?? null,
+    subidoEn: desdeLaBaseSiHay(data.archivo_subido_en),
     sections: secciones.map((s) => ({
       title: s.titulo ?? "",
       items: s.items ?? [],
@@ -106,7 +109,10 @@ export async function subirReglamento(
   */
   const actualizado = await supabase
     .from("reglamento")
-    .update({ archivo_path: ruta })
+    // El nombre con que se subió viaja con la ruta: en el depósito va uno
+    // generado y la gente no lo reconocería (17/11/2026). La fecha la pone
+    // la base (`reglamento_fecha_del_archivo`).
+    .update({ archivo_path: ruta, archivo_nombre: archivo.nombre || null })
     .eq("condominio_id", condominioId)
     .eq("tipo", HACIA_BASE[tipo])
     .eq("vigente", true)
@@ -118,6 +124,7 @@ export async function subirReglamento(
       tipo: HACIA_BASE[tipo],
       titulo: TITULO_INICIAL[tipo],
       archivo_path: ruta,
+      archivo_nombre: archivo.nombre || null,
     }));
   }
 

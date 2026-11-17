@@ -59,6 +59,26 @@ export function audienciaDe(
 }
 
 /**
+ * A quién se dirigió la publicación, para leerlo en su detalle: «Propietarios,
+ * Residentes» (17/11/2026, pedido del cliente: ver a qué roles se notificó).
+ * Sale de las mismas casillas que deciden quién la ve y a quién avisa
+ * (`audienciaDe`), en el orden del formulario. Vacío si no marca ninguna.
+ */
+export function dirigidoA(
+  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria">>,
+): string {
+  const audiencia = audienciaDe(anuncio);
+  return [
+    audiencia.propietarios && "Propietarios",
+    audiencia.residentes && "Residentes",
+    audiencia.huespedes && "Huéspedes temporales",
+    audiencia.porteria && "Portería",
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+/**
  * Si quien mira ve cómo va una encuesta que sigue abierta.
  *
  * Solo la administración: «no hay forma de ver los resultados de la encuesta»

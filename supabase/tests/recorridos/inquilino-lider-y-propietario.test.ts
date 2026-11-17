@@ -38,6 +38,12 @@ const cuentas: string[] = [];
 const invitaciones: string[] = [];
 const membresias: string[] = [];
 const avisos: string[] = [];
+/**
+ * Los inquilinos líderes que ya había en la 205 (Laura, de las personas de
+ * prueba). Desde el 17/11/2026, con uno activo el dueño no vuelve a ser
+ * residente, y la prueba lo necesita residente: se apartan y se devuelven.
+ */
+let apartados: string[] = [];
 let desde = "";
 
 async function crearCuenta(correo: string, nombre: string) {
@@ -111,6 +117,15 @@ beforeAll(async () => {
   duenoId = await entrarComo(DUENO);
   await salir();
   filaDelDueno = await filaDeGuillermo();
+  const { data: otros, error: errorOtros } = await servicio
+    .from("membresia_unidad")
+    .update({ activo: false })
+    .eq("unidad_id", U205)
+    .eq("rol", "inquilino_lider")
+    .eq("activo", true)
+    .select("id");
+  if (errorOtros) throw new Error(errorOtros.message);
+  apartados = (otros ?? []).map((o) => o.id);
   // La prueba necesita al dueño residente; si una corrida anterior lo dejó
   // como no residente, se pone aquí y se devuelve lo que había.
   if (!filaDelDueno.es_residente) {
@@ -151,6 +166,21 @@ afterAll(async () => {
     const vuelta = await filaDeGuillermo();
     if (vuelta.es_residente !== filaDelDueno.es_residente) throw new Error("La fila del dueño no quedó como estaba");
   }
+  // Los inquilinos líderes apartados vuelven. Al volver, el disparador marca
+  // otra vez al dueño no residente y le deja un aviso: el aviso se retira.
+  if (apartados.length) {
+    const { error } = await servicio.from("membresia_unidad").update({ activo: true }).in("id", apartados);
+    if (error) throw new Error(`No se pudieron devolver los inquilinos líderes: ${error.message}`);
+    const { error: errorAviso } = await servicio
+      .from("notificacion")
+      .delete()
+      .eq("usuario_id", duenoId)
+      .eq("tipo", "residencia_cambiada")
+      .eq("entidad_id", U205)
+      .gte("created_at", desde)
+      .not("mensaje", "like", `${MARCA}%`);
+    if (errorAviso) throw new Error(`No se pudo retirar el aviso de la vuelta: ${errorAviso.message}`);
+  }
   for (const id of cuentas) {
     await servicio.from("perfil").delete().eq("id", id);
     const { error } = await servicio.auth.admin.deleteUser(id);
@@ -176,11 +206,33 @@ describe("con inquilino líder, el propietario pasa a no residente", () => {
     avisos.push(...recibidos.map((a) => a.id));
     expect(recibidos).toHaveLength(1);
     expect(recibidos[0].mensaje).toMatch(
-      /^\[prueba\] Inquilino líder Luis Prueba es ahora inquilino líder de .+ · Depto 205\. Te marcamos como no residente; si vives ahí, cámbialo en Configuración\.$/,
+      /^\[prueba\] Inquilino líder Luis Prueba es ahora inquilino líder de .+ · Depto 205\. Te marcamos como no residente; para volver a vivir ahí, primero quita al inquilino líder\.$/,
     );
   });
 
-  it("y el propietario puede volver a declararse residente", async () => {
+  /*
+    Desde el 17/11/2026 (decisión del cliente) el propietario NO vuelve a ser
+    residente mientras el inquilino líder siga activo; quitándolo, sí. Las dos
+    mitades: sin la segunda, el rechazo pasaría igual con la regla rota de
+    otra forma (por ejemplo, rechazando siempre).
+  */
+  it("y el propietario no puede volver a declararse residente mientras siga el inquilino líder", async () => {
+    await entrarComo(DUENO);
+    const { error } = await supabase.rpc("declararse_residente", { p_unidad_id: U205, p_valor: true });
+    await salir();
+    expect(error?.message).toMatch(/primero quita al inquilino líder/i);
+    expect((await filaDeGuillermo()).es_residente).toBe(false);
+  });
+
+  it("y quitado el inquilino líder, sí puede", async () => {
+    const { error: errorBaja } = await servicio
+      .from("membresia_unidad")
+      .update({ activo: false })
+      .eq("unidad_id", U205)
+      .eq("rol", "inquilino_lider")
+      .in("id", membresias);
+    expect(errorBaja).toBeNull();
+
     await entrarComo(DUENO);
     const { error } = await supabase.rpc("declararse_residente", { p_unidad_id: U205, p_valor: true });
     await salir();

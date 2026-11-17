@@ -10,6 +10,7 @@ import {
   cambiarVisibilidad,
   declararseResidente,
   designarPrimario,
+  hayInquilinoLiderActivo,
   quitarAnfitrionPrimario,
   rentaCortaEnMarcha,
   viviendaEnAlquiler,
@@ -76,6 +77,16 @@ export function usePropietarioConfiguracion() {
   const enAlquiler = useQuery({
     queryKey: ["propietario", "vivienda-en-alquiler", unidadId],
     queryFn: () => viviendaEnAlquiler(unidadId),
+    enabled: Boolean(unidadId),
+  });
+
+  /*
+    Con un inquilino líder activo, el propietario no vuelve a ser residente
+    hasta quitarlo (17/11/2026; la base lo sujeta).
+  */
+  const conInquilinoLider = useQuery({
+    queryKey: [...RESIDENTES_UNIDAD_KEY, "inquilino-lider", unidadId, usuarioId],
+    queryFn: () => hayInquilinoLiderActivo(unidadId, usuarioId),
     enabled: Boolean(unidadId),
   });
 
@@ -158,6 +169,7 @@ export function usePropietarioConfiguracion() {
     cargaResidentes,
     estadoDe(enMarcha),
     estadoDe(enAlquiler),
+    estadoDe(conInquilinoLider),
   );
   const cargaDeLaLista = juntarCargas(cargaResidentes, estadoDe(alojamiento));
 
@@ -199,6 +211,8 @@ export function usePropietarioConfiguracion() {
     rentaCortaEnMarcha: enMarcha.data ?? true,
     /** Se alquila por noches o le quedan reservas: no se puede ser residente. */
     viviendaEnAlquiler: enAlquiler.data ?? false,
+    /** Hay un inquilino líder activo (que no es uno mismo): no se puede volver a ser residente. */
+    hayInquilinoLider: conInquilinoLider.data ?? false,
     quitarAnfitrionPrimario: (membresiaId: string) => quitarAnfitrion.mutate(membresiaId),
     setAnfitrionPrimario: (membresiaId: string) =>
       designar.mutate({ membresiaId, cual: "anfitrion" }),

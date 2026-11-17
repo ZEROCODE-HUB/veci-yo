@@ -49,7 +49,15 @@ export interface ReglaSeccion {
 
 export interface ReglaContenido {
   title: string;
+  /** Ruta en el depósito; vacía si no se subió ningún archivo. */
   file: string;
+  /**
+   * El nombre con que se subió el archivo (17/11/2026). Null en los subidos
+   * antes de guardarlo: la pantalla dice entonces qué es, no la ruta.
+   */
+  fileName: string | null;
+  /** Cuándo se subió el archivo; lo pone la base. */
+  subidoEn: Date | null;
   sections: ReglaSeccion[];
   downloadable: boolean;
 }

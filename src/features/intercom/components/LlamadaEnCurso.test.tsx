@@ -48,4 +48,26 @@ describe("la llamada en curso", () => {
     ).toBe("true");
     screen.getByText("Micrófono apagado");
   });
+
+  it("sin quien cambie la salida no hay botón de altavoz", () => {
+    pintar();
+    expect(screen.queryByRole("button", { name: /altavoz/i })).toBeNull();
+  });
+
+  it("el altavoz se pone y se quita, y dice cómo está (17/11/2026)", () => {
+    const onAltavoz = vi.fn();
+    pintar({ altavoz: false, onAltavoz });
+    const boton = screen.getByRole("button", { name: "Poner el altavoz" });
+    expect(boton.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(boton);
+    expect(onAltavoz).toHaveBeenCalledTimes(1);
+  });
+
+  it("con el altavoz puesto se dice, no solo se pinta", () => {
+    pintar({ altavoz: true, onAltavoz: vi.fn() });
+    expect(
+      screen.getByRole("button", { name: "Quitar el altavoz" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    screen.getByText("Altavoz activado");
+  });
 });

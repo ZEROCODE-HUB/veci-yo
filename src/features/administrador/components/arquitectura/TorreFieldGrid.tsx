@@ -13,7 +13,9 @@ import type { TowerFormValues } from "../../types";
 
   Desde el 16/11/2026 las dos cocheras solo salen al **editar** una torre de
   antes: al crear, los estacionamientos se piden por nivel
-  (`EstacionamientosPorNivel`).
+  (`EstacionamientosPorNivel`). Y desde el 17/11/2026 ni eso ni «Sótanos»: el
+  cliente pidió quitar el sótano de la torre --se crea después, en
+  Estacionamientos, eligiendo de qué torre es--.
 */
 /** Los campos de texto del formulario (no las filas de niveles). */
 type CampoDeTexto = {
@@ -22,7 +24,6 @@ type CampoDeTexto = {
 
 const towerFields: Array<[CampoDeTexto, string]> = [
   ["pisos", "Pisos (opcional)"],
-  ["sotanos", "Sótanos (opcional)"],
   ["depto", "Departamentos por torre (opcional)"],
   ["penthouse", "Penthouse (opcional)"],
   ["cocherasPrivadas", "Cocheras privadas (opcional)"],

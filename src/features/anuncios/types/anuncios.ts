@@ -55,6 +55,16 @@ export interface AnuncioFormValues {
   opcionesVotacion: Array<{ valor: string }>;
   ocultarResultados: boolean;
   votacionMultiple: boolean;
+  /*
+    Cómo vota y cuándo se aprueba una encuesta (17/11/2026, aprobado por el
+    cliente). Los valores iniciales salen de la base
+    (`encuesta_*_por_defecto`); el formulario los pone al abrirse.
+  */
+  quienVota: "vivienda" | "residente";
+  comoSeCuenta: "igual" | "indice";
+  reglaAprobacion: "mayoria" | "umbral";
+  /** % del total para aprobar, como texto del campo. Solo con «umbral». */
+  umbralAprobacion: string;
   /**
    * Si al publicarse se avisa a su audiencia.
    *
@@ -92,6 +102,10 @@ export const anuncioFormVacio = (): AnuncioFormValues => ({
   opcionesVotacion: [{ valor: "" }, { valor: "" }],
   ocultarResultados: false,
   votacionMultiple: false,
+  quienVota: "vivienda",
+  comoSeCuenta: "igual",
+  reglaAprobacion: "mayoria",
+  umbralAprobacion: "",
   avisar: true,
 });
 

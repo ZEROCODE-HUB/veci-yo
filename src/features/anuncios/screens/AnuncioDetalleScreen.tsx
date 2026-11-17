@@ -16,6 +16,8 @@ import {
   AnuncioResultadosFinales,
   AnuncioResumenCard,
   AnuncioVotacionCard,
+  MetricasDeParticipacion,
+  ResultadoDeEncuestaCard,
 } from "../components/detalle";
 import { useAnuncioDetalle, useAnuncios } from "../hooks/useAnuncios";
 import {
@@ -43,6 +45,8 @@ export function AnuncioDetalleScreen() {
     misOpciones,
     viviendasPorVotar,
     cuantasViviendas,
+    resultado,
+    participacionPorTorre,
   } = useAnuncioDetalle(id);
   // El voto vive en `useAnuncios`, que ya lo tenia escrito: lo que faltaba era
   // que alguien lo llamara.
@@ -172,12 +176,24 @@ export function AnuncioDetalleScreen() {
           />
         </SegunLaCarga>
       )}
+      {/*
+        El resultado según la base (17/11/2026): la frase, la barra con el
+        umbral y, para la administración, la participación por torre. Debajo
+        sigue la tarjeta de siempre con quién votó qué (cuando no es secreta).
+      */}
+      {resultado && (mostrarResultadosEnCurso || mostrarResultadosFinales) ? (
+        <ResultadoDeEncuestaCard resultado={resultado} enCurso={!votacionCerrada} />
+      ) : null}
+      {resultado && esAdmin && anuncio.votacion ? (
+        <MetricasDeParticipacion resultado={resultado} porTorre={participacionPorTorre} />
+      ) : null}
       {mostrarResultadosEnCurso ? (
         <AnuncioResultadosFinales
           anuncio={anuncio}
           noVotaron={[]}
           detalleNominal={detalleNominal}
           enCurso
+          sinParticipacion={Boolean(resultado)}
         />
       ) : null}
       {mostrarResultadosFinales && (
@@ -185,6 +201,7 @@ export function AnuncioDetalleScreen() {
           detalleNominal={detalleNominal}
           anuncio={anuncio}
           noVotaron={deptosNoVotaron}
+          sinParticipacion={Boolean(resultado)}
         />
       )}
       {/*

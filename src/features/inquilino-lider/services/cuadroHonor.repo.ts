@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
 import { formatMonthYear } from "@/shared/utils";
+import type { PuntualidadMes } from "../helpers/puntualidad";
 
 /**
  * Cuadro de honor y reconocimientos.
@@ -165,6 +166,8 @@ export interface PeriodoCuota {
    * lee como «no ha pagado nadie», que es una acusación falsa.
    */
   tieneCuota: boolean;
+  /** A tiempo, con atraso y pendiente (17/11/2026). Falta si el mes no tiene cuota. */
+  puntualidad?: PuntualidadMes;
 }
 
 /**
@@ -194,6 +197,46 @@ export async function obtenerResumenCuotas(
       tieneCuota: fila.tiene_cuota ?? true,
     };
   });
+}
+
+/**
+ * Si quien entra puede ver la recaudación (17/11/2026): administración,
+ * propietarios y residentes. Ni la portería ni los huéspedes. Lo decide la
+ * base, y las funciones de la recaudación ya devuelven vacío a quien no puede:
+ * esto es para no pintar una tarjeta que diga «no hay meses» cuando lo que pasa
+ * es que no le toca verlo.
+ */
+export async function puedeVerRecaudacion(condominioId: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("puede_ver_recaudacion", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return data === true;
+}
+
+/**
+ * Cuánto de cada mes se pagó a tiempo, cuánto con atraso y cuánto falta, en
+ * viviendas y en dinero (17/11/2026). La cuenta la hace la base.
+ */
+export async function obtenerPuntualidadCuotas(condominioId: string): Promise<PuntualidadMes[]> {
+  const { data, error } = await supabase.rpc("puntualidad_de_cuotas", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    periodo: fila.periodo,
+    moneda: fila.moneda,
+    venceEn: fila.vence_en,
+    yaVencio: fila.ya_vencio,
+    viviendas: fila.viviendas,
+    enFecha: fila.en_fecha,
+    conAtraso: fila.con_atraso,
+    sinPagar: fila.sin_pagar,
+    esperado: Number(fila.esperado),
+    pagadoEnFecha: Number(fila.pagado_en_fecha),
+    pagadoConAtraso: Number(fila.pagado_con_atraso),
+    pendiente: Number(fila.pendiente),
+  }));
 }
 
 /**

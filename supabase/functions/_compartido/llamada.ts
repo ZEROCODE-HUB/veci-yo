@@ -61,12 +61,17 @@ export function armarPushDeLlamada(datos: {
    * una sola persona: la firma es de cada una.
    */
   rechazo?: { usuarioId: string; firma: string; url: string };
+  /**
+   * Al dejar de sonar, por qué (17/11/2026): «Ya contestó otra persona» cuando
+   * sonaba en todos y contestó otro. Sin él, «La llamada ya no está sonando».
+   */
+  textoFin?: string;
 }) {
   const sonando = datos.evento === "sonando";
   const titulo = datos.deQuien;
   const texto = sonando
     ? `Te llama por ${datos.citofono ? `el ${datos.citofono}` : "Veciyo"}`
-    : "La llamada ya no está sonando";
+    : (datos.textoFin ?? "La llamada ya no está sonando");
   return {
     app_id: datos.appId,
     target_channel: "push",

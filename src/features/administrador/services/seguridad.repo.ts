@@ -19,6 +19,7 @@ type FilaDeGuardia = Pick<
   | "tipo_rotacion"
   | "activo"
   | "nombre"
+  | "cargo"
 > & {
   porteria: Pick<Fila<"porteria">, "id" | "nombre"> | null;
   turnos: Pick<
@@ -115,6 +116,7 @@ function mapearGuardia(fila: FilaDeGuardia): Guardia {
     // El nombre viaja en la membresia: `perfil` es privado y guarda el
     // documento de identidad, que el administrador no tiene por que ver.
     nombre: fila.nombre ?? "Sin nombre",
+    cargo: fila.cargo ?? "",
     correo: "",
     cedula: fila.documento ?? "",
     garita: fila.porteria?.nombre ?? "",
@@ -131,7 +133,7 @@ function mapearGuardia(fila: FilaDeGuardia): Guardia {
 }
 
 const SELECT = `
-  id, porteria_id, documento, permisos, rotacion_activa, tipo_rotacion, activo, nombre,
+  id, porteria_id, documento, permisos, rotacion_activa, tipo_rotacion, activo, nombre, cargo,
   porteria:porteria_id ( id, nombre ),
   turnos:turno_guardia ( id, dia_semana, hora_inicio, hora_fin ),
   overrides:turno_override ( id, fecha, hora_inicio, hora_fin )
@@ -270,6 +272,8 @@ export async function actualizarGuardia(
     permisoReservas?: boolean;
     rotacionActiva?: boolean;
     tipoRotacion?: string;
+    /** Código de `cargos_de_porteria`; vacío vuelve a «Seguridad». */
+    cargo?: string;
   },
 ) {
   const cambios: Actualizacion<"membresia_condominio"> = {};
@@ -278,6 +282,7 @@ export async function actualizarGuardia(
   if (datos.rotacionActiva !== undefined)
     cambios.rotacion_activa = datos.rotacionActiva;
   if (datos.tipoRotacion !== undefined) cambios.tipo_rotacion = datos.tipoRotacion;
+  if (datos.cargo !== undefined) cambios.cargo = datos.cargo || null;
 
   if (
     datos.permisoChat !== undefined ||

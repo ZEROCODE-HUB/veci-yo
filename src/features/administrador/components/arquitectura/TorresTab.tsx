@@ -23,8 +23,6 @@ type Props = {
    * las viviendas.
    */
   estacionamientos: Array<{ torreNumero?: number | null; tipo?: string; codigo: string }>;
-  /** Los niveles de estacionamiento, para las filas del alta (16/11/2026). */
-  niveles: Array<{ nombre: string; nomenclatura: string }>;
   onSelect: (tower: Torre) => void;
   /** `false` si falló: la ventana se queda abierta con lo escrito (13/11/2026). */
   onCreate: (form: TowerFormValues, construccion: ConstruccionDeTorre) => Promise<boolean>;
@@ -36,7 +34,6 @@ export function TorresTab({
   towers,
   unidades,
   estacionamientos,
-  niveles,
   onSelect,
   onCreate,
   onUpdate,
@@ -192,9 +189,6 @@ export function TorresTab({
         editing={editing}
         nextNumber={nextNumber}
         initial={initial}
-        niveles={niveles}
-        sotanosMaximo={Math.max(0, ...towers.map((t) => Number(t.sotanos) || 0))}
-        codigosExistentes={estacionamientos.map((e) => e.codigo)}
         onClose={closeForm}
         onSave={save}
       />

@@ -69,7 +69,12 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
 
   const iniciarLlamada = useIntercomStore((s) => s.iniciar);
   const porLaApp = useMutation({
-    mutationFn: (_quien: { membresiaId: string; nombre: string }) => llamarAVivienda(unidadId),
+    /*
+      La tarjeta es de una persona, y desde el 17/11/2026 suena solo a ella
+      (antes sonaba en toda la vivienda). Sin cuenta conocida, a todos.
+    */
+    mutationFn: (quien: { membresiaId: string; nombre: string; usuarioId: string | null }) =>
+      llamarAVivienda(unidadId, quien.usuarioId),
     onSuccess: (id, quien) => {
       onAbrirChat();
       iniciarLlamada(id, true, quien.nombre);
@@ -106,7 +111,11 @@ export function ContactosDeLaVivienda({ unidadId, onAbrirChat }: Props) {
             abriendoChat={chat.isPending}
             puedeLlamarPorLaApp={puedeLlamar}
             onLlamarPorLaApp={() =>
-              porLaApp.mutate({ membresiaId: t.persona.membresiaId, nombre: t.persona.nombre })
+              porLaApp.mutate({
+                membresiaId: t.persona.membresiaId,
+                nombre: t.persona.nombre,
+                usuarioId: t.persona.usuarioId,
+              })
             }
             llamandoPorLaApp={porLaApp.isPending && porLaApp.variables?.membresiaId === t.persona.membresiaId}
           />

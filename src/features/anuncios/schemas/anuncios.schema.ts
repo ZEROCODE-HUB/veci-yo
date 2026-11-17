@@ -66,6 +66,10 @@ export function crearEsquemaAnuncio({
       opcionesVotacion: z.array(z.object({ valor: z.string() })),
       ocultarResultados: z.boolean(),
       votacionMultiple: z.boolean(),
+      quienVota: z.enum(["vivienda", "residente"]),
+      comoSeCuenta: z.enum(["igual", "indice"]),
+      reglaAprobacion: z.enum(["mayoria", "umbral"]),
+      umbralAprobacion: z.string(),
       avisar: z.boolean(),
     })
     .superRefine((value, ctx) => {
@@ -104,6 +108,18 @@ export function crearEsquemaAnuncio({
       }
 
       if (value.tipo !== "Encuesta") return;
+
+      // El umbral mínimo para aprobar (17/11/2026): un % del total, 1 a 100.
+      if (value.reglaAprobacion === "umbral") {
+        const n = Number(value.umbralAprobacion.replace(",", "."));
+        if (!value.umbralAprobacion.trim() || !Number.isFinite(n) || n <= 0 || n > 100) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["umbralAprobacion"],
+            message: "Escribe el umbral para aprobar: un porcentaje entre 1 y 100",
+          });
+        }
+      }
 
       const opciones = value.opcionesVotacion
         .map((item) => item.valor.trim())

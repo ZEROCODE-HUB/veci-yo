@@ -8,6 +8,7 @@ import type { InvitacionDeGuardia } from "../../services/seguridad.repo";
 import { isOnShift } from "../../helpers/seguridad.helpers";
 import { formatRangoHoras } from "@/shared/utils";
 import { Button, ConfirmacionEnLinea } from "@/shared/components";
+import { useLista } from "@/shared/hooks/useLista";
 
 export function GuardiasList({
   guardias,
@@ -27,6 +28,7 @@ export function GuardiasList({
 }) {
   // Revocar pregunta antes: actuaba al primer toque (27/10/2026).
   const [porRevocar, setPorRevocar] = useState<string | null>(null);
+  const cargos = useLista("cargos_de_porteria");
   return (
     <View className="gap-3">
       {invitaciones.map((invitacion) => (
@@ -86,6 +88,11 @@ export function GuardiasList({
               <Text className="text-base font-bold text-gray-900">
                 {guardia.nombre}
               </Text>
+              {/* El cargo, como lo ven los vecinos al elegir a quién escribir
+                  (17/11/2026). Vacío cuenta como «Seguridad». */}
+              <Text className="text-sm text-gray-500">
+                {cargos.etiquetaDe(guardia.cargo || "seguridad")}
+              </Text>
               {/* Sin documento cargado se pintaba el icono a secas, que parece
                   un dato roto en vez de un dato que falta. */}
               {guardia.cedula ? (
@@ -97,7 +104,11 @@ export function GuardiasList({
                   y el administrador no podia ver cuando trabaja su personal.
                   Los turnos vienen ya ordenados por dia desde el repositorio. */}
               {guardia.turnos.length === 0 ? (
-                <Text className="mt-1 text-sm text-gray-500">Sin turnos</Text>
+                /* Sin horario cuenta como de turno siempre: los vecinos
+                   pueden escribirle a cualquier hora (17/11/2026). */
+                <Text className="mt-1 text-sm text-gray-500">
+                  Sin horario cargado: recibe mensajes a cualquier hora
+                </Text>
               ) : (
                 guardia.turnos.map((turno) => (
                   <Text

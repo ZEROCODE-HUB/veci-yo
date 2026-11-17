@@ -24,7 +24,12 @@ import {
   sePuedeLlamarPorLaApp,
 } from "@/features/intercom/services/intercom.repo";
 import { useIntercomStore } from "@/features/intercom/intercom-store";
-import { llamadaPorInternet } from "../helpers/llamadaPorInternet";
+import { obtenerContactosDeLaVivienda } from "@/features/directorio/services/contactos.repo";
+import {
+  llamadaPorInternet,
+  quienesContestanEnLaVivienda,
+  TODOS_EN_LA_VIVIENDA,
+} from "../helpers/llamadaPorInternet";
 
 const LLAMADAS_QUERY_KEY = ["chat", "llamadas"];
 
@@ -70,6 +75,8 @@ export function useLlamada() {
   const [torre, setTorre] = useState("");
   const [unidadId, setUnidadId] = useState("");
   const [destino, setDestino] = useState("");
+  /** A quién de la vivienda (17/11/2026). Vacío: «Todos». */
+  const [aQuienDeLaVivienda, setAQuienDeLaVivienda] = useState(TODOS_EN_LA_VIVIENDA);
 
   const viviendas = useMemo(
     () =>
@@ -96,6 +103,24 @@ export function useLlamada() {
     enabled: aUnaVivienda && Boolean(unidadId),
   });
 
+  /*
+    Quiénes de la vivienda pueden contestar por la app (17/11/2026, pedido del
+    cliente: «hoy solo sale el departamento»). Es la misma lista que la ficha
+    de la vivienda en el directorio (`contactos_de_la_vivienda`, solo para la
+    administración y la portería). Si falla, se llama a todos, como antes.
+  */
+  const personas = useQuery({
+    queryKey: [...LLAMADAS_QUERY_KEY, "personas", unidadId],
+    queryFn: () => obtenerContactosDeLaVivienda(unidadId),
+    enabled: aUnaVivienda && Boolean(unidadId),
+  });
+  const opcionesDeLaVivienda = aUnaVivienda
+    ? quienesContestanEnLaVivienda(personas.data ?? [])
+    : [];
+  const personaElegida = opcionesDeLaVivienda.find(
+    (o) => o.value !== TODOS_EN_LA_VIVIENDA && o.value === aQuienDeLaVivienda,
+  );
+
   const historial = useQuery({
     queryKey: [...LLAMADAS_QUERY_KEY, usuarioId],
     queryFn: obtenerHistorialLlamadas,
@@ -109,9 +134,11 @@ export function useLlamada() {
   const aQuien = aUnaVivienda ? (vivienda?.label ?? "") : (elegido?.etiqueta ?? "");
   /** Lo que se ve en la llamada en curso: con el nombre completo, si se sabe (29/10/2026). */
   const etiquetaDeLaLlamada =
-    aUnaVivienda && contacto.data?.nombre && vivienda
-      ? `${contacto.data.nombre} · ${vivienda.label}`
-      : aQuien;
+    aUnaVivienda && personaElegida && vivienda
+      ? `${personaElegida.label} · ${vivienda.label}`
+      : aUnaVivienda && contacto.data?.nombre && vivienda
+        ? `${contacto.data.nombre} · ${vivienda.label}`
+        : aQuien;
   const numero = aUnaVivienda ? (contacto.data?.numero ?? "") : (elegido?.numero ?? "");
 
   /** La llamada por la app que corresponde a lo elegido, si hay camino. */
@@ -121,6 +148,7 @@ export function useLlamada() {
     unidadId,
     unidadActivaId: unidadActiva?.unidadId,
     condominioId,
+    aUsuarioId: personaElegida?.value ?? null,
   });
 
   // Y si al otro lado alguien las recibe.
@@ -243,10 +271,18 @@ export function useLlamada() {
     cambiarTorre: (valor: string) => {
       setTorre(valor);
       setUnidadId("");
+      setAQuienDeLaVivienda(TODOS_EN_LA_VIVIENDA);
     },
     viviendas,
     unidadId,
-    setUnidadId,
+    setUnidadId: (valor: string) => {
+      setUnidadId(valor);
+      setAQuienDeLaVivienda(TODOS_EN_LA_VIVIENDA);
+    },
+    /** «Todos» y las personas de la vivienda que reciben llamadas por la app. */
+    opcionesDeLaVivienda,
+    aQuienDeLaVivienda: personaElegida ? aQuienDeLaVivienda : TODOS_EN_LA_VIVIENDA,
+    setAQuienDeLaVivienda,
     destinos: (destinos.data ?? []).map(opcion),
     /**
      * Lo que elige el personal antes de la vivienda: la portería llama a una

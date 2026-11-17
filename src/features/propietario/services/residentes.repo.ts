@@ -203,6 +203,33 @@ export async function viviendaEnAlquiler(unidadId: string): Promise<boolean> {
 }
 
 /**
+ * Si la vivienda tiene un inquilino líder activo que no sea esta persona
+ * (17/11/2026). Mientras lo haya, el propietario no puede volver a ser
+ * residente: la base lo impide (`propietario_no_reside_mientras_haya_inquilino_lider`)
+ * y la pantalla, con esto, le explica por qué en vez de ofrecerle el
+ * interruptor. Se pregunta por el rol de la base, no por la etiqueta.
+ */
+export async function hayInquilinoLiderActivo(
+  unidadId: string,
+  salvoUsuarioId: string,
+): Promise<boolean> {
+  if (!unidadId) return false;
+  let consulta = supabase
+    .from("membresia_unidad")
+    .select("id", { count: "exact", head: true })
+    .eq("unidad_id", unidadId)
+    .eq("rol", "inquilino_lider")
+    .eq("activo", true);
+  // Quien es a la vez propietario e inquilino líder no se bloquea a sí mismo.
+  if (salvoUsuarioId) {
+    consulta = consulta.or(`usuario_id.is.null,usuario_id.neq.${salvoUsuarioId}`);
+  }
+  const { count, error } = await consulta;
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/**
  * El propietario declara si vive o no en su vivienda.
  *
  * Vivía en un mapa `correo -> boolean` en memoria, lo que además usaba el
