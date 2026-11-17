@@ -75,17 +75,24 @@ const URL_CONFIRMACION = "{{ .ConfirmationURL }}";
  * las otras seis.
  */
 const PLANTILLAS = {
+  /*
+    Con código y no con enlace (17/11/2026, cliente: «cuando le sale esa
+    pantalla de Confirma tu correo, el usuario no está logueado… lo adecuado
+    sería que sí esté»). La persona escribe el código en la misma pantalla de
+    Veciyo y queda dentro en ese momento; el enlace la sacaba de la app y, si
+    el celular la cerraba mientras tanto, volvía sin sesión.
+  */
   confirmation: {
-    asunto: "Confirma tu correo y entra a Veciyo",
+    asunto: "{{ .Token }} es tu código para entrar a Veciyo",
     correo: {
-      titulo: "Confirma tu correo",
+      titulo: "Tu código para entrar",
       parrafos: [
-        "Ya casi está. Pulsa el botón para confirmar que esta dirección es tuya y terminar de crear tu cuenta de Veciyo.",
+        "Ya casi está. Escribe este código en Veciyo para confirmar que esta dirección es tuya y entrar a tu cuenta.",
         "Veciyo es la aplicación con la que tu edificio se organiza: visitas, correspondencia, zonas comunes y avisos.",
       ],
-      boton: { texto: "Confirmar mi correo", url: URL_CONFIRMACION },
-      nota: "El enlace caduca en una hora y se puede usar una sola vez.",
-      pie: "Si no has creado ninguna cuenta en Veciyo, puedes ignorar este mensaje: sin abrir el enlace no se crea nada.",
+      codigo: "{{ .Token }}",
+      nota: "El código caduca en una hora.",
+      pie: "Si no has creado ninguna cuenta en Veciyo, puedes ignorar este mensaje: sin el código no se confirma nada. Nadie de Veciyo te lo va a pedir.",
     },
   },
 
@@ -275,6 +282,8 @@ for (const [nombre, { asunto, correo }] of Object.entries(PLANTILLAS)) {
   config[`mailer_templates_${nombre}_content`] = html;
 }
 Object.assign(config, SMS);
+/* Seis cifras, que se teclean de un vistazo (17/11/2026; venía en ocho). */
+config.mailer_otp_length = 6;
 
 const cuantos = Object.keys(PLANTILLAS).length;
 

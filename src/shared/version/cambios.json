@@ -2,6 +2,13 @@
   {
     "fecha": "2026-11-17",
     "puntos": [
+      "Crear cuenta: el correo ya no trae un enlace, trae un código de 6 cifras. Lo escribes en la misma pantalla de Veciyo y quedas dentro al momento, sin poner la contraseña otra vez.",
+      "Si el celular cierra la app mientras buscas el código, al volver te lo pide con tu correo puesto. Puedes reenviarlo cada minuto o usar otro correo."
+    ]
+  },
+  {
+    "fecha": "2026-11-17",
+    "puntos": [
       "Quien entra con Google completa el mismo formulario del registro (nombre, teléfono, documento y términos) antes de entrar. El correo no se confirma, porque Google ya lo verificó.",
       "Si después de registrarte el celular cierra la app mientras confirmas el correo, al volver el inicio de sesión ya trae tu correo y te dice que solo falta la contraseña.",
       "La tarjeta «paso a paso» del propietario y de la portería ya no pide el teléfono: se da al crear la cuenta."
