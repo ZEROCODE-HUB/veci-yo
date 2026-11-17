@@ -9,7 +9,9 @@ import {
 } from "@/features/administrador/services/arquitectura.repo";
 import { estadoDe, juntarCargas } from "@/shared/components";
 import { useEstacionamientosVisita } from "@/features/visitas/hooks/useEstacionamientosVisita";
+import { pisosDe } from "@/features/correspondencia/helpers/destinos";
 import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
+import { comoDestino, nivelesDe, propietariosDe, residentesDe } from "../helpers/filtrosDelDirectorio";
 import { placaParaBuscar, vehiculosPorUnidad, type VehiculoDelDirectorio } from "../services/vehiculos.repo";
 import type { Unidad } from "@/stores/admin-store";
 import type {
@@ -86,9 +88,21 @@ export function useDirectorio() {
   const [search, setSearch] = useState("");
   /** Lo buscado como placa: sin espacios ni guiones, en mayúsculas. */
   const placaBuscada = placaParaBuscar(search);
-  const [torreFiltro, setTorreFiltro] = useState("");
+  const [torreFiltro, setTorreFiltroSolo] = useState("");
+  /*
+    Por piso, sin propietario y por nivel de estacionamiento (16/11/2026,
+    cliente: «filtrar por ubicación en el directorio»). Al cambiar de torre el
+    piso vuelve a «todos»: el 5 de una torre puede no existir en otra.
+  */
+  const [pisoFiltro, setPisoFiltro] = useState("");
+  const [soloSinPropietario, setSoloSinPropietario] = useState(false);
+  const [nivelFiltro, setNivelFiltro] = useState("");
+  const setTorreFiltro = useCallback((torre: string) => {
+    setTorreFiltroSolo(torre);
+    setPisoFiltro("");
+  }, []);
   const [subTab, setSubTab] = useState<
-    "departamentos" | "estacionamientos" | "depositos"
+    "departamentos" | "estacionamientos" | "depositos" | "residentes"
   >("departamentos");
   // El anfitrion y el admin primario son por unidad, no del condominio: los
   // trae `contactos`. Antes se buscaba "el primero que lo sea" en un store de
@@ -139,6 +153,9 @@ export function useDirectorio() {
     () =>
       unidades.filter((unidad) =>
         (!soloRentaCorta || conRentaCorta.has(unidad.uuid ?? "")) &&
+        (!pisoFiltro || String(unidad.piso) === pisoFiltro) &&
+        // El mismo criterio que la etiqueta roja de la tarjeta.
+        (!soloSinPropietario || propietariosDe(contactosFor(unidad)).length === 0) &&
         (
           // Por placa, escrita como sea: «abc-123» encuentra «ABC123» (fila 24).
           (placaBuscada.length >= 3 &&
@@ -170,7 +187,33 @@ export function useDirectorio() {
           unidad.torreNumero,
         )),
       ),
-    [unidades, matches, contactosFor, soloRentaCorta, conRentaCorta, placaBuscada, vehiculosDe, search],
+    [
+      unidades,
+      matches,
+      contactosFor,
+      soloRentaCorta,
+      conRentaCorta,
+      placaBuscada,
+      vehiculosDe,
+      search,
+      pisoFiltro,
+      soloSinPropietario,
+    ],
+  );
+
+  const pisos = useMemo(
+    () => pisosDe(unidades.map((u) => comoDestino(u, condominioId)), torreFiltro || undefined),
+    [unidades, torreFiltro, condominioId],
+  );
+  const niveles = useMemo(() => nivelesDe(unidades), [unidades]);
+
+  // Una persona por fila, con el mismo buscador y el filtro de torre.
+  const filteredRes = useMemo(
+    () =>
+      residentesDe(unidades, contactosFor).filter((r) =>
+        matches(`${r.nombre} ${r.papel} ${r.codigo} Torre ${r.torreNumero}`, r.torreNumero),
+      ),
+    [unidades, contactosFor, matches],
   );
 
   const estacionamientosList = useMemo<DirectorioEstacionamiento[]>(
@@ -180,6 +223,8 @@ export function useDirectorio() {
           id: `${unidad.id}-${index}`,
           // Su código de verdad (09/11/2026); antes se inventaba «101-E1».
           codigo: unidad.codigosEstacionamiento?.[index] ?? `${unidad.codigo}-E${index + 1}`,
+          // Su nivel, en el mismo orden que los códigos (16/11/2026).
+          nivel: unidad.nivelesEstacionamiento?.[index] ?? "",
           ubicacion: unidad.ubicacionParking || `T${unidad.torreNumero}`,
           torreNumero: unidad.torreNumero,
           unidad,
@@ -196,10 +241,12 @@ export function useDirectorio() {
   const filteredEst = useMemo(
     () =>
       estacionamientosList.filter((item) =>
+        (!nivelFiltro || item.nivel === nivelFiltro) &&
         matches(
           // Por todos sus datos (Para Claude 186, 30/10/2026).
           [
             item.codigo,
+            item.nivel,
             item.ubicacion,
             `Torre ${item.torreNumero}`,
             item.propietario,
@@ -209,7 +256,7 @@ export function useDirectorio() {
           item.torreNumero,
         ),
       ),
-    [estacionamientosList, matches],
+    [estacionamientosList, matches, nivelFiltro],
   );
 
   /*
@@ -314,9 +361,18 @@ export function useDirectorio() {
     setSubTab,
     soloRentaCorta,
     setSoloRentaCorta,
+    pisos,
+    pisoFiltro,
+    setPisoFiltro,
+    soloSinPropietario,
+    setSoloSinPropietario,
+    niveles,
+    nivelFiltro,
+    setNivelFiltro,
     contactosFor,
     vehiculosDe,
     filtered,
+    filteredRes,
     filteredEst,
     filteredEstVisita,
     filteredDep,

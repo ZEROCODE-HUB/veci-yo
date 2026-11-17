@@ -47,6 +47,8 @@ export interface Porteria {
   telefono?: string;
   /** El pais del telefono, en ISO 3166-1 alfa-2. */
   codigoPais?: string;
+  /** La torre de una garita de torre (16/11/2026). */
+  torreId?: string;
 }
 
 export interface Bloque {
@@ -73,6 +75,8 @@ export interface Unidad {
    * rellenaba `estacionamientos` y el directorio decía «Estac: 0» siempre.
    */
   codigosEstacionamiento?: string[];
+  /** El nivel de cada uno, en el mismo orden («Sótano 1»; vacío si no tiene). */
+  nivelesEstacionamiento?: string[];
   /** El enum de la base: el formulario ofrece estos cuatro y nada mas. */
   estado: Database["public"]["Enums"]["estado_unidad"];
   propietarioAsignado?: string;

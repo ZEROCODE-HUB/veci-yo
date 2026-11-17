@@ -1,5 +1,16 @@
 [
   {
+    "fecha": "2026-11-17",
+    "puntos": [
+      "En Inicio, una tarjeta «paso a paso» dice qué falta para tener listo tu edificio (administración), tu vivienda (propietario) o tu puesto (portería). Cada paso lleva a la pantalla donde se hace, y la tarjeta desaparece cuando todo está listo.",
+      "Crear torre: dices desde qué piso hasta qué piso y cuántos departamentos hay por piso, con numeración 501… o 5A…, y ves cuántos se van a crear. Si un piso es distinto, después agregas o quitas departamentos uno por uno.",
+      "Estacionamientos por nivel (Sótano 1 · S1…): en Arquitectura › Estacionamientos se crean los niveles, y al crear la torre se generan sus estacionamientos (S1-01…). El nivel es obligatorio y se ve junto al código.",
+      "Porterías: eliges cómo son tus garitas (una principal y una por torre, o una principal y una vehicular) y les pones nombre.",
+      "Directorio: filtros por piso, «Sin propietario» marcado en rojo, una pestaña de Residentes y estacionamientos por nivel. La administración puede seleccionar varios departamentos y enviarles un mensaje por su chat, con aviso en el celular. La ficha de cada vivienda muestra su personal permanente.",
+      "La portería vuelve a registrar visitas, solo de amigos o familiares y profesionales temporales, con foto, hora, departamento y quién autorizó. En Permisos hay un interruptor nuevo, «La portería pide documento a amigos y familiares», que viene apagado; al profesional temporal se le pide siempre."
+    ]
+  },
+  {
     "fecha": "2026-11-16",
     "puntos": [
       "Invitaciones: una sola forma para todos los roles. El correo dice como qué te invitan y su botón «Ver la invitación» abre la app con ella (o la tienda, si no tienes la app).",

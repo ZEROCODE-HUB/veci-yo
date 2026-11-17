@@ -28,11 +28,12 @@ export function permisosDeVisitas(
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esHuesped = rolActivo === "huesped-temporal";
-  // La porteria no registra visitas: las anuncian los vecinos o la
-  // administracion (Para Claude 200, 01/11/2026).
+  // La portería vuelve a registrar, solo amigos o familia y profesionales
+  // temporales (16/11/2026; se le había quitado el 01/11, Para Claude 200).
   const puedeCrear =
     esPropietario ||
     esInquilinoLider ||
+    esGuardia ||
     esAdmin ||
     (esHuesped && huespedPuedeRegistrar);
   const puedeEliminar =

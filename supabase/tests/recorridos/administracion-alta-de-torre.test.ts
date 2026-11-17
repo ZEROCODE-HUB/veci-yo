@@ -7,86 +7,95 @@ import {
   obtenerArquitectura,
 } from "@/features/administrador/services/arquitectura.repo";
 
-/**
- * Las reglas de la torre son parámetros de la base (torre_viviendas_maximo,
- * torre_divisor_piso): se leen de ahí, como hace la pantalla.
- */
+/** El tope de la torre es un parámetro de la base: se lee de ahí, como hace la pantalla. */
 async function reglasDeTorre() {
   const p = await obtenerParametrosPublicos(CONDOMINIO);
-  return {
-    viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo"),
-    divisorPiso: parametroNumero(p, "torre_divisor_piso"),
-  };
+  return { viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo") };
 }
 
 /**
  * Recorrido: dar de alta una torre crea lo que el formulario promete.
  *
- * El alta pedía tres cosas que no producían nada: el rango de numeración --con
- * una vista previa que decía literalmente «Se generarán 5 unidades: 101 a
- * 105»--, las cocheras de visita y los almacenes. Se guardaban como números en
- * la torre y ahí se quedaban.
+ * Hasta el 02/10/2026 el alta pedía cosas que no producían nada --el rango de
+ * numeración con su vista previa, las cocheras de visita-- y la pantalla de
+ * Torres decía diez cocheras donde la portería solo podía asignar una (R-35).
  *
- * La consecuencia se veía en dos pantallas del **mismo** administrador: la de
- * Torres decía que la Torre 3 tenía diez cocheras de visita, y la de Inicio
- * «1 de 1 disponibles», porque la única plaza que existía no estaba en ninguna
- * torre. Los dos números no se hablaban (R-35).
- *
- * Decidido con el cliente el 02/10/2026: **que se construyan**.
+ * Desde el 16/11/2026 el alta pide «del piso X al Y, N por piso» con números
+ * o letras, y los estacionamientos por nivel («S1-01», «S1-V01»). El cliente:
+ * «pone 3 departamentos del piso 5 al 7, ah entonces se van a crear 9».
  *
  * Se llama a la función del repositorio de la aplicación, no a HTTP crudo, que
  * es donde vivía la mitad de los defectos de este proyecto.
  */
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const ADMIN = "admin@veciyo.test";
+const NOMBRE = "[prueba] Torre que se construye";
+// Una nomenclatura irrepetible: (condominio, nomenclatura) es único.
+const NOM = `Z${String(Date.now()).slice(-4)}`;
+// Pisos altos y con letra: ningún departamento del edificio de pruebas se llama así.
+const PISOS = { desde: 90, hasta: 92, porPiso: 3, numeracion: "letra" as const };
 
 let torreId = "";
 
+/** Lo de esta prueba, por su torre y su marca: nunca por atributos sueltos. */
+async function limpiar() {
+  const { data: torres } = await servicio
+    .from("torre")
+    .select("id")
+    .eq("condominio_id", CONDOMINIO)
+    .eq("nombre", NOMBRE);
+  for (const t of torres ?? []) {
+    const e = await servicio.from("estacionamiento").delete().eq("torre_id", t.id);
+    expect(e.error).toBeNull();
+    const u = await servicio.from("unidad").delete().eq("torre_id", t.id);
+    expect(u.error).toBeNull();
+    const r = await servicio.from("torre").delete().eq("id", t.id);
+    expect(r.error).toBeNull();
+  }
+  const n = await servicio
+    .from("nivel_estacionamiento")
+    .delete()
+    .eq("condominio_id", CONDOMINIO)
+    .like("nombre", "[prueba] torre nivel%");
+  expect(n.error).toBeNull();
+}
+
 beforeAll(async () => {
+  await limpiar();
   await entrarComo(ADMIN);
 });
 
 afterAll(async () => {
-  /*
-    Con la clave de servicio y en orden: las viviendas y las plazas cuelgan de
-    la torre, y el disparador nuevo impide borrarla mientras tenga viviendas
-    --que es justo lo que se añadió hoy--.
-  */
-  if (torreId) {
-    await servicio.from("estacionamiento").delete().eq("torre_id", torreId);
-    await servicio.from("unidad").delete().eq("torre_id", torreId);
-    await servicio.from("torre").delete().eq("id", torreId);
-  }
-
-  const { data } = await servicio
-    .from("torre")
-    .select("id")
-    .eq("id", torreId || "00000000-0000-0000-0000-000000000000");
-  expect(data ?? []).toHaveLength(0);
-
   await salir();
+  await limpiar();
+  const { data } = await servicio.from("torre").select("id").eq("nombre", NOMBRE);
+  expect(data ?? []).toHaveLength(0);
 });
 
-describe("dar de alta una torre con su rango y sus cocheras", () => {
+describe("dar de alta una torre con sus pisos y sus niveles", () => {
   it("crea la torre", async () => {
-    await crearTorre(CONDOMINIO, {
-      nombre: "[prueba] Torre que se construye",
-      nomenclaturaDesde: "901",
-      nomenclaturaHasta: "905",
-      cocherasVisitas: "3",
-    }, await reglasDeTorre());
+    await crearTorre(CONDOMINIO, { nombre: NOMBRE }, await reglasDeTorre(), {
+      departamentos: PISOS,
+      estacionamientos: [
+        { nombre: "[prueba] torre nivel", nomenclatura: NOM, privados: 3, visita: 2 },
+      ],
+    });
 
     const { data } = await supabase
       .from("torre")
-      .select("id, numero")
-      .eq("nombre", "[prueba] Torre que se construye")
+      .select("id, cocheras_privadas, cocheras_visitas, nomenclatura_desde, nomenclatura_hasta")
+      .eq("nombre", NOMBRE)
       .single();
 
     expect(data).toBeTruthy();
     torreId = data!.id;
+    // La tarjeta de la torre cuenta lo que se creó, no lo que alguien escribió.
+    expect(data!.cocheras_privadas).toBe(3);
+    expect(data!.cocheras_visitas).toBe(2);
+    expect([data!.nomenclatura_desde, data!.nomenclatura_hasta]).toEqual(["90A", "92C"]);
   });
 
-  it("y las cinco viviendas del rango, con su piso", async () => {
+  it("y los nueve departamentos, cada uno con su piso escrito", async () => {
     const { data } = await supabase
       .from("unidad")
       .select("codigo, piso")
@@ -94,71 +103,71 @@ describe("dar de alta una torre con su rango y sus cocheras", () => {
       .order("codigo");
 
     expect((data ?? []).map((u) => u.codigo)).toEqual([
-      "901",
-      "902",
-      "903",
-      "904",
-      "905",
+      "90A", "90B", "90C", "91A", "91B", "91C", "92A", "92B", "92C",
     ]);
-    // Las dos últimas cifras son la puerta y lo de delante el piso, que es la
-    // convención que ya siguen los datos del edificio.
-    expect(new Set((data ?? []).map((u) => u.piso))).toEqual(new Set([9]));
+    // Con letras no hay división que valga: el piso viene del formulario.
+    expect(data!.find((u) => u.codigo === "91B")?.piso).toBe(91);
   });
 
-  it("y las tres cocheras de visita, en esa torre", async () => {
+  it("y el nivel nuevo con sus estacionamientos, con la nomenclatura en el código", async () => {
+    const { data: nivel } = await supabase
+      .from("nivel_estacionamiento")
+      .select("id, nombre")
+      .eq("condominio_id", CONDOMINIO)
+      .eq("nomenclatura", NOM)
+      .single();
+    expect(nivel?.nombre).toBe("[prueba] torre nivel");
+
     const { data } = await supabase
       .from("estacionamiento")
-      .select("codigo, tipo, torre_id")
-      .eq("torre_id", torreId);
-
-    expect(data).toHaveLength(3);
-    for (const plaza of data ?? []) {
-      expect(plaza.tipo).toBe("visitante");
-      // Llevan el número de torre: la placa es única en el condominio, no en
-      // la torre.
-      expect(plaza.codigo).toMatch(/^V\d+-\d{2}$/);
-    }
+      .select("codigo, tipo, nivel_id")
+      .eq("torre_id", torreId)
+      .order("codigo");
+    expect((data ?? []).map((e) => [e.codigo, e.tipo])).toEqual([
+      [`${NOM}-01`, "privado"],
+      [`${NOM}-02`, "privado"],
+      [`${NOM}-03`, "privado"],
+      [`${NOM}-V01`, "visitante"],
+      [`${NOM}-V02`, "visitante"],
+    ]);
+    expect(new Set((data ?? []).map((e) => e.nivel_id))).toEqual(new Set([nivel!.id]));
   });
 
-  it("y ahora los dos números cuadran, que era el defecto", async () => {
-    /*
-      Lo que se discutía en la puerta: la administración escribía diez y las
-      veía en su pantalla; la portería solo podía asignar las que existieran.
-    */
+  it("y la arquitectura enseña el nivel junto a cada uno", async () => {
     const arquitectura = await obtenerArquitectura();
     const torre = arquitectura.torres.find((t) => t.uuid === torreId);
-    expect(torre, "la torre tiene que estar en la arquitectura").toBeTruthy();
-
-    // La arquitectura devuelve el **numero** de torre de cada plaza, no su id.
-    const plazasReales = arquitectura.estacionamientos.filter(
-      (e) => e.torreNumero === torre!.numero,
-    );
-
-    expect(Number(torre?.cocherasVisitas ?? 0)).toBe(plazasReales.length);
+    const suyos = arquitectura.estacionamientos.filter((e) => e.torreNumero === torre!.numero);
+    expect(suyos).toHaveLength(5);
+    expect(new Set(suyos.map((e) => e.nivel))).toEqual(new Set(["[prueba] torre nivel"]));
   });
 });
 
 describe("lo que no se genera", () => {
-  it("un rango al revés se rechaza diciendo por qué, y no deja la torre a medias", async () => {
-    /*
-      Antes creaba la torre **sin viviendas** y sin decir nada: un rango
-      imposible es un dato mal tecleado, y quien lo tecleó se quedaba con una
-      torre vacía y sin saber qué había pasado. Desde el 13/10/2026 se mira
-      antes de crear nada y se dice el motivo.
-    */
+  it("pisos al revés se rechazan diciendo por qué, y no dejan la torre a medias", async () => {
     await expect(
-      crearTorre(CONDOMINIO, {
-        nombre: "[prueba] Torre sin rango",
-        nomenclaturaDesde: "500",
-        nomenclaturaHasta: "100",
-      }, await reglasDeTorre()),
-    ).rejects.toThrow(/termina antes de empezar/);
+      crearTorre(CONDOMINIO, { nombre: `${NOMBRE} al revés` }, await reglasDeTorre(), {
+        departamentos: { desde: 7, hasta: 5, porPiso: 3, numeracion: "numero" },
+      }),
+    ).rejects.toThrow(/no puede ser menor/);
 
     const { data: torres } = await servicio
       .from("torre")
       .select("id")
-      .eq("nombre", "[prueba] Torre sin rango");
+      .eq("nombre", `${NOMBRE} al revés`);
+    expect(torres ?? []).toHaveLength(0);
+  });
 
+  it("departamentos que ya existen tampoco: no se crea nada", async () => {
+    await expect(
+      crearTorre(CONDOMINIO, { nombre: `${NOMBRE} repetida` }, await reglasDeTorre(), {
+        departamentos: PISOS,
+      }),
+    ).rejects.toThrow(/Ya hay viviendas con esos números/);
+
+    const { data: torres } = await servicio
+      .from("torre")
+      .select("id")
+      .eq("nombre", `${NOMBRE} repetida`);
     expect(torres ?? []).toHaveLength(0);
   });
 });

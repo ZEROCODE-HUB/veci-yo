@@ -6,3 +6,6 @@ export { DirectorioEstacionamientoCard } from "./DirectorioEstacionamientoCard";
 export { DirectorioEstacionamientoVisitaCard } from "./DirectorioEstacionamientoVisitaCard";
 export { DirectorioDepositoCard } from "./DirectorioDepositoCard";
 export { DirectorioDetalleModal } from "./DirectorioDetalleModal";
+export { DirectorioDepartamentos } from "./DirectorioDepartamentos";
+export { DirectorioResidenteFila } from "./DirectorioResidenteFila";
+export { BarraDeMensaje } from "./BarraDeMensaje";

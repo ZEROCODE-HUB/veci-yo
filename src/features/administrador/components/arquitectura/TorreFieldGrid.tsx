@@ -10,8 +10,17 @@ import type { TowerFormValues } from "../../types";
   **crean** esa cantidad de estacionamientos con su código (ver
   `completarCocheras`). Eran desplegables con listas fijas hasta el
   20/10/2026: un número se escribe.
+
+  Desde el 16/11/2026 las dos cocheras solo salen al **editar** una torre de
+  antes: al crear, los estacionamientos se piden por nivel
+  (`EstacionamientosPorNivel`).
 */
-const towerFields: Array<[keyof TowerFormValues, string]> = [
+/** Los campos de texto del formulario (no las filas de niveles). */
+type CampoDeTexto = {
+  [K in keyof TowerFormValues]: TowerFormValues[K] extends string ? K : never;
+}[keyof TowerFormValues];
+
+const towerFields: Array<[CampoDeTexto, string]> = [
   ["pisos", "Pisos (opcional)"],
   ["sotanos", "Sótanos (opcional)"],
   ["depto", "Departamentos por torre (opcional)"],
@@ -23,17 +32,24 @@ const towerFields: Array<[keyof TowerFormValues, string]> = [
   ["entradasVehiculares", "Entradas vehiculares (opcional)"],
 ];
 
+const COCHERAS: CampoDeTexto[] = ["cocherasPrivadas", "cocherasVisitas"];
+
 export function TorreFieldGrid({
   control,
+  conCocheras,
 }: {
   control: Control<TowerFormValues>;
+  conCocheras: boolean;
 }) {
+  const campos = conCocheras
+    ? towerFields
+    : towerFields.filter(([name]) => !COCHERAS.includes(name));
   return (
     <View className="gap-3">
-      {Array.from({ length: Math.ceil(towerFields.length / 2) }).map(
+      {Array.from({ length: Math.ceil(campos.length / 2) }).map(
         (_, row) => (
           <View key={row} className="flex-row gap-3">
-            {towerFields
+            {campos
               .slice(row * 2, row * 2 + 2)
               .map(([name, label]) => (
                 <View key={name} className="flex-1">

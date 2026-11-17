@@ -45,12 +45,13 @@ import {
   errorDeVehiculos,
   yaPaso,
 } from "../helpers/validarVisita";
-import { TIPOS_VISITA } from "../constants";
+import { tiposQuePuedeRegistrar } from "../helpers/tiposQuePuedeRegistrar";
 import { useVisitas } from "./useVisitas";
 import { useVisitaNuevo } from "./useVisitaNuevo";
 import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
 import { entraAlRegistrar } from "../helpers/entraAlRegistrar";
 import { useOficios } from "./useOficios";
+import { useDocumentoDeAmigos } from "./useDocumentoDeAmigos";
 
 /**
  * Estado y reglas del alta de visitas.
@@ -128,16 +129,12 @@ export function useVisitasNuevo() {
   const esGuardiaOAdmin = esGuardia || esAdmin;
 
   const rentaCortaPermitida = useRentaCortaPermitida(unidadDeLaSesion?.unidadId);
-  const tiposDisponibles = TIPOS_VISITA.filter((t) => {
-    // La porteria no registra visitas (Para Claude 200, 01/11/2026).
-    if (esGuardia) return false;
-    // Sin renta corta en el edificio, no se ofrece el huésped (13/11/2026).
-    if (t === "huesped-temporal" && !rentaCortaPermitida) return false;
-    if (esHuesped) return t === "amigos" || t === "temporal";
-    // La administración registra solo personal permanente y profesionales
-    // temporales, en Inicio y en Viviendas › Visitas (Para Claude 199, 30/10/2026).
-    if (esAdmin) return t === "permanente" || t === "temporal";
-    return true;
+  // La portería, solo amigos o familia y profesionales temporales (16/11/2026).
+  const tiposDisponibles = tiposQuePuedeRegistrar({
+    esGuardia,
+    esAdmin,
+    esHuesped,
+    rentaCortaPermitida: Boolean(rentaCortaPermitida),
   });
 
   const tipoPreseleccionado = parametros?.tipoPreseleccionado;
@@ -235,6 +232,12 @@ export function useVisitasNuevo() {
     siguen la regla del edificio, que viene encendida.
   */
   const [amigoVerifica, setAmigoVerifica] = useState(false);
+  /*
+    Cuando la portería registra a un amigo o familiar, si le pide documento lo
+    decide el edificio (`documento_amigos_obligatorio`, 16/11/2026), no una
+    casilla: el guardia tiene a la persona delante.
+  */
+  const documentoDeAmigos = useDocumentoDeAmigos();
   const [nombre, setNombre] = useState("");
   // Sin preseleccion: "Cédula" era ambiguo entre ciudadania y extranjeria.
   const [tipoId, setTipoId] = useState("");
@@ -314,9 +317,15 @@ export function useVisitasNuevo() {
     tipoSeleccionado === "temporal" || tipoSeleccionado === "permanente";
   // Amigos y familiares: lo decide quien invita; el resto, el edificio.
   const esAmigos = tipoSeleccionado === "amigos";
-  const verificaEsta = esAmigos ? amigoVerifica : verificarDocumento;
+  /*
+    En la portería el amigo no se «verifica» después: el guardia escribe el
+    documento que tiene en la mano y la visita nace dentro (16/11/2026).
+  */
+  const verificaEsta = esAmigos ? !esGuardia && amigoVerifica : verificarDocumento;
+  /** La portería pide documento a amigos y familiares (regla del edificio). */
+  const porteriaPideDocumento = esGuardia && esAmigos && documentoDeAmigos.obligatorio;
   // El número se pide si se va a verificar, y siempre a un profesional.
-  const pideDocumento = !esAmigos || amigoVerifica;
+  const pideDocumento = !esAmigos || (esGuardia ? porteriaPideDocumento : amigoVerifica);
 
   /*
     La salida se guarda como `yyyy-MM-dd` --asi se compara y asi viaja-- y el
@@ -597,6 +606,14 @@ export function useVisitasNuevo() {
         "La identificación es obligatoria para todos los acompañantes",
         "error",
       );
+      return;
+    }
+    // Con la regla del edificio encendida, también los adultos que lo acompañan.
+    if (
+      porteriaPideDocumento &&
+      acompanantes.some((a) => !a.esMenor && a.nombre.trim() && !a.ci.trim())
+    ) {
+      addToast("En este edificio la portería pide el documento a cada adulto", "error");
       return;
     }
     if (esGuardia && !horaInicio) {
@@ -1038,6 +1055,8 @@ export function useVisitasNuevo() {
     tiposDocumento: opcionesDeDocumento(documentos.reglas),
     identificacion, setIdentificacion,
     amigoVerifica, setAmigoVerifica,
+    /** La portería registra un amigo y el edificio le pide el documento. */
+    porteriaPideDocumento,
     email, setEmail,
     telefono, setTelefono,
     horaInicio, setHoraInicio,
@@ -1087,6 +1106,10 @@ export function useVisitasNuevo() {
       documento (que vale «sí» mientras no llega), los límites del edificio--
       todavía no ha llegado: no se deja guardar con valores supuestos.
     */
-    cargandoReglas: cargandoSuscripcion || cargandoVerificarDocumento || cargandoLimites,
+    cargandoReglas:
+      cargandoSuscripcion ||
+      cargandoVerificarDocumento ||
+      cargandoLimites ||
+      (esGuardia && documentoDeAmigos.cargando),
   };
 }

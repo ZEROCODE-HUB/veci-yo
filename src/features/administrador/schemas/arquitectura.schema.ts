@@ -44,6 +44,15 @@ export const towerSchema = z.object({
   entradasPeatonales: conteo,
   entradasVehiculares: conteo,
   ubicacionParkingVisitas: z.string(),
+  // Lo que se construye al crear (16/11/2026). Que el conjunto tenga sentido
+  // --hasta no menor que desde, cuántos caben-- lo dice `planDeTorre`, que es
+  // lo mismo que enseña la vista previa.
+  pisoDesde: conteo,
+  pisoHasta: conteo,
+  porPiso: conteo,
+  numeracion: z.enum(["numero", "letra"]),
+  cocherasPorNivel: z.record(z.string(), z.object({ privados: conteo, visita: conteo })),
+  nivelesNuevos: z.array(z.object({ nombre: z.string(), nomenclatura: z.string() })),
 });
 
 export const unitSchema = z.object({
@@ -62,14 +71,23 @@ export const depositSchema = z.object({
 export const estacionamientoSchema = z.object({
   codigo: z.string().min(1, "El codigo es requerido"),
   tipo: z.enum(["visitante", "privado"]),
+  // «Ubicación obligatoria al crear Estacionamiento» (16/11/2026): el nivel.
+  nivelId: z.string().min(1, "Elige el nivel"),
   ubicacion: z.string(),
   unidadId: z.string(),
 });
 
-export const porteriaSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  tipo: z.enum(["entrada_principal", "acceso_vehicular"]),
-  ubicacion: z.string(),
-  telefono: z.string(),
-  codigoPais: z.string(),
-});
+export const porteriaSchema = z
+  .object({
+    nombre: z.string().min(1, "El nombre es requerido"),
+    tipo: z.enum(Constants.public.Enums.tipo_porteria),
+    ubicacion: z.string(),
+    telefono: z.string(),
+    codigoPais: z.string(),
+    torreId: z.string(),
+  })
+  // Una garita de torre sin torre no dice de dónde es (16/11/2026).
+  .refine((v) => v.tipo !== "garita_torre" || v.torreId !== "", {
+    message: "Elige la torre",
+    path: ["torreId"],
+  });

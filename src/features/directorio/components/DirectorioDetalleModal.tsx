@@ -12,6 +12,7 @@ import type {
 } from "../types/directorio";
 import type { Unidad } from "@/stores/admin-store";
 import { ContactosDeLaVivienda } from "./ContactosDeLaVivienda";
+import { PersonalPermanenteDeLaVivienda } from "./PersonalPermanenteDeLaVivienda";
 
 /**
  * El detalle de una propiedad del directorio.
@@ -120,7 +121,10 @@ function DetalleDepartamento({
   depositos: string[];
   vehiculos: VehiculoDelDirectorio[];
 }) {
-  const estac = datos.codigosEstacionamiento ?? [];
+  // Con su nivel al lado, «S1-03 · Sótano 1» (16/11/2026).
+  const estac = (datos.codigosEstacionamiento ?? []).map((c, i) =>
+    datos.nivelesEstacionamiento?.[i] ? `${c} · ${datos.nivelesEstacionamiento[i]}` : c,
+  );
   return (
     <View className="gap-1.5 rounded-xl bg-gray-100 p-3">
       <Dato icono="business-outline">{`Torre ${datos.torreNumero} · Piso ${datos.piso}`}</Dato>
@@ -201,6 +205,12 @@ export function DirectorioDetalleModal({
             />
           )}
         </View>
+        {detalle.tipo === "departamento" && detalle.datos.uuid ? (
+          <View className="gap-1.5 rounded-xl bg-gray-100 p-3">
+            <Text className="text-sm font-bold text-gray-900">Personal permanente</Text>
+            <PersonalPermanenteDeLaVivienda unidadId={detalle.datos.uuid} />
+          </View>
+        ) : null}
         {/*
           A quién contactar, con WhatsApp, chat, contacto de emergencia y
           alternativo (huecos 11 y 20). Si no se sabe la vivienda --un

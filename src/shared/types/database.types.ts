@@ -605,6 +605,7 @@ export type Database = {
           cuotas_visibilidad: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at: string | null
           direccion: string
+          documento_amigos_obligatorio: boolean
           email: string | null
           foto_path: string | null
           horario_atencion: string | null
@@ -641,6 +642,7 @@ export type Database = {
           cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion: string
+          documento_amigos_obligatorio?: boolean
           email?: string | null
           foto_path?: string | null
           horario_atencion?: string | null
@@ -677,6 +679,7 @@ export type Database = {
           cuotas_visibilidad?: Database["public"]["Enums"]["visibilidad_cuotas"]
           deleted_at?: string | null
           direccion?: string
+          documento_amigos_obligatorio?: boolean
           email?: string | null
           foto_path?: string | null
           horario_atencion?: string | null
@@ -1580,6 +1583,7 @@ export type Database = {
           condominio_id: string
           created_at: string
           id: string
+          nivel_id: string | null
           tipo: Database["public"]["Enums"]["tipo_estacionamiento"]
           torre_id: string | null
           ubicacion: string | null
@@ -1591,6 +1595,7 @@ export type Database = {
           condominio_id: string
           created_at?: string
           id?: string
+          nivel_id?: string | null
           tipo: Database["public"]["Enums"]["tipo_estacionamiento"]
           torre_id?: string | null
           ubicacion?: string | null
@@ -1602,6 +1607,7 @@ export type Database = {
           condominio_id?: string
           created_at?: string
           id?: string
+          nivel_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_estacionamiento"]
           torre_id?: string | null
           ubicacion?: string | null
@@ -1615,6 +1621,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "condominio"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estacionamiento_nivel_del_mismo_edificio"
+            columns: ["nivel_id", "condominio_id"]
+            isOneToOne: false
+            referencedRelation: "nivel_estacionamiento"
+            referencedColumns: ["id", "condominio_id"]
           },
           {
             foreignKeyName: "estacionamiento_torre_id_fkey"
@@ -2677,6 +2690,44 @@ export type Database = {
         }
         Relationships: []
       }
+      nivel_estacionamiento: {
+        Row: {
+          condominio_id: string
+          created_at: string
+          id: string
+          nombre: string
+          nomenclatura: string
+          orden: number
+          updated_at: string
+        }
+        Insert: {
+          condominio_id: string
+          created_at?: string
+          id?: string
+          nombre: string
+          nomenclatura: string
+          orden?: number
+          updated_at?: string
+        }
+        Update: {
+          condominio_id?: string
+          created_at?: string
+          id?: string
+          nombre?: string
+          nomenclatura?: string
+          orden?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nivel_estacionamiento_condominio_id_fkey"
+            columns: ["condominio_id"]
+            isOneToOne: false
+            referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacion: {
         Row: {
           audiencia: Json | null
@@ -3383,6 +3434,7 @@ export type Database = {
           nombre: string
           telefono: string | null
           tipo: Database["public"]["Enums"]["tipo_porteria"]
+          torre_id: string | null
           ubicacion: string | null
           updated_at: string
         }
@@ -3395,6 +3447,7 @@ export type Database = {
           nombre: string
           telefono?: string | null
           tipo: Database["public"]["Enums"]["tipo_porteria"]
+          torre_id?: string | null
           ubicacion?: string | null
           updated_at?: string
         }
@@ -3407,6 +3460,7 @@ export type Database = {
           nombre?: string
           telefono?: string | null
           tipo?: Database["public"]["Enums"]["tipo_porteria"]
+          torre_id?: string | null
           ubicacion?: string | null
           updated_at?: string
         }
@@ -3417,6 +3471,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "condominio"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "porteria_torre_del_mismo_edificio"
+            columns: ["torre_id", "condominio_id"]
+            isOneToOne: false
+            referencedRelation: "torre"
+            referencedColumns: ["id", "condominio_id"]
           },
         ]
       }
@@ -6938,6 +6999,16 @@ export type Database = {
           tipo_documento: string
         }[]
       }
+      mensaje_a_viviendas: {
+        Args: { p_texto: string; p_unidades: string[] }
+        Returns: {
+          codigo: string
+          conversacion_id: string
+          enviado: boolean
+          motivo: string
+          unidad_id: string
+        }[]
+      }
       mensajes_de_conversacion: {
         Args: { p_conversacion_id: string }
         Returns: {
@@ -7615,6 +7686,19 @@ export type Database = {
         Returns: {
           es_titular: boolean
           invitado_id: string
+          visita_id: string
+        }[]
+      }
+      personal_permanente_de_la_vivienda: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          codigo_pais: string
+          dias_trabajo: number[]
+          documento_numero: string
+          nombre: string
+          profesion: string
+          telefono: string
+          tipo_documento: string
           visita_id: string
         }[]
       }
@@ -8457,7 +8541,7 @@ export type Database = {
         | "booleano"
         | "lista"
       tipo_participante: "residente" | "visitante" | "huesped_temporal"
-      tipo_porteria: "entrada_principal" | "acceso_vehicular"
+      tipo_porteria: "entrada_principal" | "acceso_vehicular" | "garita_torre"
       tipo_publicacion: "anuncio" | "encuesta"
       tipo_reclamo:
         | "consulta"
@@ -8879,7 +8963,7 @@ export const Constants = {
         "lista",
       ],
       tipo_participante: ["residente", "visitante", "huesped_temporal"],
-      tipo_porteria: ["entrada_principal", "acceso_vehicular"],
+      tipo_porteria: ["entrada_principal", "acceso_vehicular", "garita_torre"],
       tipo_publicacion: ["anuncio", "encuesta"],
       tipo_reclamo: [
         "consulta",

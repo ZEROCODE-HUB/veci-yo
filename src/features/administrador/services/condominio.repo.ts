@@ -147,6 +147,37 @@ export async function guardarVerificacionDeDocumento(
   if (error) throw error;
 }
 
+/**
+ * Si la portería pide el documento a amigos y familiares cuando ella misma
+ * registra la visita (16/11/2026). Lo decide el edificio y viene apagado: el
+ * cliente pidió que a un amigo o familiar no se le pida, «depende de la regla
+ * del edificio». La base también lo exige (`porteria_pide_el_documento`).
+ */
+export async function obtenerDocumentoAmigosObligatorio(
+  condominioId: string,
+): Promise<boolean> {
+  if (!condominioId) return false;
+  const { data, error } = await supabase
+    .from("condominio")
+    .select("documento_amigos_obligatorio")
+    .eq("id", condominioId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.documento_amigos_obligatorio ?? false;
+}
+
+/** Solo la administración; lo sujeta `condominio_escritura`. */
+export async function guardarDocumentoAmigosObligatorio(
+  condominioId: string,
+  obligatorio: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from("condominio")
+    .update({ documento_amigos_obligatorio: obligatorio })
+    .eq("id", condominioId);
+  if (error) throw error;
+}
+
 /** Lo que el edificio pide a toda vivienda de renta corta. `null` = no lo pide. */
 export interface LimitesRentaCorta {
   estanciaMinimaNoches: number | null;

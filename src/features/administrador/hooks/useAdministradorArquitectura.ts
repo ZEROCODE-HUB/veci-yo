@@ -21,6 +21,12 @@ import {
   eliminarTorre,
   eliminarUnidad,
   obtenerArquitectura,
+  crearNiveles,
+  actualizarNivel,
+  eliminarNivel,
+  crearGaritas,
+  type ConstruccionDeTorre,
+  type DatosNivel,
 } from "../services/arquitectura.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { estadoDe } from "@/shared/components";
@@ -101,11 +107,13 @@ export function useAdministradorArquitectura() {
   const nuevaTorre = useMutation({
     // Si los parámetros no hubieran llegado, `numero` lanza y el fallo se
     // enseña como cualquier otro: no se crea una torre con un tope inventado.
-    mutationFn: (datos: Partial<Torre>) =>
-      crearTorre(condominioId, datos, {
-        viviendasMaximo: parametrosDeLaBase.numero("torre_viviendas_maximo"),
-        divisorPiso: parametrosDeLaBase.numero("torre_divisor_piso"),
-      }),
+    mutationFn: ({ datos, construccion }: { datos: Partial<Torre>; construccion?: ConstruccionDeTorre }) =>
+      crearTorre(
+        condominioId,
+        datos,
+        { viviendasMaximo: parametrosDeLaBase.numero("torre_viviendas_maximo") },
+        construccion,
+      ),
     ...opciones,
   });
   /*
@@ -196,6 +204,24 @@ export function useAdministradorArquitectura() {
     ...opciones,
   });
 
+  // Niveles de estacionamiento y garitas de una vez (16/11/2026).
+  const nuevosNiveles = useMutation({
+    mutationFn: (niveles: DatosNivel[]) => crearNiveles(condominioId, niveles),
+    ...opciones,
+  });
+  const editarNivel = useMutation({
+    mutationFn: ({ uuid, datos }: { uuid: string; datos: DatosNivel }) => actualizarNivel(uuid, datos),
+    ...opciones,
+  });
+  const borrarNivel = useMutation({
+    mutationFn: (uuid: string) => eliminarNivel(uuid),
+    ...opciones,
+  });
+  const nuevasGaritas = useMutation({
+    mutationFn: (garitas: Parameters<typeof crearGaritas>[1]) => crearGaritas(condominioId, garitas),
+    ...opciones,
+  });
+
   const nuevoEstacionamiento = useMutation({
     mutationFn: (datos: Parameters<typeof crearEstacionamiento>[1]) =>
       crearEstacionamiento(condominioId, datos),
@@ -222,11 +248,13 @@ export function useAdministradorArquitectura() {
     depositos: query.data?.depositos ?? ([] as Deposito[]),
     porterias: query.data?.porterias ?? [],
     estacionamientos: query.data?.estacionamientos ?? [],
+    niveles: query.data?.niveles ?? [],
     cargando: query.isLoading,
     /** Carga, fallo y reintento: sin esto, un fallo se leía como un edificio vacío. */
     estado: estadoDe(query),
 
-    createTower: (datos: Partial<Torre>) => esperar(nuevaTorre.mutateAsync(datos)),
+    createTower: (datos: Partial<Torre>, construccion?: ConstruccionDeTorre) =>
+      esperar(nuevaTorre.mutateAsync({ datos, construccion })),
     updateTower: (uuid: string, datos: Partial<Torre>) =>
       esperar(editarTorre.mutateAsync({ uuid, datos })),
     deleteTower: (uuid: string) => esperar(borrarTorre.mutateAsync(uuid)),
@@ -253,6 +281,12 @@ export function useAdministradorArquitectura() {
     updatePorteria: (uuid: string, datos: Parameters<typeof actualizarPorteria>[1]) =>
       esperar(editarPorteria.mutateAsync({ uuid, datos })),
     deletePorteria: (uuid: string) => esperar(borrarPorteria.mutateAsync(uuid)),
+    createGaritas: (garitas: Parameters<typeof crearGaritas>[1]) =>
+      esperar(nuevasGaritas.mutateAsync(garitas)),
+
+    createNiveles: (niveles: DatosNivel[]) => esperar(nuevosNiveles.mutateAsync(niveles)),
+    updateNivel: (uuid: string, datos: DatosNivel) => esperar(editarNivel.mutateAsync({ uuid, datos })),
+    deleteNivel: (uuid: string) => esperar(borrarNivel.mutateAsync(uuid)),
 
     createEstacionamiento: (datos: Parameters<typeof nuevoEstacionamiento.mutateAsync>[0]) =>
       esperar(nuevoEstacionamiento.mutateAsync(datos)),

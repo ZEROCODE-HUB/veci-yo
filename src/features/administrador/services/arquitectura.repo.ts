@@ -9,6 +9,12 @@ import type {
   Unidad,
 } from "@/stores/admin-store";
 import type { Database } from "@/shared/types/database.types";
+import {
+  planDeEstacionamientos,
+  planDeTorre,
+  type PedidoDeNivel,
+  type PedidoDeTorre,
+} from "../helpers/arquitectura.helpers";
 
 type TipoPorteriaDB = Database["public"]["Enums"]["tipo_porteria"];
 type EstadoUnidadDB = Database["public"]["Enums"]["estado_unidad"];
@@ -92,11 +98,20 @@ function torreHaciaFila(datos: Partial<Torre>) {
 // Consulta única
 // ---------------------------------------------------------------------------
 
+/** Un nivel de estacionamiento del edificio (16/11/2026). */
+export interface NivelDeEstacionamiento {
+  uuid: string;
+  nombre: string;
+  nomenclatura: string;
+  orden: number;
+}
+
 export interface Arquitectura {
   torres: Torre[];
   unidades: Unidad[];
   depositos: Deposito[];
   porterias: Porteria[];
+  niveles: NivelDeEstacionamiento[];
   estacionamientos: Array<{
     uuid: string;
     codigo: string;
@@ -105,11 +120,15 @@ export interface Arquitectura {
     unidadId: string | null;
     torreNumero: number | null;
     ocupado: boolean;
+    /** El nivel donde está; vacío en los de antes del 16/11/2026. */
+    nivelId: string | null;
+    /** Su nombre («Sótano 1»), para enseñarlo junto al código. */
+    nivel: string;
   }>;
 }
 
 export async function obtenerArquitectura(): Promise<Arquitectura> {
-  const [torres, unidades, depositos, porterias, estacionamientos] =
+  const [torres, unidades, depositos, porterias, estacionamientos, niveles] =
     await Promise.all([
       supabase.from("torre").select("*").is("deleted_at", null).order("numero"),
       supabase
@@ -131,27 +150,40 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
           `any` para compilar.
         */
         .select(
-          `id, codigo, ubicacion, tipo, unidad_id,
+          `id, codigo, ubicacion, tipo, unidad_id, nivel_id,
            torre:torre_id ( numero ),
            asignaciones:asignacion_estacionamiento ( liberado_en )`,
         )
         .order("codigo"),
+      supabase
+        .from("nivel_estacionamiento")
+        .select("id, nombre, nomenclatura, orden")
+        .order("orden")
+        .order("nombre"),
     ]);
 
-  for (const r of [torres, unidades, depositos, porterias, estacionamientos]) {
+  for (const r of [torres, unidades, depositos, porterias, estacionamientos, niveles]) {
     if (r.error) throw r.error;
   }
+
+  // El nombre del nivel va junto al código en todas partes (16/11/2026): se
+  // pide aparte y se cruza aquí, una vez.
+  const nombreDelNivel = new Map((niveles.data ?? []).map((n) => [n.id, n.nombre]));
 
   /*
     Los estacionamientos privados de cada vivienda (09/11/2026, Correcciones
     fila 8): ya se cargaban aquí, pero a la vivienda no le llegaban y el
     directorio decía «Estac: 0» en todas.
   */
-  const privadosPorUnidad = new Map<string, { codigo: string; ubicacion: string }[]>();
+  const privadosPorUnidad = new Map<string, { codigo: string; ubicacion: string; nivel: string }[]>();
   for (const e of estacionamientos.data ?? []) {
     if (e.tipo === "visitante" || !e.unidad_id) continue;
     const lista = privadosPorUnidad.get(e.unidad_id) ?? [];
-    lista.push({ codigo: e.codigo, ubicacion: e.ubicacion ?? "" });
+    lista.push({
+      codigo: e.codigo,
+      ubicacion: e.ubicacion ?? "",
+      nivel: e.nivel_id ? nombreDelNivel.get(e.nivel_id) ?? "" : "",
+    });
     privadosPorUnidad.set(e.unidad_id, lista);
   }
 
@@ -170,6 +202,8 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
         estado: f.estado,
         estacionamientos: privados.length,
         codigosEstacionamiento: privados.map((p) => p.codigo),
+        // En el mismo orden que los códigos (16/11/2026).
+        nivelesEstacionamiento: privados.map((p) => p.nivel),
         ubicacionParking: privados.map((p) => p.ubicacion).filter(Boolean).join(", "),
       };
     }) as Unidad[],
@@ -190,7 +224,14 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       ubicacion: f.ubicacion ?? "",
       telefono: f.telefono ?? "",
       codigoPais: f.codigo_pais ?? paisPorDefecto(),
+      torreId: f.torre_id ?? undefined,
     })) as unknown as Porteria[],
+    niveles: (niveles.data ?? []).map((n) => ({
+      uuid: n.id,
+      nombre: n.nombre,
+      nomenclatura: n.nomenclatura,
+      orden: n.orden,
+    })),
     estacionamientos: (estacionamientos.data ?? []).map((f) => ({
       uuid: f.id,
       codigo: f.codigo,
@@ -200,6 +241,8 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       torreNumero: f.torre?.numero ?? null,
       // Ocupado = tiene una asignacion sin liberar.
       ocupado: (f.asignaciones ?? []).some((a) => a.liberado_en === null),
+      nivelId: f.nivel_id,
+      nivel: f.nivel_id ? nombreDelNivel.get(f.nivel_id) ?? "" : "",
     })),
   };
 }
@@ -209,23 +252,36 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
 // ---------------------------------------------------------------------------
 
 /**
- * Las dos reglas con que se genera una torre. Las pone la base y las pasa
- * quien llama: eran un 500 y un 100 escritos aquí.
+ * La regla con que se genera una torre. La pone la base y la pasa quien
+ * llama: era un 500 escrito aquí.
+ *
+ * `torre_divisor_piso` ya no se usa al crear (16/11/2026): el piso de cada
+ * departamento sale escrito del formulario, no de dividir el código.
  */
 export interface ReglasDeTorre {
   /** Cuántas viviendas se generan como mucho de una vez (`torre_viviendas_maximo`). */
   viviendasMaximo: number;
-  /** Entre cuánto se divide el código para sacar el piso (`torre_divisor_piso`). */
-  divisorPiso: number;
+}
+
+/** Lo que el alta de una torre construye además de la torre (16/11/2026). */
+export interface ConstruccionDeTorre {
+  /** «Del piso X al Y, N por piso», con números o letras. */
+  departamentos?: PedidoDeTorre;
+  /**
+   * Las filas «Nivel · privados · de visita». Un nivel que no existe todavía
+   * se crea con su nombre y su nomenclatura.
+   */
+  estacionamientos?: PedidoDeNivel[];
 }
 
 export async function crearTorre(
   condominioId: string,
   datos: Partial<Torre>,
   reglas: ReglasDeTorre,
+  construccion: ConstruccionDeTorre = {},
 ) {
   /*
-    Antes de crear nada, se mira si las viviendas caben.
+    Antes de crear nada, se mira si los departamentos caben.
 
     La torre se insertaba primero y las viviendas después. El código de una
     vivienda es único en todo el condominio, no por torre, así que «Torre B,
@@ -233,18 +289,16 @@ export async function crearTorre(
     viviendas**, un «no se pudo guardar», y otra torre igual al reintentar
     (13/10/2026). Las dadas de baja cuentan: su código sigue ocupado.
   */
-  const pedido = rangoPedido(
-    datos.nomenclaturaDesde,
-    datos.nomenclaturaHasta,
-    reglas.viviendasMaximo,
-  );
-  if (pedido.motivo) throw new Error(pedido.motivo);
-  if (pedido.codigos.length > 0) {
+  const plan = construccion.departamentos
+    ? planDeTorre(construccion.departamentos, reglas.viviendasMaximo)
+    : { viviendas: [], motivo: "" };
+  if (plan.motivo) throw new Error(plan.motivo);
+  if (plan.viviendas.length > 0) {
     const { data: ocupados, error: errorOcupados } = await supabase
       .from("unidad")
       .select("codigo")
       .eq("condominio_id", condominioId)
-      .in("codigo", pedido.codigos.map(String));
+      .in("codigo", plan.viviendas.map((v) => v.codigo));
     if (errorOcupados) throw errorOcupados;
     if (ocupados?.length) {
       const lista = ocupados
@@ -255,10 +309,28 @@ export async function crearTorre(
       throw new Error(
         `Ya hay viviendas con esos números en el edificio (${lista}${
           ocupados.length > 6 ? "…" : ""
-        }). Elige otra numeración.`,
+        }). Elige otros pisos o la otra numeración.`,
       );
     }
   }
+
+  // Los códigos de estacionamiento siguen los que ya hay en el edificio: el
+  // código es único en el condominio, no en la torre.
+  const filas = (construccion.estacionamientos ?? []).filter(
+    (f) => f.privados > 0 || f.visita > 0,
+  );
+  let existentes: string[] = [];
+  if (filas.length) {
+    const { data, error: errorCodigos } = await supabase
+      .from("estacionamiento")
+      .select("codigo")
+      .eq("condominio_id", condominioId);
+    if (errorCodigos) throw errorCodigos;
+    existentes = (data ?? []).map((e) => e.codigo);
+  }
+  const planCocheras = planDeEstacionamientos(filas, existentes);
+  const privados = planCocheras.reduce((s, n) => s + n.codigosPrivados.length, 0);
+  const deVisita = planCocheras.reduce((s, n) => s + n.codigosVisita.length, 0);
 
   // El numero es correlativo dentro del condominio; lo calcula la base al leer
   // el maximo actual, no el cliente.
@@ -270,6 +342,8 @@ export async function crearTorre(
     .limit(1);
 
   const siguiente = (ultimas?.[0]?.numero ?? 0) + 1;
+  const primera = plan.viviendas[0]?.codigo;
+  const ultima = plan.viviendas[plan.viviendas.length - 1]?.codigo;
 
   const { data: creada, error } = await supabase
     .from("torre")
@@ -278,142 +352,95 @@ export async function crearTorre(
       condominio_id: condominioId,
       numero: siguiente,
       nombre: datos.nombre || `Torre ${siguiente}`,
+      // Lo que la tarjeta de la torre enseña; ya no genera nada por sí solo.
+      nomenclatura_desde: primera ?? null,
+      nomenclatura_hasta: ultima ?? null,
+      cocheras_privadas: privados,
+      cocheras_visitas: deVisita,
     })
     .select("id")
     .single();
   if (error) throw error;
 
   /*
-    Y ahora se construye lo que el formulario promete.
-
-    Hasta el 02/10/2026 el alta pedia tres cosas que no producian nada: el
-    rango de numeracion --con una vista previa que decia «Se generaran 5
-    unidades: 101 a 105»--, las cocheras de visita y los almacenes. Se
-    guardaban como numeros en la torre y ahi se quedaban: la Torre 3 declaraba
-    diez cocheras y existia **una** plaza de visitante en todo el edificio, sin
-    torre. Los dos numeros no se hablaban (R-35).
-
-    La consecuencia se discute en la puerta: la administracion escribe diez y
-    las ve en su pantalla; la porteria solo puede asignar las que existan.
-
     Se generan **solo al crear**, nunca al editar. Reconciliar un numero con
     filas que ya existen es destructivo --bajar de diez a cinco tendria que
-    borrar cinco plazas, quiza asignadas-- y nadie pidio eso. Al editar, los
-    numeros no vuelven a generar nada y lo que vale son las filas.
+    borrar cinco plazas, quiza asignadas-- y nadie pidio eso. Para un piso con
+    otra cantidad, se agregan o quitan departamentos uno a uno en la torre.
   */
-  await generarEstructuraDeTorre(condominioId, creada.id, datos, reglas);
-}
-
-/**
- * Los codigos de vivienda que salen de un rango.
- *
- * Llegan como texto porque el formulario los recoge en dos `Input`. Un rango
- * vacio, al reves o no numerico no genera nada: no se adivina.
- */
-/**
- * El rango que se pidió, o por qué no vale.
- *
- * Vacío es válido: una torre se puede crear sin viviendas. Lo que no puede
- * es **escribirse un rango y que no genere nada sin decirlo**: más del tope
- * se ignoraba en silencio mientras la pantalla decía «Se generarán 10000».
- *
- * El tope es `torre_viviendas_maximo` (hoy 500), y lo pasa quien llama.
- */
-export function rangoPedido(
-  desde: string | null | undefined,
-  hasta: string | null | undefined,
-  tope: number,
-): { codigos: number[]; motivo: string } {
-  const sinDesde = desde === undefined || desde === null || `${desde}`.trim() === "";
-  const sinHasta = hasta === undefined || hasta === null || `${hasta}`.trim() === "";
-  if (sinDesde && sinHasta) return { codigos: [], motivo: "" };
-
-  const inicio = Number(desde);
-  const fin = Number(hasta);
-  if (!Number.isInteger(inicio) || !Number.isInteger(fin) || inicio <= 0) {
-    return { codigos: [], motivo: "La numeración va con números enteros: desde y hasta." };
-  }
-  if (fin < inicio) {
-    return { codigos: [], motivo: "La numeración termina antes de empezar." };
-  }
-  if (fin - inicio + 1 > tope) {
-    return {
-      codigos: [],
-      motivo: `Son demasiadas viviendas de una vez (máximo ${tope}). Revisa la numeración.`,
-    };
-  }
-  return { codigos: unidadesDelRango(desde, hasta, tope), motivo: "" };
-}
-
-function unidadesDelRango(
-  desde: string | null | undefined,
-  hasta: string | null | undefined,
-  tope: number,
-) {
-  const inicio = Number(desde);
-  const fin = Number(hasta);
-  if (!Number.isInteger(inicio) || !Number.isInteger(fin)) return [];
-  if (inicio <= 0 || fin < inicio) return [];
-
-  /*
-    Un tope, porque esto lo teclea una persona: «101» y «10100» por un cero de
-    mas serian diez mil viviendas insertadas de golpe y sin vuelta atras.
-  */
-  if (fin - inicio + 1 > tope) return [];
-
-  return Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
-}
-
-/**
- * El piso al que pertenece un codigo de vivienda.
- *
- * Con el divisor de hoy (100, `torre_divisor_piso`): `101` es el primero,
- * `205` el segundo, `1203` el doceavo: las dos ultimas cifras son la puerta y
- * lo de delante el piso. Un edificio con tres cifras de puerta pone 1000.
- *
- * Un codigo menor que el divisor no tiene piso que deducir, y entonces es el
- * primero: mas vale un piso 1 discutible que un piso 0, que no existe.
- */
-function pisoDelCodigo(codigo: number, divisor: number): number {
-  return Math.max(1, Math.floor(codigo / divisor));
-}
-
-/**
- * Crea las viviendas y las cocheras de visita que declara una torre nueva.
- *
- * Los fallos no tumban el alta: la torre ya existe y es lo que se pidio. Si
- * algo de esto falla, se lanza para que la pantalla lo diga, pero despues de
- * haber dejado la torre creada.
- */
-async function generarEstructuraDeTorre(
-  condominioId: string,
-  torreId: string,
-  datos: Partial<Torre>,
-  reglas: ReglasDeTorre,
-) {
-  const codigos = unidadesDelRango(
-    datos.nomenclaturaDesde,
-    datos.nomenclaturaHasta,
-    reglas.viviendasMaximo,
-  );
-
-  if (codigos.length > 0) {
-    const { error } = await supabase.from("unidad").insert(
-      codigos.map((codigo) => ({
+  if (plan.viviendas.length > 0) {
+    const { error: errorViviendas } = await supabase.from("unidad").insert(
+      plan.viviendas.map((v) => ({
         condominio_id: condominioId,
-        torre_id: torreId,
-        codigo: String(codigo),
-        piso: pisoDelCodigo(codigo, reglas.divisorPiso),
+        torre_id: creada.id,
+        codigo: v.codigo,
+        piso: v.piso,
       })),
     );
-    if (error) throw error;
+    if (errorViviendas) throw errorViviendas;
   }
 
-  await completarCocheras(condominioId, torreId, datos);
+  if (planCocheras.length > 0) {
+    const idDelNivel = await asegurarNiveles(condominioId, planCocheras);
+    const nuevas = planCocheras.flatMap((n) => [
+      ...n.codigosPrivados.map((codigo) => ({ codigo, tipo: "privado" as const, nivel: n.nomenclatura })),
+      ...n.codigosVisita.map((codigo) => ({ codigo, tipo: "visitante" as const, nivel: n.nomenclatura })),
+    ]);
+    const { error: errorCocheras } = await supabase.from("estacionamiento").insert(
+      nuevas.map((n) => ({
+        condominio_id: condominioId,
+        torre_id: creada.id,
+        codigo: n.codigo,
+        tipo: n.tipo,
+        nivel_id: idDelNivel.get(n.nivel) ?? null,
+      })),
+    );
+    if (errorCocheras) throw errorCocheras;
+  }
+}
+
+/**
+ * Los niveles de las filas pedidas, creando los que falten. Devuelve
+ * nomenclatura → id.
+ */
+async function asegurarNiveles(
+  condominioId: string,
+  filas: Array<{ nombre: string; nomenclatura: string }>,
+): Promise<Map<string, string>> {
+  const { data: hay, error } = await supabase
+    .from("nivel_estacionamiento")
+    .select("id, nomenclatura, orden")
+    .eq("condominio_id", condominioId);
+  if (error) throw error;
+  const ids = new Map((hay ?? []).map((n) => [n.nomenclatura, n.id]));
+  let orden = Math.max(0, ...(hay ?? []).map((n) => n.orden));
+  const faltan = filas.filter(
+    (f, i) => !ids.has(f.nomenclatura) && filas.findIndex((g) => g.nomenclatura === f.nomenclatura) === i,
+  );
+  if (faltan.length) {
+    const { data: creados, error: errorCrear } = await supabase
+      .from("nivel_estacionamiento")
+      .insert(
+        faltan.map((f) => ({
+          condominio_id: condominioId,
+          nombre: f.nombre.trim(),
+          nomenclatura: f.nomenclatura,
+          orden: (orden += 1),
+        })),
+      )
+      .select("id, nomenclatura");
+    if (errorCrear) throw errorCrear;
+    for (const n of creados ?? []) ids.set(n.nomenclatura, n.id);
+  }
+  return ids;
 }
 
 /**
  * Crea las cocheras que la torre declara y todavía no existen (29/10/2026).
+ *
+ * Desde el 16/11/2026 la torre nueva crea sus estacionamientos por nivel
+ * (`crearTorre`); esto queda para **editar** las torres de antes, que se
+ * dieron de alta con los dos números: subir el número crea las que faltan.
  *
  * El cliente volvió a pedir «Cocheras privadas» y «Cocheras de visitas» en la
  * torre, y que el número que se ponga **cree** esas cocheras con su código:
@@ -636,7 +663,13 @@ interface DatosPorteria {
    * llamar a la garita desde fuera del pais era imposible.
    */
   codigoPais?: string;
+  /** La torre de una garita de torre; vacía en las demás (16/11/2026). */
+  torreId?: string | null;
 }
+
+/** Solo la garita de torre lleva torre: en las demás se guarda vacía. */
+const torreDeLaPorteria = (datos: DatosPorteria) =>
+  datos.tipo === "garita_torre" ? datos.torreId || null : null;
 
 export async function crearPorteria(
   condominioId: string,
@@ -646,10 +679,31 @@ export async function crearPorteria(
     condominio_id: condominioId,
     nombre: datos.nombre,
     tipo: datos.tipo,
+    torre_id: torreDeLaPorteria(datos),
     ubicacion: datos.ubicacion || null,
     telefono: datos.telefono || null,
     codigo_pais: datos.codigoPais || null,
   });
+  if (error) throw error;
+}
+
+/**
+ * Las garitas del modelo elegido que faltaban, de una vez y con los nombres
+ * que se dejaron escritos (16/11/2026).
+ */
+export async function crearGaritas(
+  condominioId: string,
+  garitas: Array<{ nombre: string; tipo: TipoPorteriaDB; torreId: string | null }>,
+) {
+  if (!garitas.length) return;
+  const { error } = await supabase.from("porteria").insert(
+    garitas.map((g) => ({
+      condominio_id: condominioId,
+      nombre: g.nombre.trim(),
+      tipo: g.tipo,
+      torre_id: g.tipo === "garita_torre" ? g.torreId : null,
+    })),
+  );
   if (error) throw error;
 }
 
@@ -662,7 +716,10 @@ export async function actualizarPorteria(uuid: string, datos: DatosPorteria) {
   */
   const fila: Partial<Fila<"porteria">> = {};
   if (datos.nombre !== undefined) fila.nombre = datos.nombre;
-  if (datos.tipo !== undefined) fila.tipo = datos.tipo;
+  if (datos.tipo !== undefined) {
+    fila.tipo = datos.tipo;
+    fila.torre_id = torreDeLaPorteria(datos);
+  }
   if (datos.ubicacion !== undefined) fila.ubicacion = datos.ubicacion || null;
   if (datos.telefono !== undefined) fila.telefono = datos.telefono || null;
   if (datos.codigoPais !== undefined) fila.codigo_pais = datos.codigoPais || null;
@@ -700,15 +757,23 @@ export async function crearEstacionamiento(
     codigo: string;
     tipo: TipoEstacionamientoDB;
     torreId?: string;
+    /**
+     * Obligatorio desde el 16/11/2026 (el cliente: «Ubicación obligatoria al
+     * crear Estacionamiento»). La base lo deja vacío por las filas de antes;
+     * la puerta se cierra aquí, no solo en el formulario.
+     */
+    nivelId: string;
     ubicacion?: string;
     unidadId?: string;
   },
 ) {
+  if (!datos.nivelId) throw new Error("Elige el nivel del estacionamiento.");
   const { error } = await supabase.from("estacionamiento").insert({
     condominio_id: condominioId,
     codigo: datos.codigo,
     tipo: datos.tipo,
     torre_id: datos.torreId ?? null,
+    nivel_id: datos.nivelId,
     ubicacion: datos.ubicacion || null,
     unidad_id: datos.unidadId ?? null,
   });
@@ -720,6 +785,8 @@ export async function actualizarEstacionamiento(
   datos: {
     codigo?: string;
     tipo?: TipoEstacionamientoDB;
+    /** Sin tocar si no viene; una cochera de antes puede seguir sin nivel. */
+    nivelId?: string | null;
     ubicacion?: string;
     unidadId?: string | null;
   },
@@ -729,11 +796,76 @@ export async function actualizarEstacionamiento(
     .update({
       codigo: datos.codigo,
       tipo: datos.tipo,
+      nivel_id: datos.nivelId === undefined ? undefined : datos.nivelId || null,
       ubicacion: datos.ubicacion,
       unidad_id: datos.unidadId,
     })
     .eq("id", uuid);
   if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Niveles de estacionamiento (16/11/2026)
+// ---------------------------------------------------------------------------
+
+export interface DatosNivel {
+  nombre: string;
+  nomenclatura: string;
+}
+
+/** Crea uno o varios («Crear los sugeridos»), al final del orden. */
+export async function crearNiveles(condominioId: string, niveles: DatosNivel[]) {
+  if (!niveles.length) return;
+  const { data: hay, error: errorHay } = await supabase
+    .from("nivel_estacionamiento")
+    .select("orden")
+    .eq("condominio_id", condominioId);
+  if (errorHay) throw errorHay;
+  let orden = Math.max(0, ...(hay ?? []).map((n) => n.orden));
+  const { error } = await supabase.from("nivel_estacionamiento").insert(
+    niveles.map((n) => ({
+      condominio_id: condominioId,
+      nombre: n.nombre.trim(),
+      nomenclatura: n.nomenclatura,
+      orden: (orden += 1),
+    })),
+  );
+  if (error?.code === "23505") {
+    throw new Error("Ya hay un nivel con esa nomenclatura en el edificio.");
+  }
+  if (error) throw error;
+}
+
+export async function actualizarNivel(uuid: string, datos: DatosNivel) {
+  const { error } = await supabase
+    .from("nivel_estacionamiento")
+    .update({ nombre: datos.nombre.trim(), nomenclatura: datos.nomenclatura })
+    .eq("id", uuid);
+  if (error?.code === "23505") {
+    throw new Error("Ya hay un nivel con esa nomenclatura en el edificio.");
+  }
+  if (error) throw error;
+}
+
+/** Un nivel con estacionamientos no se quita: se dice cuántos tiene. */
+export async function eliminarNivel(uuid: string) {
+  const { count, error: errorConteo } = await supabase
+    .from("estacionamiento")
+    .select("id", { count: "exact", head: true })
+    .eq("nivel_id", uuid);
+  if (errorConteo) throw errorConteo;
+  if ((count ?? 0) > 0) {
+    throw new Error(
+      `Este nivel tiene ${count} ${count === 1 ? "estacionamiento" : "estacionamientos"}. Muévelos o elimínalos antes.`,
+    );
+  }
+  const { data, error } = await supabase
+    .from("nivel_estacionamiento")
+    .delete()
+    .eq("id", uuid)
+    .select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("No tienes permiso para quitar ese nivel.");
 }
 
 export async function eliminarEstacionamiento(uuid: string) {

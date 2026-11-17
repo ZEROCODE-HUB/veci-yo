@@ -32,6 +32,11 @@ interface Props {
   /** Amigos y familiares: si quien invita pide que la portería verifique el documento. */
   verificaDocumento: boolean;
   setVerificaDocumento: (v: boolean) => void;
+  /**
+   * La portería registra a un amigo o familiar y el edificio le pide el
+   * documento (`documento_amigos_obligatorio`, 16/11/2026).
+   */
+  porteriaPideDocumento?: boolean;
 }
 
 /**
@@ -86,6 +91,7 @@ export function DatosPersona({
   setProfesionOtro,
   verificaDocumento,
   setVerificaDocumento,
+  porteriaPideDocumento = false,
 }: Props) {
   const esEstancia = tipoSeleccionado === "huesped-temporal";
   /** El telefono es obligatorio cuando la portería registra un profesional. */
@@ -99,7 +105,12 @@ export function DatosPersona({
     Está siempre a la vista.
   */
   const esAmigos = tipoSeleccionado === "amigos";
-  const documentoObligatorio = !esEstancia && (!esAmigos || verificaDocumento);
+  /*
+    En la portería no hay casilla (16/11/2026): a un amigo o familiar se le
+    pide el documento solo si el edificio lo decide.
+  */
+  const amigoConDocumento = esGuardia ? porteriaPideDocumento : verificaDocumento;
+  const documentoObligatorio = !esEstancia && (!esAmigos || amigoConDocumento);
   const sePuedePlegar = false;
 
   const yaHayAlgoEscrito = Boolean(
@@ -234,7 +245,7 @@ export function DatosPersona({
           quien lee esta pantalla es el anfitrion, que no va a estar en la
           puerta para decirselo.
         */}
-        {esAmigos ? (
+        {esAmigos && !esGuardia ? (
           <Checkbox
             checked={verificaDocumento}
             onChange={setVerificaDocumento}

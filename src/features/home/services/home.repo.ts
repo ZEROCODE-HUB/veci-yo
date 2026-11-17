@@ -170,3 +170,19 @@ export async function obtenerAgendaHoy(
       : "",
   }));
 }
+
+/**
+ * Cuántos reglamentos vigentes tiene el edificio: el paso «Sube el
+ * reglamento» de la lista de inicio de la administración (16/11/2026). Basta
+ * contar; la política `reglamento_lectura` ya deja leerlos a quien es del
+ * edificio.
+ */
+export async function contarReglamentosVigentes(condominioId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("reglamento")
+    .select("id", { count: "exact", head: true })
+    .eq("condominio_id", condominioId)
+    .eq("vigente", true);
+  if (error) throw error;
+  return count ?? 0;
+}

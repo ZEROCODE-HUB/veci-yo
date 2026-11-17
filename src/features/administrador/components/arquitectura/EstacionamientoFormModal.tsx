@@ -2,7 +2,8 @@ import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Modal, Select } from "@/shared/components";
-import { View } from "react-native";
+import { Text, View } from "react-native";
+import { siguientesCodigos } from "../../helpers/arquitectura.helpers";
 import { estacionamientoSchema } from "../../schemas";
 import type { Unidad } from "@/stores/admin-store";
 import type {
@@ -15,6 +16,10 @@ type Props = {
   editing: EstacionamientoDeTorre | null;
   initial: EstacionamientoFormValues;
   units: Unidad[];
+  /** Los niveles del edificio: el nivel es obligatorio (16/11/2026). */
+  niveles: Array<{ uuid: string; nombre: string; nomenclatura: string }>;
+  /** Los códigos que ya hay en el edificio, para sugerir el siguiente. */
+  codigosExistentes: string[];
   onClose: () => void;
   onSave: (form: EstacionamientoFormValues) => unknown;
 };
@@ -36,6 +41,8 @@ export function EstacionamientoFormModal({
   editing,
   initial,
   units,
+  niveles,
+  codigosExistentes,
   onClose,
   onSave,
 }: Props) {
@@ -44,6 +51,8 @@ export function EstacionamientoFormModal({
     handleSubmit,
     reset,
     watch,
+    setValue,
+    getValues,
     // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
     formState: { isSubmitting },
   } =
@@ -58,6 +67,22 @@ export function EstacionamientoFormModal({
 
   const esPrivada = watch("tipo") === "privado";
 
+  /*
+    Al elegir el nivel (o cambiar el tipo) se sugiere el siguiente código de
+    ese nivel --S1-04 si ya hay hasta S1-03--, salvo que se haya escrito otro
+    a mano (16/11/2026).
+  */
+  const sugerido = React.useRef("");
+  const sugerir = () => {
+    const nivel = niveles.find((n) => n.uuid === getValues("nivelId"));
+    if (!nivel || editing) return;
+    const actual = getValues("codigo");
+    if (actual && actual !== sugerido.current) return;
+    const [codigo] = siguientesCodigos(nivel.nomenclatura, getValues("tipo"), 1, codigosExistentes);
+    sugerido.current = codigo;
+    setValue("codigo", codigo, { shouldValidate: true });
+  };
+
   return (
     <Modal
       visible={visible}
@@ -65,6 +90,33 @@ export function EstacionamientoFormModal({
       title={editing ? "Editar cochera" : "Nueva cochera"}
     >
       <View className="gap-3">
+        {/*
+          El nivel primero: el cliente pidió la ubicación obligatoria
+          (16/11/2026), y el código sale de su nomenclatura.
+        */}
+        <Controller
+          control={control}
+          name="nivelId"
+          render={({ field, fieldState }) => (
+            <Select
+              label="Nivel *"
+              value={field.value}
+              placeholder="Elegir el nivel…"
+              textoSinOpciones="Todavía no hay niveles. Créalos en Arquitectura › Estacionamientos."
+              options={niveles.map((n) => ({ value: n.uuid, label: `${n.nombre} (${n.nomenclatura})` }))}
+              onChange={(valor) => {
+                field.onChange(String(valor));
+                sugerir();
+              }}
+              error={fieldState.error?.message}
+            />
+          )}
+        />
+        {niveles.length ? null : (
+          <Text className="text-xs text-gray-500">
+            Todavía no hay niveles. Créalos en Arquitectura › Estacionamientos.
+          </Text>
+        )}
         <Controller
           control={control}
           name="codigo"
@@ -73,7 +125,7 @@ export function EstacionamientoFormModal({
               label="Código *"
               value={field.value}
               onChangeText={field.onChange}
-              placeholder="Ej. V-02"
+              placeholder="Ej. S1-01"
             error={fieldState.error?.message}
             />
           )}
@@ -89,7 +141,10 @@ export function EstacionamientoFormModal({
                 { value: "visitante", label: "De visita" },
                 { value: "privado", label: "Privada" },
               ]}
-              onChange={field.onChange}
+              onChange={(valor) => {
+                field.onChange(valor);
+                sugerir();
+              }}
             />
           )}
         />
@@ -98,10 +153,10 @@ export function EstacionamientoFormModal({
           name="ubicacion"
           render={({ field, fieldState }) => (
             <Input
-              label="Ubicación (opcional)"
+              label="Detalle de ubicación (opcional)"
               value={field.value}
               onChangeText={field.onChange}
-              placeholder="Ej. Sótano -1"
+              placeholder="Ej. Junto al ascensor"
             error={fieldState.error?.message}
             />
           )}

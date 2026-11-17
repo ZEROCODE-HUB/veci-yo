@@ -30,7 +30,8 @@ export function DirectorioEstacionamientoCard({
       >
         <View style={{ flex: 1 }}>
           <Text className="text-sm font-bold text-gray-900">
-            Estacionamiento {item.codigo} — Torre {item.torreNumero}
+            {/* El nivel junto al código (16/11/2026): «S1-03 · Sótano 1». */}
+            {`Estacionamiento ${item.nivel ? `${item.codigo} · ${item.nivel}` : item.codigo} — Torre ${item.torreNumero}`}
           </Text>
           <Text className="text-xs text-gray-500">
             Ubicación: {item.ubicacion} → Depto {item.unidad.codigo}
