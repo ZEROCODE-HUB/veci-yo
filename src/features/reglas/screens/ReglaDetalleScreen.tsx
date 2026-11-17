@@ -23,6 +23,23 @@ export function ReglaDetalleScreen() {
   */
   const { tipo } = useParametros("ReglaDetalle");
   const regla = useReglaDetalle(tipo);
+  /*
+    La ventana de subir va fuera del «si hay reglamento»: el primero de un
+    edificio también se sube desde aquí (17/11/2026). Antes la pantalla vacía
+    solo decía que no había ninguno, y la administración no tenía cómo
+    cargarlo --`subirReglamento` ya sabía crear la fila--.
+  */
+  const cargaModal = (
+    <ReglaCargaModal
+      visible={regla.uploadOpen}
+      titulo={regla.content?.title ?? "Reglamento"}
+      elegido={regla.elegido}
+      subiendo={regla.subir.isPending}
+      onElegir={regla.elegirArchivo}
+      onSubir={() => regla.subir.mutate()}
+      onClose={regla.cerrarCarga}
+    />
+  );
   const acciones = (
     <View className="flex-row justify-end gap-2">
       {/* Subirlo es de la administración, como dicen la política de la tabla
@@ -63,12 +80,20 @@ export function ReglaDetalleScreen() {
           // Una red caída no es un reglamento sin cargar (13/11/2026).
           <ErrorAlCargar texto="el reglamento" reintentar={regla.reintentar} />
         ) : (
-          <View className="items-center p-6">
+          <View className="items-center gap-4 p-6">
             <Text className="text-sm text-center text-gray-500">
-              Este condominio todavía no tiene cargado este reglamento.
+              {regla.puedeSubir
+                ? "Todavía no has cargado este reglamento. Súbelo (PDF o Word) y lo verán quienes corresponda."
+                : "Este condominio todavía no tiene cargado este reglamento."}
             </Text>
+            {regla.puedeSubir ? (
+              <Button fullWidth onPress={() => regla.setUploadOpen(true)}>
+                Subir reglamento
+              </Button>
+            ) : null}
           </View>
         )}
+        {cargaModal}
       </View>
     );
   }
@@ -92,15 +117,7 @@ export function ReglaDetalleScreen() {
           </Button>
         )}
       </ScrollView>
-      <ReglaCargaModal
-        visible={regla.uploadOpen}
-        titulo={regla.content.title}
-        elegido={regla.elegido}
-        subiendo={regla.subir.isPending}
-        onElegir={regla.elegirArchivo}
-        onSubir={() => regla.subir.mutate()}
-        onClose={regla.cerrarCarga}
-      />
+      {cargaModal}
       <ReglaDescargaModal
         visible={regla.downloadOpen}
         file={regla.content.file}

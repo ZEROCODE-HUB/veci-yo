@@ -112,6 +112,11 @@ export interface OpcionDeCorrespondencia {
  */
 export function opcionesDeCorrespondencia(
   estado: CorrespondenciaItem["estado"],
+  /**
+   * Si ya se avisó por otro medio. Se seguía ofreciendo después de hacerlo,
+   * con el progreso diciendo que ya estaba (17/11/2026).
+   */
+  yaNotificado = false,
 ): OpcionDeCorrespondencia[] {
   const opciones: OpcionDeCorrespondencia[] = [];
   if (estado === "No Recibido") {
@@ -119,7 +124,9 @@ export function opcionesDeCorrespondencia(
   }
   if (estado === "En Portería") {
     // Encima de «Marcar como entregado» (Para Claude 198, 30/10/2026).
-    opciones.push({ accion: "notificar", etiqueta: "Notificado por otro medio" });
+    if (!yaNotificado) {
+      opciones.push({ accion: "notificar", etiqueta: "Notificado por otro medio" });
+    }
     opciones.push({ accion: "entregar", etiqueta: "Marcar como entregado" });
   }
   if (estado === "Entregado") {
