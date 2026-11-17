@@ -8,7 +8,6 @@ import {
 } from "@/features/administrador/services/arquitectura.repo";
 import { ZONAS_QUERY_KEY } from "@/features/zonas/hooks/useZonas";
 import { obtenerZonas } from "@/features/zonas/services/zonas.repo";
-import { obtenerPreferencias } from "@/features/perfil/services/configuracion.repo";
 import { useAvisosEnEsteCelular } from "@/features/perfil/hooks/useAvisosEnEsteCelular";
 import { usePerfil } from "@/features/perfil/hooks/usePerfil";
 import { RESIDENTES_UNIDAD_KEY } from "@/features/propietario/hooks/usePropietarioConfiguracion";
@@ -44,10 +43,6 @@ export interface PasosConCarga {
 function useAvisos(): AvisosDelCelular {
   const { estado, activar } = useAvisosEnEsteCelular();
   return { disponible: estado.disponible, permiso: estado.permiso, activar };
-}
-
-function usePreferencias() {
-  return useQuery({ queryKey: ["preferencias"], queryFn: obtenerPreferencias });
 }
 
 export function usePasosDelAdministrador(): PasosConCarga {
@@ -101,7 +96,6 @@ export function usePasosDelPropietario(): PasosConCarga {
   const unidadId = useUnidadActiva()?.unidadId ?? "";
   const tieneVivienda = Boolean(unidadId);
 
-  const preferencias = usePreferencias();
   // La misma clave que la configuración del propietario.
   const residentes = useQuery({
     queryKey: [...RESIDENTES_UNIDAD_KEY, unidadId],
@@ -118,7 +112,6 @@ export function usePasosDelPropietario(): PasosConCarga {
 
   const todos = residentes.data ?? [];
   const pasos = pasosDelPropietario({
-    telefono: preferencias.data?.telefono ?? "",
     tieneVivienda,
     enAlquiler: enAlquiler.data ?? false,
     hayQuienViva: todos.some((r) => r.esResidente || r.usuarioId !== usuarioId),
@@ -127,22 +120,20 @@ export function usePasosDelPropietario(): PasosConCarga {
     avisos,
   });
 
-  const cargas = [estadoDe(preferencias)];
+  const cargas: EstadoDeLaCarga[] = [];
   if (tieneVivienda) cargas.push(estadoDe(residentes), estadoDe(enAlquiler), vehiculos.carga);
   return { pasos, carga: juntarCargas(...cargas) };
 }
 
 export function usePasosDelGuardia(): PasosConCarga {
   const { guardiaActual, cargaDelPuesto } = usePerfil();
-  const preferencias = usePreferencias();
   const avisos = useAvisos();
 
   const pasos = pasosDelGuardia({
     garita: guardiaActual?.garita ?? "",
     turnos: guardiaActual?.turnos?.length ?? 0,
-    telefono: preferencias.data?.telefono ?? "",
     avisos,
   });
 
-  return { pasos, carga: juntarCargas(cargaDelPuesto, estadoDe(preferencias)) };
+  return { pasos, carga: juntarCargas(cargaDelPuesto) };
 }

@@ -11,6 +11,7 @@ import {
   invitacionPendiente,
 } from "@/shared/services/invitacionPendiente";
 import { datosParaRegistrarse } from "@/shared/services/invitaciones";
+import { olvidarCorreoPorConfirmar, recordarCorreoPorConfirmar } from "@/shared/services/correoPorConfirmar";
 import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/hooks";
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
 import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
@@ -115,6 +116,7 @@ export function useRegistro() {
       try {
         await iniciarSesionReal(c.correo, c.password);
         credenciales.current = null;
+        void olvidarCorreoPorConfirmar();
       } catch {
         if (avisarSiNo) {
           addToast("Todavía no vemos tu correo confirmado. Abre el mensaje y pulsa el enlace.", "info");
@@ -156,6 +158,8 @@ export function useRegistro() {
     onSuccess: ({ sesionAbierta, correo, password }) => {
       if (!sesionAbierta) {
         credenciales.current = { correo, password };
+        // Por si el celular cierra la app mientras va al correo (16/11/2026).
+        void recordarCorreoPorConfirmar(correo);
         setCorreoPorConfirmar(correo);
       }
     },
