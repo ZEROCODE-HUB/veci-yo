@@ -6309,6 +6309,10 @@ export type Database = {
           votos: number
         }[]
       }
+      enlace_nuevo_de_invitacion: {
+        Args: { p_invitacion_id: string }
+        Returns: string
+      }
       enviar_aviso_de_prueba: { Args: never; Returns: string }
       enviar_recordatorios_precheckin: { Args: never; Returns: number }
       enviar_reportes_mensuales: { Args: never; Returns: number }
@@ -6835,6 +6839,10 @@ export type Database = {
         Args: { p_dentro: number; p_visita_id: string }
         Returns: boolean
       }
+      la_invitacion_tiene_cuenta: {
+        Args: { p_token: string }
+        Returns: boolean
+      }
       le_suena_la_llamada:
         | {
             Args: {
@@ -7048,6 +7056,17 @@ export type Database = {
           vehiculos: number
         }[]
       }
+      mis_invitaciones_de_la_vivienda: {
+        Args: never
+        Returns: {
+          condominio: string
+          id: string
+          invitada_por: string
+          rol: string
+          torre: number
+          unidad: string
+        }[]
+      }
       mis_invitaciones_del_edificio: {
         Args: never
         Returns: {
@@ -7182,6 +7201,16 @@ export type Database = {
         Returns: boolean
       }
       palabras_sin_tildes: { Args: { p_texto: string }; Returns: string[] }
+      panel_administraciones_pendientes: {
+        Args: never
+        Returns: {
+          condominio_id: string
+          correo: string
+          enviada_en: string
+          expira_en: string
+          nombre: string
+        }[]
+      }
       panel_agregar_moneda: {
         Args: { p_codigo: string; p_decimales: number; p_nombre: string }
         Returns: undefined
@@ -7939,6 +7968,10 @@ export type Database = {
         Returns: undefined
       }
       responder_mi_invitacion: {
+        Args: { p_acepta: boolean; p_invitacion_id: string }
+        Returns: undefined
+      }
+      responder_mi_invitacion_de_la_vivienda: {
         Args: { p_acepta: boolean; p_invitacion_id: string }
         Returns: undefined
       }

@@ -53,14 +53,14 @@ export function InvitarAdministracion({
     <Modal
       visible={Boolean(edificio)}
       onClose={onCerrar}
-      title="Asignar la administración"
+      title="Invitar a la administración"
     >
       <View className="gap-3">
         <Text className="text-sm text-gray-500">
-          {edificio?.nombre} no tiene a nadie en administración. Esta persona
-          queda de administración en el acto y le avisamos por correo; si no
-          tiene cuenta, se la creamos y el correo trae el enlace para poner su
-          contraseña.
+          {edificio?.nombre} no tiene a nadie en administración. Le llega un
+          correo con la invitación: al abrirlo, la app le dice si tiene que
+          iniciar sesión o crear su cuenta, y la acepta. Si ya había una
+          invitación sin aceptar, esta la reemplaza.
         </Text>
         <Input
           label="Nombre *"
@@ -79,7 +79,7 @@ export function InvitarAdministracion({
           error={errores.correo}
         />
         <Button fullWidth loading={enviando} onPress={enviar}>
-          <Text>Asignar la administración</Text>
+          <Text>Enviar la invitación</Text>
         </Button>
         <Button variant="ghost" fullWidth onPress={onCerrar}>
           <Text>Cancelar</Text>

@@ -10,7 +10,8 @@ export type RootStackParamList = {
     --el tipo de esa pantalla mezcla las dos listas-- y no hace nada: «Crear
     cuenta» e «Iniciar sesión» eran dos botones muertos (12/10/2026).
   */
-  Auth: { screen: keyof AuthStackParamList } | undefined;
+  /* `params.correo`: el inicio de sesión llega con el correo de la invitación (16/11/2026). */
+  Auth: { screen: keyof AuthStackParamList; params?: { correo?: string } } | undefined;
   App: undefined;
   /**
    * El panel de quien opera la plataforma.
@@ -50,7 +51,7 @@ export type PlataformaStackParamList = {
 };
 
 export type AuthStackParamList = {
-  Login: undefined;
+  Login: { correo?: string } | undefined;
   Registro: undefined;
   TerminosLegales: undefined;
 };

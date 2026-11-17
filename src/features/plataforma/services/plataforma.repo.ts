@@ -42,6 +42,11 @@ export interface EdificioEnElPanel {
   guardias: number;
   reclamosAbiertos: number;
   creadoEn: string;
+  /**
+   * La invitación de administración que todavía no se aceptó, si la hay
+   * (16/11/2026): hasta que la acepten, el edificio no tiene a nadie.
+   */
+  invitacionPendiente: { nombre: string; correo: string; enviadaEn: string } | null;
 }
 
 export interface ReclamoDeLaApp {
@@ -129,10 +134,21 @@ export async function obtenerResumen(): Promise<ResumenPlataforma> {
 }
 
 export async function obtenerEdificios(): Promise<EdificioEnElPanel[]> {
-  const { data, error } = await supabase.rpc("panel_condominios");
+  const [{ data, error }, pendientes] = await Promise.all([
+    supabase.rpc("panel_condominios"),
+    supabase.rpc("panel_administraciones_pendientes"),
+  ]);
   if (error) throw error;
+  if (pendientes.error) throw pendientes.error;
+  const pendientePor = new Map(
+    (pendientes.data ?? []).map((p) => [
+      p.condominio_id,
+      { nombre: p.nombre, correo: p.correo, enviadaEn: formatDate(desdeLaBase(p.enviada_en)) },
+    ]),
+  );
 
   return (data ?? []).map((fila) => ({
+    invitacionPendiente: pendientePor.get(fila.id) ?? null,
     id: fila.id,
     nombre: fila.nombre,
     direccion: fila.direccion,
@@ -202,37 +218,40 @@ export interface EnvioDeInvitacion {
   motivo: string | null;
 }
 
-/** Lo que queda al dar la administración de un edificio. */
-export interface AdministracionAsignada {
-  /** Si no tenía cuenta y se le creó (el correo trae el enlace de la contraseña). */
-  cuentaNueva: boolean;
+/** Lo que queda al invitar a la administración de un edificio. */
+export interface AdministracionInvitada {
+  /** Solo si el correo no salió: para pasárselo a mano. */
+  enlace: string | null;
   correo: EnvioDeInvitacion;
 }
 
 /**
- * Le da la administración de un edificio sin administración a ese correo, en
- * el acto, y se lo avisa por correo (29/10/2026). Antes era una invitación que
- * había que aceptar; el cliente: «es mucha vaina». Si no tenía cuenta, se le
- * crea y el correo trae el enlace para poner su contraseña. Lo hace la función
+ * Invita a la administración de un edificio sin administración (16/11/2026).
+ *
+ * Igual que la del guardia: el correo abre la app con la invitación, la app
+ * dice «Iniciar sesión» o «Crear cuenta», y se acepta con un toque. Hasta hoy
+ * se vinculaba en el acto y, si no tenía cuenta, se le creaba una sin
+ * contraseña y el correo la mandaba a la web a ponerla (cliente: «necesito que
+ * unifiquemos el tema de invitaciones para todos»). Lo hace la función
  * `vincular-administracion`, que comprueba que quien pide es dueño.
  */
 async function vincularAdministracion(datos: {
   condominioId: string;
   correo: string;
   nombre: string;
-}): Promise<AdministracionAsignada> {
+}): Promise<AdministracionInvitada> {
   const { data, error } = await supabase.functions.invoke("vincular-administracion", {
     body: datos,
   });
   if (error) {
-    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo asignar la administración");
+    throw new Error((await motivoDeLaFuncion(error)) ?? "No se pudo invitar a la administración");
   }
   const respuesta = data as {
-    cuentaNueva?: boolean;
+    enlace?: string | null;
     correo?: { enviado?: boolean; motivo?: string | null };
   } | null;
   return {
-    cuentaNueva: Boolean(respuesta?.cuentaNueva),
+    enlace: respuesta?.enlace ?? null,
     correo: {
       enviado: Boolean(respuesta?.correo?.enviado),
       motivo: respuesta?.correo?.enviado ? null : (respuesta?.correo?.motivo ?? "No se pudo enviar el correo"),
@@ -261,8 +280,8 @@ export async function paisesParaAltaDeEdificio(): Promise<
 }
 
 /**
- * Da de alta un edificio y, si se dio un correo, le da su administración a
- * esa persona en el acto (29/10/2026; antes era una invitación).
+ * Da de alta un edificio y, si se dio un correo, invita a esa persona a
+ * administrarlo (16/11/2026: invitación que se acepta en la app, como todas).
  */
 export async function crearEdificio(datos: EdificioNuevo) {
   const { data, error } = await supabase.rpc("panel_crear_condominio", {
@@ -272,14 +291,14 @@ export async function crearEdificio(datos: EdificioNuevo) {
     p_ciudad: datos.ciudad,
     // Sin moneda, la base pone la del país (`pais.moneda`).
     p_moneda: datos.moneda,
-    // Sin invitación: la administración se asigna directamente, abajo.
+    // La administración se invita aparte, abajo, con `vincular-administracion`.
   });
   if (error) throw error;
 
   const condominioId = data?.[0]?.condominio_id ?? "";
   if (!datos.correoAdmin || !condominioId) return { condominioId, administracion: null, fallo: null };
   /*
-    El edificio ya existe: si asignar la administración falla, no se deshace,
+    El edificio ya existe: si invitar a la administración falla, no se deshace,
     se dice, y se puede volver a intentar desde el resumen.
   */
   try {
@@ -293,7 +312,7 @@ export async function crearEdificio(datos: EdificioNuevo) {
     return {
       condominioId,
       administracion: null,
-      fallo: mensajeDeError(e, "No se pudo asignar la administración"),
+      fallo: mensajeDeError(e, "No se pudo invitar a la administración"),
     };
   }
 }

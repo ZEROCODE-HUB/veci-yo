@@ -72,18 +72,18 @@ export function PlataformaResumenScreen() {
         ...datos,
       });
       setPorInvitar(null);
-      // Queda asignada en el acto (29/10/2026); el correo solo avisa.
+      // Una invitación que se acepta en la app, como todas (16/11/2026).
       if (resultado.correo.enviado) {
-        addToast(`${datos.nombre} ya administra ${porInvitar.nombre}. Le avisamos por correo.`, "success");
+        addToast(`Invitamos a ${datos.nombre} a administrar ${porInvitar.nombre}. Le llegó un correo.`, "success");
       } else {
         addToast(
-          `${datos.nombre} ya administra ${porInvitar.nombre}, pero no salió el correo: ${resultado.correo.motivo}. Avísale tú.`,
+          `No salió el correo: ${resultado.correo.motivo}. Pásale tú este enlace: ${resultado.enlace ?? ""}`,
           "error",
         );
       }
     } catch (fallo) {
       addToast(
-        mensajeDeError(fallo, "No se pudo asignar la administración"),
+        mensajeDeError(fallo, "No se pudo invitar a la administración"),
         "error",
       );
     }
@@ -196,7 +196,28 @@ export function PlataformaResumenScreen() {
               hay que mirar en esta lista, así que se dice en vez de dejarlo en
               un cero que se pierde entre los demás.
             */}
-            {e.administradores === 0 ? (
+            {e.administradores === 0 && e.invitacionPendiente ? (
+              /*
+                Invitada y sin aceptar todavía (16/11/2026): se dice a quién y
+                desde cuándo, y se puede volver a mandar --a otro correo o al
+                mismo--, que reemplaza a la anterior.
+              */
+              <>
+                <Text className="mt-1 text-xs font-semibold text-warning">
+                  {`Invitación pendiente: ${e.invitacionPendiente.nombre} (${e.invitacionPendiente.correo}), enviada el ${e.invitacionPendiente.enviadaEn}`}
+                </Text>
+                {esDueno ? (
+                  <Text
+                    accessibilityRole="button"
+                    accessibilityLabel={`Volver a invitar a la administración de ${e.nombre}`}
+                    onPress={() => setPorInvitar({ id: e.id, nombre: e.nombre })}
+                    className="mt-1 text-sm font-semibold text-primary"
+                  >
+                    Reenviar o cambiar el correo
+                  </Text>
+                ) : null}
+              </>
+            ) : e.administradores === 0 ? (
               <>
                 <Text className="mt-1 text-xs font-semibold text-warning">
                   Sin administración
@@ -208,11 +229,11 @@ export function PlataformaResumenScreen() {
                 {esDueno ? (
                   <Text
                     accessibilityRole="button"
-                    accessibilityLabel={`Asignar la administración de ${e.nombre}`}
+                    accessibilityLabel={`Invitar a la administración de ${e.nombre}`}
                     onPress={() => setPorInvitar({ id: e.id, nombre: e.nombre })}
                     className="mt-1 text-sm font-semibold text-primary"
                   >
-                    Asignar su administración
+                    Invitar a su administración
                   </Text>
                 ) : null}
               </>

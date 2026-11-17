@@ -13,6 +13,7 @@ import { useListasEnVivo } from "@/app/useListasEnVivo";
 import { useVisitasEnVivo } from "@/app/useVisitasEnVivo";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
+import { invitacionPendiente } from '@/shared/services/invitacionPendiente';
 import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
@@ -72,6 +73,23 @@ export function RootNavigator() {
   useListasEnVivo();
   // Las pantallas de la portería, al momento (Correcciones fila 20).
   useVisitasEnVivo();
+
+  /*
+    Quien abrió una invitación, pulsó «Iniciar sesión» o «Crear cuenta» y
+    entró, vuelve a ella para aceptarla con un toque (16/11/2026). Sin esto
+    caía en un Inicio sin edificio y tenía que encontrar la invitación solo.
+  */
+  const estabaDentro = useRef(autenticado);
+  useEffect(() => {
+    const acabaDeEntrar = autenticado && !estabaDentro.current;
+    estabaDentro.current = autenticado;
+    const token = invitacionPendiente();
+    if (!acabaDeEntrar || !token) return;
+    const espera = setTimeout(() => {
+      if (navegacionGlobal.isReady()) navegacionGlobal.navigate('AceptarInvitacion', { token });
+    }, 0);
+    return () => clearTimeout(espera);
+  }, [autenticado]);
 
   // Con cuenta real y varios roles posibles, la app no puede elegir por el
   // usuario: le pregunta antes de entrar. Demo e incognito ya traen su rol.
