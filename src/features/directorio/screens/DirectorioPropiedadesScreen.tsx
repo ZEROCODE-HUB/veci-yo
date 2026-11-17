@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { Linking, ScrollView, Text, View } from "react-native";
 import { useAuthStore } from "@/stores";
+import { useCondominioActivo } from "@/shared/hooks";
 import {
+  BarraDeMensaje,
   DirectorioAdminPagos,
   DirectorioAdminTabs,
-  DirectorioDepartamentoCard,
+  DirectorioDepartamentos,
   DirectorioDepositoCard,
   DirectorioDetalleModal,
   DirectorioEstacionamientoCard,
   DirectorioEstacionamientoVisitaCard,
   DirectorioFiltros,
+  DirectorioResidenteFila,
 } from "../components";
 import { useDirectorio } from "../hooks/useDirectorio";
+import { useSeleccionDeViviendas } from "../hooks/useSeleccionDeViviendas";
 import { SegunLaCarga } from "@/shared/components";
-import type { DirectorioDetalle } from "../types/directorio";
+import type { DirectorioDetalle, Unidad } from "../types/directorio";
 
 /*
   Un deposito sin vivienda asignada no tiene a quien llamar. Se dice, en vez de
@@ -30,6 +34,7 @@ const SIN_CONTACTOS = {
 
 export function DirectorioPropiedadesScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
+  const condominioId = useCondominioActivo() ?? "";
   const {
     unidades,
     torres,
@@ -42,7 +47,16 @@ export function DirectorioPropiedadesScreen() {
     setSubTab,
     soloRentaCorta,
     setSoloRentaCorta,
+    pisos,
+    pisoFiltro,
+    setPisoFiltro,
+    soloSinPropietario,
+    setSoloSinPropietario,
+    niveles,
+    nivelFiltro,
+    setNivelFiltro,
     filtered,
+    filteredRes,
     filteredEst,
     filteredEstVisita,
     filteredDep,
@@ -53,6 +67,9 @@ export function DirectorioPropiedadesScreen() {
   const [tab, setTab] = useState<"directorio" | "pagos">("directorio");
   const [detalle, setDetalle] = useState<DirectorioDetalle | null>(null);
   const esAdmin = rolActivo === "administrador";
+  // Seleccionar departamentos para un mensaje: solo la administración (16/11/2026).
+  const seleccion = useSeleccionDeViviendas(filtered, condominioId);
+  const conSeleccion = esAdmin && tab === "directorio" && subTab === "departamentos";
   /*
     El estacionamiento de visitas es una zona común más que solo usa la
     portería, para registrar a quien llega en carro (cliente, 16/10/2026): a
@@ -68,9 +85,19 @@ export function DirectorioPropiedadesScreen() {
   const cuantos =
     subTab === "departamentos"
       ? filtered.length
-      : subTab === "estacionamientos"
-        ? filteredEst.length + visitas.length
-        : filteredDep.length;
+      : subTab === "residentes"
+        ? filteredRes.length
+        : subTab === "estacionamientos"
+          ? filteredEst.length + visitas.length
+          : filteredDep.length;
+  const abrirDepartamento = (item: Unidad) =>
+    setDetalle({
+      tipo: "departamento",
+      datos: item,
+      contactos: contactosFor(item),
+      depositos: depositosPorUnidad.get(String(item.id)) ?? [],
+      vehiculos: vehiculosDe(item),
+    });
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView
@@ -97,25 +124,32 @@ export function DirectorioPropiedadesScreen() {
                 onSubTab={setSubTab}
                 soloRentaCorta={soloRentaCorta}
                 onSoloRentaCorta={setSoloRentaCorta}
+                piso={pisoFiltro}
+                pisos={pisos}
+                onPiso={setPisoFiltro}
+                soloSinPropietario={soloSinPropietario}
+                onSoloSinPropietario={setSoloSinPropietario}
+                nivel={nivelFiltro}
+                niveles={niveles}
+                onNivel={setNivelFiltro}
               />
               <View style={{ gap: 12 }}>
-                {subTab === "departamentos" &&
-                  filtered.map((item) => (
-                    <DirectorioDepartamentoCard
-                      key={String(item.id)}
+                {subTab === "departamentos" && (
+                  <DirectorioDepartamentos
+                    unidades={filtered}
+                    seleccion={esAdmin ? seleccion : null}
+                    contactosFor={contactosFor}
+                    depositosDe={(item) => depositosPorUnidad.get(String(item.id)) ?? []}
+                    vehiculosDe={vehiculosDe}
+                    onAbrir={abrirDepartamento}
+                  />
+                )}
+                {subTab === "residentes" &&
+                  filteredRes.map((item) => (
+                    <DirectorioResidenteFila
+                      key={item.clave}
                       item={item}
-                      contactos={contactosFor(item)}
-                      depositos={depositosPorUnidad.get(String(item.id)) ?? []}
-                      vehiculos={vehiculosDe(item)}
-                      onPress={() =>
-                        setDetalle({
-                          tipo: "departamento",
-                          datos: item,
-                          contactos: contactosFor(item),
-                          depositos: depositosPorUnidad.get(String(item.id)) ?? [],
-                          vehiculos: vehiculosDe(item),
-                        })
-                      }
+                      onPress={() => abrirDepartamento(item.unidad)}
                     />
                   ))}
                 {subTab === "estacionamientos" &&
@@ -167,6 +201,7 @@ export function DirectorioPropiedadesScreen() {
           )}
         </SegunLaCarga>
       </ScrollView>
+      {conSeleccion ? <BarraDeMensaje seleccion={seleccion} /> : null}
       <DirectorioDetalleModal
         detalle={detalle}
         onClose={() => setDetalle(null)}

@@ -1,7 +1,7 @@
 import { obtenerParametrosPublicos } from "@/shared/services/parametros.repo";
 import { parametroNumero } from "@/shared/services/parametros";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { entrarComo, salir, supabase } from "./cliente";
+import { entrarComo, salir, servicio, supabase } from "./cliente";
 import {
   actualizarEstacionamiento,
   crearEstacionamiento,
@@ -13,16 +13,10 @@ import {
   obtenerArquitectura,
 } from "@/features/administrador/services/arquitectura.repo";
 
-/**
- * Las reglas de la torre son parámetros de la base (torre_viviendas_maximo,
- * torre_divisor_piso): se leen de ahí, como hace la pantalla.
- */
+/** El tope de la torre es un parámetro de la base: se lee de ahí, como hace la pantalla. */
 async function reglasDeTorre() {
   const p = await obtenerParametrosPublicos(CONDOMINIO);
-  return {
-    viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo"),
-    divisorPiso: parametroNumero(p, "torre_divisor_piso"),
-  };
+  return { viviendasMaximo: parametroNumero(p, "torre_viviendas_maximo") };
 }
 
 /**
@@ -54,10 +48,19 @@ const MARCA = `[prueba] arq ${SUFIJO}`;
 
 let torreId = "";
 let unidadId = "";
+// Desde el 16/11/2026 un estacionamiento nuevo va en un nivel: se trae el suyo.
+let nivelId = "";
 const porterias: string[] = [];
 const estacionamientos: string[] = [];
 
 beforeAll(async () => {
+  const { data, error } = await servicio
+    .from("nivel_estacionamiento")
+    .insert({ condominio_id: CONDOMINIO, nombre: `${MARCA} nivel`, nomenclatura: `A${SUFIJO.slice(-5)}` })
+    .select("id")
+    .single();
+  expect(error).toBeNull();
+  nivelId = data!.id;
   await entrarComo(ADMIN);
 });
 
@@ -73,6 +76,10 @@ afterAll(async () => {
   if (unidadId) await supabase.from("unidad").delete().eq("id", unidadId);
   if (torreId) await supabase.from("torre").delete().eq("id", torreId);
   await salir();
+  if (nivelId) {
+    const { error } = await servicio.from("nivel_estacionamiento").delete().eq("id", nivelId);
+    expect(error).toBeNull();
+  }
 });
 
 describe("la estructura del edificio", () => {
@@ -137,6 +144,7 @@ describe("la estructura del edificio", () => {
       codigo: `E${SUFIJO}`,
       tipo: "visitante",
       torreId,
+      nivelId,
     });
     const { data: e } = await supabase
       .from("estacionamiento")
@@ -164,6 +172,7 @@ describe("la estructura del edificio", () => {
       codigo,
       tipo: "visitante",
       torreId,
+      nivelId,
     });
     const { data: creada } = await supabase
       .from("estacionamiento")

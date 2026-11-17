@@ -27,6 +27,7 @@ import {
 } from "../components/permisos";
 import { useAdministradorPermisos } from "../hooks/useAdministradorPermisos";
 import { useVerificacionDeDocumento } from "../hooks/useVerificacionDeDocumento";
+import { useDocumentoDeAmigos } from "@/features/visitas/hooks/useDocumentoDeAmigos";
 import type { EstanciaConfig, PermisoVivienda } from "@/shared/types";
 import { AdminSectionCard } from "../components";
 import { PermisoConInterruptor } from "../components/PermisoConInterruptor";
@@ -48,6 +49,7 @@ export function AdministradorPermisosScreen() {
   const [unidadId, setUnidadId] = useState<string>(TODO_EL_EDIFICIO);
   const { unidades } = useUnidadesDisponibles();
   const documento = useVerificacionDeDocumento();
+  const documentoDeAmigos = useDocumentoDeAmigos();
   const {
     data: permisos,
     estado: cargaDePermisos,
@@ -218,6 +220,32 @@ export function AdministradorPermisosScreen() {
           onCambiar={documento.setVerificar}
           cargando={documento.cargando || documento.guardando}
         />
+        )}
+        {/*
+          La portería vuelve a registrar amigos y familiares (16/11/2026): si
+          les pide documento lo decide el edificio, y viene apagado.
+        */}
+        {documentoDeAmigos.fallo ? (
+          <ErrorAlCargar
+            texto="la regla del documento de amigos y familiares"
+            reintentar={documentoDeAmigos.reintentar}
+            enLinea
+          />
+        ) : (
+          <PermisoConInterruptor
+            seccion="Visitas registradas en portería"
+            etiqueta="La portería pide documento a amigos y familiares"
+            ayuda={{
+              titulo: "Documento de amigos y familiares",
+              descripcion:
+                "Vale cuando la portería registra a un amigo o familiar que llega sin anunciar. " +
+                "Si está activo, tiene que escribir su documento para registrarlo; si no, basta " +
+                "el nombre. Viene desactivado. Al profesional temporal se le pide siempre.",
+            }}
+            valor={documentoDeAmigos.obligatorio}
+            onCambiar={documentoDeAmigos.setObligatorio}
+            cargando={documentoDeAmigos.cargando || documentoDeAmigos.guardando}
+          />
         )}
         <PermisoConInterruptor
           seccion="Correspondencia"

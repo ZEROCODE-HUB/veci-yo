@@ -10,6 +10,8 @@ import { ConQuienViene } from "./ConQuienViene";
 export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
   const { acompanantes, setAcompanantes } = v;
   const esTemporal = v.tipoSeleccionado === "temporal";
+  const identificacionObligatoria = (esMenor: boolean) =>
+    esTemporal || (Boolean(v.porteriaPideDocumento) && !esMenor);
   const cambiar = (idx: number, campo: "nombre" | "ci", valor: string) => {
     const updated = [...acompanantes];
     updated[idx] = { ...updated[idx], [campo]: valor };
@@ -61,11 +63,16 @@ export function AcompanantesDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
                 onChangeText={(x) => cambiar(idx, "nombre", x)}
                 placeholder="Nombre y Apellido"
               />
+              {/*
+                Obligatoria en el profesional temporal, y en los adultos que
+                acompañan a un amigo cuando el edificio pide documento en la
+                portería (16/11/2026).
+              */}
               <Input
-                label={esTemporal ? "Identificación *" : "Identificación (opcional)"}
+                label={identificacionObligatoria(acc.esMenor) ? "Identificación *" : "Identificación (opcional)"}
                 value={acc.ci}
                 onChangeText={(x) => cambiar(idx, "ci", x)}
-                placeholder={esTemporal ? "Obligatorio" : "Opcional"}
+                placeholder={identificacionObligatoria(acc.esMenor) ? "Obligatorio" : "Opcional"}
               />
               {acc.esMenor && preguntaConQuien ? (
                 <ConQuienViene

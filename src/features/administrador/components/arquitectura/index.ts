@@ -1,6 +1,7 @@
 export { EmpresaContactoSection } from "./EmpresaContactoSection";
 export { CondominioTab } from "./CondominioTab";
 export { DepositoFormModal } from "./DepositoFormModal";
+export { EstacionamientosTab } from "./EstacionamientosTab";
 export { PorteriaFormModal } from "./PorteriaFormModal";
 export { PorteriasTab } from "./PorteriasTab";
 export { TorreDetailView } from "./TorreDetailView";

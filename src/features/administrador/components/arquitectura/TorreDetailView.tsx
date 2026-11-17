@@ -52,6 +52,10 @@ type Props = {
     form: EstacionamientoFormValues,
   ) => Promise<boolean>;
   onDeleteParking: (uuid: string) => Promise<boolean>;
+  /** Los niveles del edificio: el nivel es obligatorio al crear (16/11/2026). */
+  niveles: Array<{ uuid: string; nombre: string; nomenclatura: string }>;
+  /** Todos los códigos del edificio, para sugerir el siguiente de un nivel. */
+  codigosDelEdificio: string[];
 };
 
 export function TorreDetailView({
@@ -69,6 +73,8 @@ export function TorreDetailView({
   onCreateParking,
   onUpdateParking,
   onDeleteParking,
+  niveles,
+  codigosDelEdificio,
 }: Props) {
   const [tab, setTab] = useState("Departamentos");
   const [unitModal, setUnitModal] = useState(false);
@@ -190,6 +196,8 @@ export function TorreDetailView({
                   title={parking.codigo}
                   subtitle={[
                     parking.tipo === "visitante" ? "De visita" : "Privada",
+                    // El nivel junto al código (16/11/2026).
+                    parking.nivel,
                     parking.ubicacion,
                     unidadDe(parking, units),
                   ]
@@ -254,6 +262,7 @@ export function TorreDetailView({
           onUpdateParking={onUpdateParking}
           onCreateDeposit={(form) => onCreateDeposit(form, units)}
           onUpdateDeposit={(deposit, form) => onUpdateDeposit(deposit, form, units)}
+          nivelesParaCrear={{ niveles, codigosDelEdificio }}
           onSave={async (form, extra) => {
             if (unitEditing) {
               if (await onUpdateUnit(unitEditing, form)) closeUnit();
@@ -274,7 +283,13 @@ export function TorreDetailView({
                   if (p) void onUpdateParking(p, { ...estacionamientoToForm(p), tipo: "privado", unidadId: uuid });
                 }
                 for (const n of borrador.estacionamientosNuevos) {
-                  void onCreateParking({ codigo: n.codigo, ubicacion: n.ubicacion, tipo: "privado", unidadId: uuid });
+                  void onCreateParking({
+                    codigo: n.codigo,
+                    ubicacion: n.ubicacion,
+                    nivelId: n.nivelId,
+                    tipo: "privado",
+                    unidadId: uuid,
+                  });
                 }
                 for (const id of borrador.depositos) {
                   const d = deposits.find((x) => (x.uuid ?? String(x.id)) === id);
@@ -308,6 +323,8 @@ export function TorreDetailView({
           editing={parkingEditing}
           initial={parkingInitial}
           units={units}
+          niveles={niveles}
+          codigosExistentes={codigosDelEdificio}
           onClose={closeParking}
           onSave={async (form) => {
             const ok = parkingEditing

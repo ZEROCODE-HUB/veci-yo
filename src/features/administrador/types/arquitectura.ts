@@ -42,6 +42,19 @@ export type TowerFormValues = {
   entradasPeatonales: string;
   entradasVehiculares: string;
   ubicacionParkingVisitas: string;
+  /*
+    Al crear (16/11/2026): «¿desde qué piso empiezan los departamentos?»,
+    «¿hasta qué piso?», «¿cuántos por piso?» y la numeración. Sustituyen al
+    rango «Desde 101 / Hasta 105», que sacaba el piso dividiendo el código.
+  */
+  pisoDesde: string;
+  pisoHasta: string;
+  porPiso: string;
+  numeracion: "numero" | "letra";
+  /** Privados y de visita por nivel, con la nomenclatura del nivel como clave. */
+  cocherasPorNivel: Record<string, { privados: string; visita: string }>;
+  /** Niveles escritos a mano en el alta que todavía no existen. */
+  nivelesNuevos: Array<{ nombre: string; nomenclatura: string }>;
 };
 
 export type UnitFormValues = {
@@ -67,6 +80,8 @@ export type EstacionamientoFormValues = {
   codigo: string;
   /** `visitante` o `privado`, que son los dos que acepta la base. */
   tipo: "visitante" | "privado";
+  /** El nivel, obligatorio al crear (16/11/2026). */
+  nivelId: string;
   ubicacion: string;
   /** Vacio para una cochera de visita: no es de nadie. */
   unidadId: string;
@@ -85,6 +100,8 @@ export type PorteriaFormValues = {
   telefono: string;
   /** El pais del telefono, en ISO 3166-1 alfa-2. */
   codigoPais: string;
+  /** La torre, solo para una garita de torre (16/11/2026). */
+  torreId: string;
 };
 
 export type ArchitectureSnapshot = {
@@ -109,6 +126,12 @@ export const emptyTower: TowerFormValues = {
   entradasPeatonales: "",
   entradasVehiculares: "",
   ubicacionParkingVisitas: "",
+  pisoDesde: "",
+  pisoHasta: "",
+  porPiso: "",
+  numeracion: "numero",
+  cocherasPorNivel: {},
+  nivelesNuevos: [],
 };
 
 export const defaultCondominio: CondominioFormValues = {
@@ -159,10 +182,11 @@ export function estacionamientoToForm(
     ? {
         codigo: item.codigo,
         tipo: item.tipo,
+        nivelId: item.nivelId ?? "",
         ubicacion: item.ubicacion,
         unidadId: item.unidadId ?? "",
       }
-    : { codigo: "", tipo: "visitante", ubicacion: "", unidadId: "" };
+    : { codigo: "", tipo: "visitante", nivelId: "", ubicacion: "", unidadId: "" };
 }
 
 /** Lo que devuelve `obtenerArquitectura` para cada cochera. */
@@ -174,6 +198,10 @@ export type EstacionamientoDeTorre = {
   unidadId: string | null;
   torreNumero: number | null;
   ocupado: boolean;
+  /** Vacío en las de antes del 16/11/2026. */
+  nivelId: string | null;
+  /** El nombre del nivel («Sótano 1»), para enseñarlo junto al código. */
+  nivel: string;
 };
 
 export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
@@ -181,12 +209,13 @@ export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
     ? {
         nombre: item.nombre,
         tipo:
-          item.tipo === "acceso_vehicular"
-            ? "acceso_vehicular"
+          item.tipo === "acceso_vehicular" || item.tipo === "garita_torre"
+            ? item.tipo
             : "entrada_principal",
         ubicacion: item.ubicacion || "",
         telefono: item.telefono || "",
         codigoPais: item.codigoPais || paisPorDefecto(),
+        torreId: item.torreId ?? "",
       }
     : {
         nombre: "",
@@ -194,5 +223,6 @@ export function porteriaToForm(item?: Porteria | null): PorteriaFormValues {
         ubicacion: "",
         telefono: "",
         codigoPais: paisPorDefecto(),
+        torreId: "",
       };
 }

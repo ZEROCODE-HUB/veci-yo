@@ -92,7 +92,8 @@ export type SharedStackParamList = {
   Anuncios: undefined;
   AnuncioDetalle: { id: string };
   AdministradorUbicacion: undefined;
-  AdministradorArquitectura: undefined;
+  /** `pestana`: la pestaña con que abre, p. ej. «Torres» desde la lista de inicio (16/11/2026). */
+  AdministradorArquitectura: { pestana?: string } | undefined;
   AdministradorPermisos: undefined;
   AdministradorSeguridad: undefined;
   AdministradorCanales: undefined;

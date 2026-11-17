@@ -36,6 +36,13 @@ describe("los permisos de la pantalla de visitas", () => {
     expect(noResidente.tiposDisponibles).toContain("huesped-temporal");
   });
 
+  it("la portería registra solo amigos o familia y profesionales temporales", () => {
+    // Se le quitó el 01/11/2026 y el cliente lo pidió de vuelta el 16/11/2026.
+    const guardia = permisos("guardia");
+    expect(guardia.puedeCrear).toBe(true);
+    expect(guardia.tiposDisponibles).toEqual(["amigos", "temporal"]);
+  });
+
   it("el huésped no registra visitas si su anfitrión no lo permite", () => {
     // La opción del anfitrión se guardaba y no cambiaba nada (15/10/2026).
     const prohibido = permisosDeVisitas("huesped-temporal", 1, true, false);

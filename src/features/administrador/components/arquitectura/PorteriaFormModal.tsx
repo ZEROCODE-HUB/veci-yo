@@ -12,6 +12,8 @@ type Props = {
   visible: boolean;
   editing: Porteria | null;
   initial: PorteriaFormValues;
+  /** Para elegir la torre de una garita de torre (16/11/2026). */
+  torres?: Array<{ uuid?: string; numero: number; nombre: string }>;
   onClose: () => void;
   onSave: (form: PorteriaFormValues) => unknown;
 };
@@ -20,6 +22,7 @@ export function PorteriaFormModal({
   visible,
   editing,
   initial,
+  torres = [],
   onClose,
   onSave,
 }: Props) {
@@ -81,6 +84,24 @@ export function PorteriaFormModal({
             />
           )}
         />
+        {watch("tipo") === "garita_torre" ? (
+          <Controller
+            control={control}
+            name="torreId"
+            render={({ field, fieldState }) => (
+              <Select
+                label="Torre *"
+                value={field.value}
+                placeholder="Elegir la torre…"
+                options={torres
+                  .filter((t) => t.uuid)
+                  .map((t) => ({ value: t.uuid ?? "", label: t.nombre || `Torre ${t.numero}` }))}
+                onChange={(valor) => field.onChange(String(valor))}
+                error={fieldState.error?.message}
+              />
+            )}
+          />
+        ) : null}
         <Controller
           control={control}
           name="ubicacion"

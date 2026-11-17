@@ -19,6 +19,7 @@ import { MisViviendas } from "./MisViviendas";
 import { GratitudCard } from "./GratitudCard";
 import { TuResumen } from "./TuResumen";
 import { PrimeraPropiedad } from "./PrimeraPropiedad";
+import { TuEdificioPasoAPaso } from "./TuEdificioPasoAPaso";
 import { RecordatoriosDePreregistro } from "@/features/visitas/components/RecordatoriosDePreregistro";
 import { BuscarEnPorteria } from "./BuscarEnPorteria";
 import { AvisoFinDeTurno } from "@/features/perfil/components/turno/AvisoFinDeTurno";
@@ -134,6 +135,9 @@ export function InquilinoLiderHome() {
           <BuscarEnPorteria />
         </View>
       ) : null}
+
+      {/* Lo que falta para tener el edificio listo; se va sola al completarse (16/11/2026). */}
+      <TuEdificioPasoAPaso />
 
       {/* Reputación — solo para residentes */}
       {esResidente && (
@@ -667,18 +671,19 @@ export function InquilinoLiderHome() {
                     Ver detalle
                   </Text>
                 </Pressable>
-                {/* La porteria no registra visitas (Para Claude 200, 01/11/2026). */}
-                {esGuardia ? null : (
-                  <Pressable
-                    hitSlop={8}
-                    onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
-                    className="px-3.5 py-1.5 rounded-full bg-secondary"
-                  >
-                    <Text className="text-xs font-semibold text-white">
-                      Registrar
-                    </Text>
-                  </Pressable>
-                )}
+                {/*
+                  La portería vuelve a registrar amigos o familia y profesionales
+                  temporales (16/11/2026; se le había quitado el 01/11).
+                */}
+                <Pressable
+                  hitSlop={8}
+                  onPress={() => navigateToRoute(navigation, "VisitasNuevo")}
+                  className="px-3.5 py-1.5 rounded-full bg-secondary"
+                >
+                  <Text className="text-xs font-semibold text-white">
+                    Registrar
+                  </Text>
+                </Pressable>
                 {/* Las reservas de zonas, a mano de la portería (29/10/2026). */}
                 {esGuardia ? (
                   <Pressable

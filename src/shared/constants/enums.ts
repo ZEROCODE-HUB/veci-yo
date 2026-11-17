@@ -114,6 +114,8 @@ export function claveDeEtiqueta<T extends string>(
 export const TIPO_PORTERIA: Record<Enums["tipo_porteria"], string> = {
   entrada_principal: "Entrada peatonal",
   acceso_vehicular: "Acceso vehicular",
+  // La garita de una torre, con su torre (16/11/2026).
+  garita_torre: "Garita de torre",
 };
 
 /*
