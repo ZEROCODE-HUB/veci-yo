@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/services/supabase";
-import { crearInvitacion } from "@/shared/services/invitaciones";
+import { crearInvitacion, enlaceNuevoDeInvitacion, enviarInvitacion } from "@/shared/services/invitaciones";
+import { mensajeDeError } from "@/shared/utils/error.util";
 import { invitacionesPorCorreo } from "@/shared/services/ajustesDeLaApp";
 import { motivoDeLaFuncion } from "@/shared/services/errorDeFuncion";
 import type { Database } from "@/shared/types/database.types";
@@ -113,10 +114,10 @@ export async function invitarAUnidad(datos: NuevaInvitacionAUnidad) {
 /**
  * La administración asigna el propietario de una vivienda (29/10/2026).
  *
- * Sin invitación que aceptar: si ya tiene cuenta con ese correo queda
- * propietario en el acto; si no, la asignación espera a que la cree en la app
- * con ese correo (`reclamar_asignaciones`). En los dos casos le llega un correo
- * que se lo dice y le pide descargar la app e iniciar sesión con ese correo.
+ * Desde el 30/10/2026 es una invitación que el propietario acepta en Inicio,
+ * con sus términos y sus espacios. Desde el 16/11/2026 el correo la lleva,
+ * como el de los demás roles: abre la app con ella, y la app dice si toca
+ * iniciar sesión o crear la cuenta.
  */
 export async function asignarPropietario(datos: { unidadId: string; nombre: string; correo: string }) {
   const correo = datos.correo.trim().toLowerCase();
@@ -130,28 +131,38 @@ export async function asignarPropietario(datos: { unidadId: string; nombre: stri
   const fila = data?.[0];
   const asignado = Boolean(fila?.asignado);
 
-  let correoEnviado = false;
-  let motivo: string | null = "El envío de correos está apagado";
-  if (await invitacionesPorCorreo()) {
-    const { data: envio, error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
-      body: {
-        tipo: "propietario-asignado",
-        correo,
-        nombre,
-        condominio: fila?.edificio ?? undefined,
-        unidad: fila?.unidad ?? undefined,
-        cuentaNueva: !asignado,
-      },
-    });
-    const respuesta = envio as { enviado?: boolean; motivo?: string } | null;
-    correoEnviado = !errorEnvio && Boolean(respuesta?.enviado);
-    motivo = correoEnviado
-      ? null
-      : errorEnvio
-        ? ((await motivoDeLaFuncion(errorEnvio)) ?? "No se pudo enviar el correo")
-        : (respuesta?.motivo ?? "No se pudo enviar el correo");
+  /*
+    El correo lleva la invitación, como los de los demás roles (16/11/2026):
+    el botón abre la app con ella y la app dice si toca iniciar sesión o
+    crear la cuenta. Hasta hoy solo decía «abre la app», porque el enlace con
+    el que nace la invitación no lo recibe nadie: se pide uno nuevo.
+  */
+  if (!(await invitacionesPorCorreo())) {
+    return { asignado, correoEnviado: false, motivo: "El envío de correos está apagado" };
   }
-  return { asignado, correoEnviado, motivo };
+  try {
+    const { data: invitacion, error: errorInvitacion } = await supabase
+      .from("invitacion")
+      .select("id")
+      .eq("unidad_id", datos.unidadId)
+      .eq("ambito", "unidad")
+      .eq("rol_unidad", "propietario")
+      .eq("correo", correo)
+      .eq("estado", "pendiente")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    if (errorInvitacion) throw errorInvitacion;
+    const token = await enlaceNuevoDeInvitacion(invitacion.id);
+    await enviarInvitacion({ invitacionId: invitacion.id, token, correo, nombre });
+    return { asignado, correoEnviado: true, motivo: null };
+  } catch (fallo) {
+    return {
+      asignado,
+      correoEnviado: false,
+      motivo: (await motivoDeLaFuncion(fallo)) ?? mensajeDeError(fallo, "No se pudo enviar el correo"),
+    };
+  }
 }
 
 /** El propietario asignado que todavía no creó su cuenta, si hay (29/10/2026). */

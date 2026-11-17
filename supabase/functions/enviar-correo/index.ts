@@ -104,6 +104,8 @@ interface Peticion {
   hasta?: string;
   /** Si la cuenta se acaba de crear (solo «administracion-asignada»). */
   cuentaNueva?: boolean;
+  /** Como qué se invita (solo «invitacion», 16/11/2026): `guardia`, `propietario`... */
+  rol?: string;
   /** Los de una PQRS (30/10/2026): los manda la base al guardarla. */
   numero?: string;
   titulo?: string;
@@ -142,6 +144,18 @@ const json = (cuerpo: unknown, status: number) =>
  * buzón equivocado tiene que poder ignorarse con confianza, y por eso el pie
  * por defecto de la maqueta lo dice en todos.
  */
+/** «Te invitaron …» según el rol; recibe « de la vivienda 301» o "". */
+const COMO_QUE: Record<string, (vivienda: string) => string> = {
+  administrador: () => "a administrar el edificio",
+  coadministrador: (vivienda) => (vivienda ? `a la coadministración${vivienda}` : "a la coadministración del edificio"),
+  guardia: () => "como guardia de portería",
+  propietario: (vivienda) => `como propietario${vivienda}`,
+  inquilino_lider: (vivienda) => `como inquilino líder${vivienda}`,
+  residente: (vivienda) => `como residente${vivienda}`,
+  corresidente: (vivienda) => `como corresidente${vivienda}`,
+  huesped_temporal: (vivienda) => `como huésped${vivienda}`,
+};
+
 function plantilla(
   p: Peticion,
   /** Cuánto dura el enlace de una invitación; solo lo usan las dos invitaciones. */
@@ -161,22 +175,41 @@ function plantilla(
   const quienReservo = p.deParte ? `${p.deParte} hizo` : "alguien hizo";
 
   switch (p.tipo) {
-    case "invitacion":
+    /*
+      Una sola invitación para todos los roles (16/11/2026, cliente: «necesito
+      que unifiquemos el tema de invitaciones para todos»). Dice como qué te
+      invitan y el botón abre la app con la invitación: ella decide si toca
+      iniciar sesión o crear la cuenta. Sin `rol` --versiones viejas de la
+      app-- dice lo de siempre.
+    */
+    case "invitacion": {
+      const vivienda = p.unidad ? ` de la vivienda ${p.unidad}` : "";
+      const comoQue = p.rol ? COMO_QUE[p.rol]?.(vivienda) : undefined;
       return {
-        asunto: "Te invitaron a tu edificio en Veciyo",
-        titulo: "Te invitaron a tu edificio",
+        asunto: comoQue
+          ? `Te invitaron ${comoQue}${enDonde} en Veciyo`
+          : "Te invitaron a tu edificio en Veciyo",
+        titulo: p.rol === "administrador" ? "Te invitaron a administrar tu edificio" : "Tienes una invitación",
         saludo,
         parrafos: [
-          `Te invitaron${dePartede} a unirte a tu vivienda${donde} en Veciyo, ` +
+          (comoQue
+            ? `Te invitaron${dePartede} ${comoQue}${enDonde} en Veciyo, `
+            : `Te invitaron${dePartede} a unirte a tu vivienda${donde} en Veciyo, `) +
             `la aplicación con la que el edificio se organiza: visitas, ` +
             `correspondencia, zonas comunes y avisos.`,
+          `Pulsa el botón: se abre la app con tu invitación y te dice si tienes que ` +
+            `iniciar sesión o crear tu cuenta. Si todavía no tienes la app, te lleva a ` +
+            `la tienda de tu celular para descargarla.`,
+          `Importante: entra con este mismo correo (${p.correo}); con otro no verás la invitación.`,
         ],
-        boton: { texto: "Aceptar la invitación", url: p.enlace },
-        // El plazo sale del parámetro `invitacion_dias_validez`, el mismo que
-        // usa `crear_invitacion`: hasta el 18/10/2026 aquí ponía «7» a mano y
-        // si se cambiaba el plazo en la base el correo seguía diciendo 7.
-        nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.`,
+        boton: { texto: "Ver la invitación", url: p.enlace },
+        // El plazo sale del parámetro de la base, el mismo que usa quien la
+        // crea. La del propietario no caduca en la práctica (un año): no se dice.
+        ...(p.rol === "propietario"
+          ? {}
+          : { nota: `El enlace vence en ${cuantoFalta(diasValidezInvitacion)}.` }),
       };
+    }
 
     // La del primer administrador de un edificio, desde el panel de la app
     // (24/10/2026). Hasta hoy ese enlace solo se enseñaba para copiarlo.
@@ -699,7 +732,9 @@ Deno.serve(async (req: Request) => {
       diasValidezInvitacion = await parametroEntero(
         clienteRpcPorFetch(url, claveServicio),
         // La del primer administrador tiene su propio plazo.
-        cuerpo.tipo === "invitacion" ? "invitacion_dias_validez" : "invitacion_admin_dias_validez",
+        cuerpo.tipo === "invitacion" && cuerpo.rol !== "administrador"
+          ? "invitacion_dias_validez"
+          : "invitacion_admin_dias_validez",
       );
     } catch (error) {
       return json(

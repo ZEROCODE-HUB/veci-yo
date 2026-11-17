@@ -13,10 +13,9 @@ import { paisPorDefecto } from "@/shared/constants";
 /**
  * Dar de alta un edificio.
  *
- * Si se da un correo, esa persona queda de administración en el acto y se le
- * avisa por correo (29/10/2026; antes era una invitación que había que
- * aceptar). Si no tenía cuenta, se le crea y el correo trae el enlace para
- * poner su contraseña: la plataforma no elige claves de otros.
+ * Si se da un correo, a esa persona le llega la invitación a administrarlo,
+ * que se acepta en la app como todas (16/11/2026). La app le dice si tiene
+ * que iniciar sesión o crear su cuenta: la plataforma no elige claves de otros.
  */
 
 export function PlataformaEdificioNuevoScreen() {
@@ -119,20 +118,21 @@ export function PlataformaEdificioNuevoScreen() {
           </Text>
           {listo.administracion ? (
             <>
+              {/*
+                Desde el 16/11/2026 la administración es una invitación que se
+                acepta en la app, como la del guardia: hasta entonces el
+                edificio sigue sin nadie.
+              */}
               <Text className="mt-2 text-sm text-gray-900">
-                {`${nombreAdmin.trim()} ya administra el edificio.`}
+                {`Invitamos a ${nombreAdmin.trim()} a administrar el edificio.`}
               </Text>
               {listo.administracion.correo.enviado ? (
                 <Text className="mt-2 text-sm text-gray-600">
-                  {listo.administracion.cuentaNueva
-                    ? `Le enviamos un correo a ${correoAdmin.trim()} con el enlace para poner su contraseña.`
-                    : `Le avisamos por correo a ${correoAdmin.trim()}. Entra con su cuenta de siempre.`}
+                  {`Le llegó un correo a ${correoAdmin.trim()}: al abrirlo, la app le dice si tiene que iniciar sesión o crear su cuenta, y acepta la invitación.`}
                 </Text>
               ) : (
-                <Text className="mt-2 text-sm text-danger">
-                  {listo.administracion.cuentaNueva
-                    ? `No salió el correo: ${listo.administracion.correo.motivo}. Dile que entre con «¿Olvidaste tu contraseña?» y ${correoAdmin.trim()}.`
-                    : `No salió el correo: ${listo.administracion.correo.motivo}. Avísale tú: ya puede entrar con su cuenta.`}
+                <Text selectable className="mt-2 text-sm text-danger">
+                  {`No salió el correo: ${listo.administracion.correo.motivo}. Pásale tú este enlace: ${listo.administracion.enlace ?? ""}`}
                 </Text>
               )}
             </>

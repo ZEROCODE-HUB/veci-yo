@@ -123,6 +123,24 @@ export async function crearInvitacion(
   const fila = Array.isArray(data) ? data[0] : data;
   const token = fila?.token as string;
   const invitacionId = fila?.invitacion_id as string;
+  return enviarInvitacion({ invitacionId, token, correo: datos.correo, nombre: datos.nombre });
+}
+
+/**
+ * Manda por correo la invitación de ese token: la misma para todos los roles
+ * (16/11/2026, cliente: «necesito que unifiquemos el tema de invitaciones para
+ * todos»). El correo dice como qué se invita, en qué edificio y vivienda --lo
+ * saca de la propia invitación-- y su botón abre la app con ella.
+ *
+ * Con el envío apagado devuelve el enlace para enseñarlo y copiarlo a mano.
+ */
+export async function enviarInvitacion(datos: {
+  invitacionId: string;
+  token: string;
+  correo: string;
+  nombre: string;
+}): Promise<InvitacionCreada> {
+  const { invitacionId, token } = datos;
   const enlace = `${await webDeVeciyo()}/invitacion?token=${token}`;
 
   if (!(await invitacionesPorCorreo())) {
@@ -131,12 +149,17 @@ export async function crearInvitacion(
     return { invitacionId, enlace, correoEnviado: false };
   }
 
+  // Si no se puede leer, el correo sale igual, con el texto general.
+  const detalle = await consultarInvitacion(token).catch(() => null);
   const { error: errorEnvio } = await supabase.functions.invoke("enviar-correo", {
     body: {
       tipo: "invitacion",
       correo: datos.correo,
       nombre: datos.nombre,
       enlace,
+      rol: detalle?.rol,
+      condominio: detalle?.condominio,
+      unidad: detalle?.unidad ?? undefined,
     },
   });
   if (errorEnvio) throw errorEnvio;
@@ -148,6 +171,29 @@ export async function crearInvitacion(
 
   // Con el envío activo el enlace no vuelve a la UI: vive solo en el correo.
   return { invitacionId, enlace: null, correoEnviado: true };
+}
+
+/**
+ * Otro enlace para una invitación pendiente (16/11/2026): el anterior deja de
+ * valer. Lo usa la del propietario, que nacía con un enlace que nadie recibía.
+ */
+export async function enlaceNuevoDeInvitacion(invitacionId: string): Promise<string> {
+  const { data, error } = await supabase.rpc("enlace_nuevo_de_invitacion", {
+    p_invitacion_id: invitacionId,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+/**
+ * Si el correo de la invitación de ese enlace ya tiene cuenta (16/11/2026).
+ * Con eso la pantalla ofrece un solo botón: «Iniciar sesión» o «Crear cuenta».
+ * Nulo si la base no lo sabe (invitación ya usada o vencida).
+ */
+export async function laInvitacionTieneCuenta(token: string): Promise<boolean | null> {
+  const { data, error } = await supabase.rpc("la_invitacion_tiene_cuenta", { p_token: token });
+  if (error) throw error;
+  return typeof data === "boolean" ? data : null;
 }
 
 export interface DetalleInvitacion {

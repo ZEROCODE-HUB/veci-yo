@@ -1,7 +1,7 @@
 import { theme } from "@/config";
-import { recordarInvitacion } from "@/shared/services/invitacionPendiente";
+import { olvidarInvitacion, recordarInvitacion } from "@/shared/services/invitacionPendiente";
 import { useEffect, useState } from "react";
-import {ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import { Button, Cargando } from "@/shared/components";
@@ -11,6 +11,7 @@ import { useUIStore } from "@/stores/ui-store";
 import {
   aceptarInvitacion,
   consultarInvitacion,
+  laInvitacionTieneCuenta,
   rechazarInvitacion,
   type DetalleInvitacion,
 } from "@/shared/services/invitaciones";
@@ -38,6 +39,22 @@ const ETIQUETA_ROL: Record<string, string> = {
   huesped_temporal: "Huésped temporal",
 };
 
+/*
+  Estos dos se aceptan en Inicio, no aquí: el propietario tiene términos y,
+  a veces, estacionamientos y depósitos que aceptar uno a uno; el huésped
+  revisa su reserva. Aceptarlos aquí con un botón se saltaría todo eso.
+*/
+const SE_ACEPTA_EN_INICIO = new Set(["propietario", "huesped_temporal"]);
+
+/**
+ * Lo que abre el enlace de una invitación, para cualquier rol (16/11/2026).
+ *
+ * El cliente: «lo mejor es que se detecte si el usuario tiene o no cuenta, o
+ * sea se abre la app, le muestra la invitación y pues la app decide si debe
+ * crear cuenta o iniciar sesión». Antes enseñaba los dos botones y dejaba que
+ * cada quien adivinara; ahora pregunta a la base (`la_invitacion_tiene_cuenta`,
+ * que solo responde a quien trae el enlace) y ofrece uno.
+ */
 export function AceptarInvitacionScreen() {
   const navigation = useNavegacionEntrada();
   const route = useRoute<RouteType>();
@@ -49,6 +66,8 @@ export function AceptarInvitacionScreen() {
   const addToast = useUIStore((s) => s.addToast);
 
   const [detalle, setDetalle] = useState<DetalleInvitacion | null>(null);
+  /** `null`: no se sabe, y entonces se ofrecen las dos cosas. */
+  const [tieneCuenta, setTieneCuenta] = useState<boolean | null>(null);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
   /*
@@ -62,13 +81,18 @@ export function AceptarInvitacionScreen() {
 
   useEffect(() => {
     let vigente = true;
-    // Para que el correo de confirmación de una cuenta nueva vuelva aquí.
+    // Para volver aquí al entrar, y para que el registro se rellene solo.
     recordarInvitacion(token);
     void (async () => {
       try {
-        const info = await consultarInvitacion(token);
+        const [info, cuenta] = await Promise.all([
+          consultarInvitacion(token),
+          // Si esto falla, la invitación se enseña igual con los dos botones.
+          laInvitacionTieneCuenta(token).catch(() => null),
+        ]);
         if (vigente) {
           setDetalle(info);
+          setTieneCuenta(cuenta);
           setSinRespuesta(false);
         }
       } catch {
@@ -122,14 +146,21 @@ export function AceptarInvitacionScreen() {
   const correoCoincide =
     !autenticado ||
     usuario?.correo?.toLowerCase() === detalle.correo.toLowerCase();
+  const enInicio = SE_ACEPTA_EN_INICIO.has(detalle.rol);
+
+  const entrar = () =>
+    navigation.navigate("Auth", { screen: "Login", params: { correo: detalle.correo } });
+  const registrarse = () => navigation.navigate("Auth", { screen: "Registro" });
+  const irAInicio = () => navigation.reset({ index: 0, routes: [{ name: "App" }] });
 
   const aceptar = async () => {
     setProcesando(true);
     try {
       await aceptarInvitacion(token);
+      olvidarInvitacion();
       await sincronizarContexto();
       addToast("¡Listo! Ya formas parte de tu edificio", "success");
-      navigation.reset({ index: 0, routes: [{ name: "App" }] });
+      irAInicio();
     } catch (error) {
       addToast(
         mensajeDeError(error, "No pudimos aceptar la invitación"),
@@ -145,6 +176,7 @@ export function AceptarInvitacionScreen() {
     setRechazando(true);
     try {
       await rechazarInvitacion(token);
+      olvidarInvitacion();
       addToast("Invitación rechazada", "info");
       navigation.goBack();
     } catch (error) {
@@ -172,7 +204,7 @@ export function AceptarInvitacionScreen() {
 
         <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
           <Dato etiqueta="Edificio" valor={detalle.condominio} />
-          {detalle.unidad && <Dato etiqueta="Unidad" valor={detalle.unidad} />}
+          {detalle.unidad ? <Dato etiqueta="Unidad" valor={detalle.unidad} /> : null}
           <Dato
             etiqueta="Rol"
             valor={ETIQUETA_ROL[detalle.rol] ?? detalle.rol}
@@ -180,28 +212,50 @@ export function AceptarInvitacionScreen() {
           <Dato etiqueta="Correo" valor={detalle.correo} />
         </View>
 
-        {!detalle.vigente && (
+        {!detalle.vigente ? (
           <Aviso
             tono="error"
             texto="Esta invitación ya venció o fue utilizada. Pídele a quien te invitó que te envíe una nueva."
           />
-        )}
+        ) : null}
 
-        {detalle.vigente && !autenticado && (
+        {detalle.vigente && !autenticado ? (
           <Aviso
             tono="info"
-            texto={`Para aceptar necesitas iniciar sesión con ${detalle.correo}. Si todavía no tienes cuenta, regístrate con ese mismo correo.`}
+            texto={
+              tieneCuenta === true
+                ? `Ya tienes una cuenta con ${detalle.correo}: inicia sesión para aceptar la invitación.`
+                : tieneCuenta === false
+                  ? `Todavía no tienes cuenta en Veciyo. Créala con ${detalle.correo} para aceptar la invitación: es un minuto.`
+                  : `Para aceptar necesitas iniciar sesión con ${detalle.correo}. Si todavía no tienes cuenta, regístrate con ese mismo correo.`
+            }
           />
-        )}
+        ) : null}
 
-        {detalle.vigente && autenticado && !correoCoincide && (
+        {detalle.vigente && autenticado && !correoCoincide ? (
           <Aviso
             tono="error"
             texto={`Estás dentro con ${usuario?.correo}, pero esta invitación es para ${detalle.correo}. Cierra sesión y entra con ese correo.`}
           />
-        )}
+        ) : null}
 
-        {detalle.vigente && autenticado && correoCoincide && (
+        {detalle.vigente && autenticado && correoCoincide && enInicio ? (
+          <View className="gap-2">
+            <Aviso
+              tono="info"
+              texto={
+                detalle.rol === "propietario"
+                  ? "Tu invitación te espera en Inicio: pulsa «Ver», revisa los términos y acéptala."
+                  : "Tu invitación te espera en Inicio: revisa los datos de tu reserva y acéptala."
+              }
+            />
+            <Button fullWidth onPress={irAInicio}>
+              Ir a mi invitación
+            </Button>
+          </View>
+        ) : null}
+
+        {detalle.vigente && autenticado && correoCoincide && !enInicio ? (
           <View className="gap-2">
             <Button
               fullWidth
@@ -221,22 +275,26 @@ export function AceptarInvitacionScreen() {
               Rechazar
             </Button>
           </View>
-        )}
+        ) : null}
 
-        {detalle.vigente && !autenticado && (
+        {detalle.vigente && !autenticado ? (
           <View className="gap-2">
-            <Button fullWidth onPress={() => navigation.navigate("Auth", { screen: "Login" })}>
-              Iniciar sesión
-            </Button>
-            <Button
-              fullWidth
-              variant="secondary"
-              onPress={() => navigation.navigate("Auth", { screen: "Registro" })}
-            >
-              Crear cuenta
-            </Button>
+            {tieneCuenta !== false ? (
+              <Button fullWidth onPress={entrar}>
+                Iniciar sesión
+              </Button>
+            ) : null}
+            {tieneCuenta !== true ? (
+              <Button
+                fullWidth
+                variant={tieneCuenta === false ? "primary" : "secondary"}
+                onPress={registrarse}
+              >
+                Crear cuenta
+              </Button>
+            ) : null}
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </ScreenLayout>
   );

@@ -24,6 +24,11 @@ export async function enlaceDeLaInvitacionPendiente(): Promise<string | undefine
   return token ? `${await webDeVeciyo()}/invitacion?token=${token}` : undefined;
 }
 
+/** Ya se respondió: no hay a dónde volver. */
+export function olvidarInvitacion() {
+  token = null;
+}
+
 /** El token de la invitación que se estaba mirando, si lo hay (hueco 58). */
 export function invitacionPendiente(): string | null {
   return token;
