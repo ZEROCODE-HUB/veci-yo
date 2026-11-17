@@ -168,6 +168,28 @@ export function UnidadFormModal({
           )}
         />
         {/*
+          El índice de votación (coeficiente) de la vivienda (17/11/2026):
+          pesa su voto en las encuestas que se cuentan «según el índice».
+        */}
+        <Controller
+          control={control}
+          name="indiceVotacion"
+          render={({ field, fieldState }) => (
+            <View className="gap-1">
+              <Input
+                label="Índice de votación"
+                value={field.value}
+                onChangeText={(texto) => field.onChange(texto.replace(/[^0-9.,]/g, ""))}
+                placeholder="1"
+                error={fieldState.error?.message}
+              />
+              <Text className="text-xs text-gray-500">
+                Cuánto vale su voto en las encuestas que se cuentan según el índice. 1 = igual que los demás.
+              </Text>
+            </View>
+          )}
+        />
+        {/*
           Estacionamientos, depósitos y propietario desde la ficha del
           departamento (pedido del cliente, 29/10/2026). Necesitan que el
           departamento exista: al crearlo, se completan con «Editar».

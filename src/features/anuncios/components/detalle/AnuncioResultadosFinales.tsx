@@ -9,6 +9,7 @@ export function AnuncioResultadosFinales({
   noVotaron,
   detalleNominal = [],
   enCurso = false,
+  sinParticipacion = false,
 }: {
   anuncio: Anuncio;
   noVotaron: string[];
@@ -16,8 +17,16 @@ export function AnuncioResultadosFinales({
   enCurso?: boolean;
   /** Vacio si la votacion es secreta o si quien mira no administra. */
   detalleNominal?: FilaDetalleVoto[];
+  /**
+   * Sin la barra de participación: desde el 17/11/2026 el avance lo pinta
+   * `ResultadoDeEncuestaCard` con lo que calcula la base, y dos barras que
+   * miden distinto se contradirían.
+   */
+  sinParticipacion?: boolean;
 }) {
-  const participacion = medirParticipacion(anuncio, noVotaron.length);
+  const participacion = sinParticipacion
+    ? undefined
+    : medirParticipacion(anuncio, noVotaron.length);
 
   return (
     <View

@@ -68,6 +68,8 @@ export type UnitFormValues = {
   estado: Database["public"]["Enums"]["estado_unidad"];
   /** El uuid de la tipología, o vacío si no tiene. */
   tipologiaId: string;
+  /** Índice de votación (coeficiente), como texto del campo. «1» por defecto. */
+  indiceVotacion: string;
 };
 
 export type DepositFormValues = {
@@ -160,8 +162,9 @@ export function unitToForm(unit?: Unidad | null): UnitFormValues {
         piso: String(unit.piso),
         estado: unit.estado,
         tipologiaId: unit.tipologiaId ?? "",
+        indiceVotacion: String(unit.indiceVotacion ?? 1).replace(".", ","),
       }
-    : { codigo: "", piso: "1", estado: "disponible", tipologiaId: "" };
+    : { codigo: "", piso: "1", estado: "disponible", tipologiaId: "", indiceVotacion: "1" };
 }
 
 export function depositToForm(deposit?: Deposito | null): DepositFormValues {

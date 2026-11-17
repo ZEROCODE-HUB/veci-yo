@@ -62,6 +62,20 @@ let canalId = "";
 const mensajes: string[] = [];
 
 beforeAll(async () => {
+  /*
+    Desde el 17/11/2026 un vecino solo escribe en un canal si el edificio
+    enciende `chat_entre_vecinos` (viene apagado). Aquí el propietario escribe
+    en el canal: en el edificio de pruebas se enciende y **no se devuelve**,
+    porque otro archivo que corre a la vez también lo necesita encendido. El
+    caso apagado lo comprueba `sin-chat-entre-vecinos.test.ts`, en el segundo
+    edificio.
+  */
+  const { error: errorAjuste } = await servicio
+    .from("condominio")
+    .update({ chat_entre_vecinos: true })
+    .eq("id", CONDOMINIO);
+  expect(errorAjuste).toBeNull();
+
   propietarioId = await entrarComo(PROPIETARIO);
   await salir();
   adminId = await entrarComo(ADMIN);

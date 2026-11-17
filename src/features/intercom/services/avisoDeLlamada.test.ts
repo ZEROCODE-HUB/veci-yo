@@ -44,6 +44,15 @@ describe("el push de la llamada", () => {
     expect(fin.collapse_id).toBe(sonando.collapse_id);
   });
 
+  it("si contestó otro, el «ya no suena» lo dice (17/11/2026)", () => {
+    const fin = armarPushDeLlamada({ ...base, evento: "fin", textoFin: "Ya contestó otra persona" });
+    expect(fin.contents.es).toBe("Ya contestó otra persona");
+    expect(fin.data.tipo).toBe("llamada_fin");
+    expect(armarPushDeLlamada({ ...base, evento: "fin" }).contents.es).toBe(
+      "La llamada ya no está sonando",
+    );
+  });
+
   it("con la firma, lo que el APK manda para rechazar sin sesión", () => {
     const push = armarPushDeLlamada({
       ...base,

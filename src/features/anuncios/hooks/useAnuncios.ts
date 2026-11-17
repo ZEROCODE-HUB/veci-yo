@@ -15,7 +15,9 @@ import {
   eliminarAnuncio,
   misVotos,
   obtenerAnuncios,
+  participacionPorTorre,
   pendientesVotacion,
+  resultadoDeEncuesta,
   votar,
   type NuevoAnuncio,
 } from "../services/anuncios.repo";
@@ -210,6 +212,23 @@ export function useAnuncioDetalle(uuid: string) {
   });
 
   /*
+    El resultado lo calcula la base (17/11/2026): cuenta, pesa y dice si se
+    aprueba. Cuelga de la misma clave, así que votar lo refresca.
+  */
+  const resultado = useQuery({
+    queryKey: [...anunciosQueryKey, uuid, "resultado"],
+    queryFn: () => resultadoDeEncuesta(uuid),
+    enabled: Boolean(uuid),
+  });
+
+  // Por torre, solo para la administración: a otros la base les da vacío.
+  const porTorre = useQuery({
+    queryKey: [...anunciosQueryKey, uuid, "por-torre"],
+    queryFn: () => participacionPorTorre(uuid),
+    enabled: Boolean(uuid) && rolActivo === "administrador",
+  });
+
+  /*
     Se vota **por vivienda**: quien tiene dos vota dos veces, una por cada una.
     Lo decidio el cliente el 05/10/2026.
 
@@ -241,14 +260,24 @@ export function useAnuncioDetalle(uuid: string) {
   const esMultiple = Boolean(anuncio?.votacionMultiple);
   const laElegida =
     mias.find((u) => u.unidadId === unidadActiva?.unidadId) ?? mias[0];
-  const pendientesMias = esMultiple
-    ? laElegida
+  /*
+    «Cada residente» (17/11/2026): vota la persona, una vez, por la vivienda
+    que tenga elegida --la vivienda solo dice que está en la audiencia--.
+    Quien tiene dos no vota dos veces; la base lo sujeta igual.
+  */
+  const votaLaPersona = resultado.data?.quienVota === "residente";
+  const pendientesMias = votaLaPersona
+    ? laElegida && (esMultiple || votos.length === 0)
       ? [laElegida]
       : []
-    : mias.filter((u) => !yaVotaron.has(u.unidadId));
+    : esMultiple
+      ? laElegida
+        ? [laElegida]
+        : []
+      : mias.filter((u) => !yaVotaron.has(u.unidadId));
   // Lo que ya marcó la vivienda que vota, no todo lo que marqué con todas.
   const votosALaVista =
-    esMultiple && laElegida
+    esMultiple && laElegida && !votaLaPersona
       ? votos.filter((v) => v.unidadId === laElegida.unidadId)
       : votos;
 
@@ -289,7 +318,15 @@ export function useAnuncioDetalle(uuid: string) {
       unidadId: u.unidadId,
       codigo: u.codigo,
     })),
-    /** Cuantas viviendas mias hay en este edificio. Con una, no se dice nada. */
-    cuantasViviendas: mias.length,
+    /**
+     * Cuantas viviendas mias hay en este edificio. Con una, no se dice nada.
+     * Si vota cada residente, la persona vota una vez: cuenta como una.
+     */
+    cuantasViviendas: votaLaPersona ? Math.min(1, mias.length) : mias.length,
+    /** El resultado según la base. Null si aún no llega o no se ve. */
+    resultado: resultado.data ?? null,
+    cargaResultado: estadoDe(resultado),
+    /** Participación por torre (solo la administración la recibe). */
+    participacionPorTorre: porTorre.data ?? [],
   };
 }

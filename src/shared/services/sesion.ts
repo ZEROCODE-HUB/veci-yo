@@ -229,7 +229,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     acepta la invitación desde el aviso de Inicio (`InvitacionesPendientes`).
   */
 
-  const [perfilRes, condominiosRes, unidadesRes, plataformaRes] = await Promise.all([
+  const [perfilRes, condominiosRes, unidadesRes, plataformaRes, trabajadorRes] = await Promise.all([
     supabase
       .from("perfil")
       .select("nombre, apellido, telefono, tipo_documento, identificacion, verificado, alias")
@@ -270,12 +270,21 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       .eq("usuario_id", user.id)
       .eq("activo", true)
       .maybeSingle(),
+
+    /*
+      Las viviendas en que es trabajador permanente con app (17/11/2026). No
+      es una membresía --la base no le deja ver nada de la vivienda--, así que
+      viene de su propia función.
+    */
+    supabase.rpc("mis_viviendas_de_trabajador"),
   ]);
 
   if (perfilRes.error) throw perfilRes.error;
   if (condominiosRes.error) throw condominiosRes.error;
   if (unidadesRes.error) throw unidadesRes.error;
   if (plataformaRes.error) throw plataformaRes.error;
+  // Si esto falla no se le cierra la puerta a nadie: solo se queda sin el rol de trabajador.
+  const filasDeTrabajador = trabajadorRes.error ? [] : (trabajadorRes.data ?? []);
 
   const perfil = perfilRes.data;
 
@@ -344,6 +353,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
   const roles = new Set<RolActivo>();
   condominios.forEach((c) => roles.add(ROL_CONDOMINIO_A_ACTIVO[c.rol]));
   unidades.forEach((m) => roles.add(refinarRolPropietario(m)));
+  if (filasDeTrabajador.length > 0) roles.add("trabajador");
 
   /*
     Operar la plataforma es un rol mas, no un permiso que se suma a otro: se
@@ -392,6 +402,24 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     rol: refinarRolPropietario(m),
     papel: m.rol,
   }));
+  /*
+    Las del trabajador van detrás: son para la barra de arriba («Trabajador
+    permanente · …») y para elegir el rol. Sin membresía, sin apodo.
+  */
+  filasDeTrabajador.forEach((t) => {
+    ubicaciones.push({
+      id: ubicaciones.length + 1,
+      direccion: t.condominio,
+      alias: `Torre ${t.torre_numero} · ${t.codigo}`,
+      unidadId: t.unidad_id,
+      favorito: ubicaciones.length === 0,
+      torreNumero: t.torre_numero,
+      codigo: t.codigo,
+      imagen: null,
+      rol: "trabajador",
+      papel: "trabajador",
+    });
+  });
 
   return {
     usuarioId: user.id,

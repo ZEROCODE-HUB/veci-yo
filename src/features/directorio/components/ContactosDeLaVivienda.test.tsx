@@ -39,6 +39,7 @@ const persona = (p: Partial<ContactoDeLaVivienda>): ContactoDeLaVivienda => ({
   alterno: null,
   recibeLlamadasApp: true,
   tieneCuenta: true,
+  usuarioId: null,
   ...p,
 });
 

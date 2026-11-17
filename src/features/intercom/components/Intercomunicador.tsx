@@ -12,13 +12,20 @@ import { useIntercomStore } from "../intercom-store";
 import {
   colgarLlamada,
   contestarLlamada,
+  contestarYaNoSePuede,
   llamadasQueMeSuenan,
   obtenerLlamada,
+  olvidarPermisoDeVoz,
   permisoDeVoz,
   rechazarLlamada,
   type LlamadaInternet,
 } from "../services/intercom.repo";
-import { conectarVoz, prepararMicrofono, type Conexion } from "../services/vozDeLlamada";
+import {
+  conectarVoz,
+  precalentarVoz,
+  prepararMicrofono,
+  type Conexion,
+} from "../services/vozDeLlamada";
 import { terminarLlamadaNativa } from "../services/llamadasNativas";
 import { useLlamadaDesdeFuera } from "../hooks/useLlamadaDesdeFuera";
 import { LlamadaEnCurso } from "./LlamadaEnCurso";
@@ -35,6 +42,8 @@ function deQuien(l: LlamadaInternet): string {
   // Con el nombre completo delante, si se sabe (29/10/2026).
   return l.deNombre ? `${l.deNombre} · ${lugar}` : lugar;
 }
+
+const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function reloj(segundos: number): string {
   const m = Math.floor(segundos / 60);
@@ -64,6 +73,20 @@ export function Intercomunicador() {
   const [estado, setEstado] = useState<LlamadaInternet["estado"] | null>(null);
   const [segundos, setSegundos] = useState(0);
   const [silencio, setSilencio] = useState(false);
+  /*
+    Altavoz (17/11/2026, pedido del cliente). Con qué empieza lo dice el
+    parámetro `llamada_empieza_en_altavoz`; se guarda en una referencia porque
+    la voz se conecta en un efecto que solo mira la llamada.
+  */
+  const [altavoz, setAltavoz] = useState(true);
+  const altavozAlEmpezar = useRef(true);
+  if (parametros.listo) {
+    try {
+      altavozAlEmpezar.current = parametros.booleano("llamada_empieza_en_altavoz");
+    } catch {
+      // Sin el parámetro, por el altavoz: lo de siempre.
+    }
+  }
   const [contestando, setContestando] = useState(false);
   /*
     Rechazar no decía nada mientras se guardaba, se podía pulsar a la vez que
@@ -99,18 +122,43 @@ export function Intercomunicador() {
   }, [usuarioId, cliente]);
 
   // Suena cada llamada nueva que entra.
+  const yaAvisada = useRef<Set<string>>(new Set());
   useEffect(() => {
     for (const l of entrantes) {
       if (!yaSono.current.has(l.id)) {
         yaSono.current.add(l.id);
         sonarAlarma();
+        /*
+          Mientras suena se pide ya el permiso de la sala de voz y se calienta
+          la conexión (17/11/2026): al contestar no se empieza de cero, que es
+          lo que hacía tardar en oírse.
+        */
+        void permisoDeVoz(l.id)
+          .then(({ servidor, token }) => precalentarVoz(servidor, token))
+          .catch(() => {});
       }
     }
     // La que dejó de sonar --la contestó otro, colgaron-- se quita también de
     // la pantalla de llamada del iPhone (CallKit), si estaba ahí.
     for (const id of yaSono.current) {
-      if (id !== llamadaId && !entrantes.some((l) => l.id === id)) terminarLlamadaNativa(id);
+      if (id === llamadaId || entrantes.some((l) => l.id === id)) continue;
+      terminarLlamadaNativa(id);
+      /*
+        Con «Todos» contesta el primero (17/11/2026): a los demás se les dice
+        que ya contestó otra persona, en vez de desaparecer sin más.
+      */
+      if (yaAvisada.current.has(id)) continue;
+      yaAvisada.current.add(id);
+      olvidarPermisoDeVoz(id);
+      void obtenerLlamada(id)
+        .then((l) => {
+          if (l?.estado === "en_curso" && l.contestadaPor && l.contestadaPor !== usuarioId) {
+            addToast("Ya contestó otra persona", "info");
+          }
+        })
+        .catch(() => {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entrantes, llamadaId]);
 
   // La llamada abierta: su estado, mirado cada pocos segundos y por Realtime.
@@ -122,12 +170,16 @@ export function Intercomunicador() {
   });
 
   const cerrar = async (aviso?: string) => {
-    if (llamadaId) terminarLlamadaNativa(llamadaId);
+    if (llamadaId) {
+      terminarLlamadaNativa(llamadaId);
+      olvidarPermisoDeVoz(llamadaId);
+    }
     await conexion.current?.colgar().catch(() => {});
     conexion.current = null;
     setEstado(null);
     setSegundos(0);
     setSilencio(false);
+    setAltavoz(true);
     terminar();
     if (aviso) addToast(aviso, "info");
   };
@@ -145,39 +197,59 @@ export function Intercomunicador() {
     lista de las que suenan, se contesta sola-- y cada paso deja un rastro en
     `error_de_la_app` para poder ver en qué se quedó.
   */
+  /*
+    17/11/2026: se contestaba dos veces a la vez --el enlace y la lista de las
+    que suenan llegaban casi juntos-- y la segunda decía «ya no está sonando» y
+    quitaba la llamada de la pantalla del sistema (rastros del 17/11, 17:01).
+    Ahora una sola a la vez (`contestandoYa`). Y ya no se lee la llamada antes
+    de contestar: se contesta en seguida (reintentando si la sesión no está
+    lista) y a la vez se lee quién llama y se pide el permiso de la voz.
+  */
   const porContestar = useRef<string | null>(null);
+  const contestandoYa = useRef<string | null>(null);
   const contestarPorId = async (id: string) => {
-    if (llamadaId === id) return;
+    if (llamadaId === id || contestandoYa.current === id) return;
+    contestandoYa.current = id;
     porContestar.current = id;
     void anotarEnLaBase("rastro", "contestar desde fuera", `pedido ${id}`);
     try {
-      let l: LlamadaInternet | null = null;
-      for (let intento = 0; intento < 6; intento++) {
-        l = await obtenerLlamada(id).catch(() => null);
-        if (l) break;
-        await new Promise((r) => setTimeout(r, 1000));
+      void permisoDeVoz(id).catch(() => {});
+      const quien = (async () => {
+        for (let intento = 0; intento < 6; intento++) {
+          const l = await obtenerLlamada(id).catch(() => null);
+          if (l) return l;
+          await esperar(1000);
+        }
+        return null;
+      })();
+      let contestada = false;
+      for (let intento = 0; intento < 6 && !contestada; intento++) {
+        try {
+          await contestarLlamada(id);
+          contestada = true;
+        } catch (e) {
+          if (contestarYaNoSePuede(e)) throw e;
+          await esperar(1000);
+        }
       }
-      if (!l) {
-        void anotarEnLaBase("rastro", "contestar desde fuera", `sin leer la llamada ${id}`);
+      if (!contestada) {
+        // Se queda en `porContestar`: si aparece entre las que suenan, se contesta sola.
+        void anotarEnLaBase("rastro", "contestar desde fuera", `sin poder contestar ${id}`);
         return;
       }
-      if (l.estado !== "sonando") {
-        porContestar.current = null;
-        terminarLlamadaNativa(id);
-        addToast("Esa llamada ya no está sonando", "info");
-        void anotarEnLaBase("rastro", "contestar desde fuera", `ya no suena: ${l.estado}`);
-        return;
-      }
-      await contestarLlamada(id);
+      const l = await quien;
       porContestar.current = null;
-      iniciar(id, false, deQuien(l));
+      iniciar(id, false, l ? deQuien(l) : "Llamada");
       void anotarEnLaBase("rastro", "contestar desde fuera", `contestada ${id}`);
     } catch (e) {
       porContestar.current = null;
       terminarLlamadaNativa(id);
-      addToast(mensajeDeError(e, "No se pudo contestar"), "error");
+      const yaNo = contestarYaNoSePuede(e);
+      addToast(yaNo ?? mensajeDeError(e, "No se pudo contestar"), yaNo ? "info" : "error");
       const { mensaje, detalle } = describirError(e);
-      void anotarEnLaBase("error", "contestar desde fuera", mensaje, detalle);
+      void anotarEnLaBase(yaNo ? "rastro" : "error", "contestar desde fuera", mensaje, detalle);
+    } finally {
+      contestandoYa.current = null;
     }
   };
   // Si la que había que contestar aparece entre las que suenan, se contesta sola.
@@ -208,15 +280,22 @@ export function Intercomunicador() {
     (async () => {
       try {
         const { servidor, token } = await permisoDeVoz(llamadaId);
-        const c = await conectarVoz(servidor, token, () => {
-          void anotarEnLaBase("rastro", "voz de la llamada", `se cortó ${llamadaId}`);
-          void cerrar("Se cortó la llamada");
-        });
+        const empiezaEnAltavoz = altavozAlEmpezar.current;
+        const c = await conectarVoz(
+          servidor,
+          token,
+          () => {
+            void anotarEnLaBase("rastro", "voz de la llamada", `se cortó ${llamadaId}`);
+            void cerrar("Se cortó la llamada");
+          },
+          { altavoz: empiezaEnAltavoz },
+        );
         if (!vigente) {
           await c.colgar();
           return;
         }
         conexion.current = c;
+        setAltavoz(empiezaEnAltavoz);
       } catch (e) {
         // Antes no quedaba rastro: en iPhone la llamada se colgaba sola y no
         // había forma de saber por qué (09/11/2026).
@@ -286,6 +365,16 @@ export function Intercomunicador() {
             await conexion.current?.silenciar(!silencio);
             setSilencio(!silencio);
           }}
+          altavoz={altavoz}
+          onAltavoz={async () => {
+            if (!conexion.current) return;
+            try {
+              await conexion.current.altavoz(!altavoz);
+              setAltavoz(!altavoz);
+            } catch (e) {
+              addToast(mensajeDeError(e, "No se pudo cambiar la salida del audio"), "error");
+            }
+          }}
           onColgar={async () => {
             await colgarLlamada(llamadaId).catch(() => {});
             void cerrar();
@@ -336,10 +425,14 @@ export function Intercomunicador() {
               onPress={async () => {
                 setContestando(true);
                 try {
+                  // El permiso de la voz, a la vez (casi siempre ya está pedido).
+                  void permisoDeVoz(entrante.id).catch(() => {});
                   await contestarLlamada(entrante.id);
                   iniciar(entrante.id, false, deQuien(entrante));
                 } catch (e) {
-                  addToast(mensajeDeError(e, "No se pudo contestar"), "error");
+                  const yaNo = contestarYaNoSePuede(e);
+                  addToast(yaNo ?? mensajeDeError(e, "No se pudo contestar"), yaNo ? "info" : "error");
+                  void cliente.invalidateQueries({ queryKey: ["intercom"] });
                 } finally {
                   setContestando(false);
                 }

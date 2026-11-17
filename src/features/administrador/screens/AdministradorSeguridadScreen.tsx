@@ -158,6 +158,8 @@ export function AdministradorSeguridadScreen() {
         porteriaId:
           porterias.find((p) => p.nombre === draftForm.garita)?.uuid ?? null,
         documento: draftForm.cedula,
+        // El cargo sale delante del nombre cuando un vecino elige a quién escribir (17/11/2026).
+        cargo: draftForm.cargo ?? "",
         // La confirmacion los enseñaba --«Chat: Permitido»-- y no se guardaban.
         permisoChat: draftForm.permisoChat ?? true,
         permisoLlamadas: draftForm.permisoLlamadas ?? true,

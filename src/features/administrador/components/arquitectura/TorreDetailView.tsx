@@ -53,7 +53,7 @@ type Props = {
   ) => Promise<boolean>;
   onDeleteParking: (uuid: string) => Promise<boolean>;
   /** Los niveles del edificio: el nivel es obligatorio al crear (16/11/2026). */
-  niveles: Array<{ uuid: string; nombre: string; nomenclatura: string }>;
+  niveles: Array<{ uuid: string; nombre: string; nomenclatura: string; torreId?: string | null }>;
   /** Todos los códigos del edificio, para sugerir el siguiente de un nivel. */
   codigosDelEdificio: string[];
 };
@@ -328,7 +328,8 @@ export function TorreDetailView({
           editing={parkingEditing}
           initial={parkingInitial}
           units={units}
-          niveles={niveles}
+          // Solo los sótanos de esta torre (y los de antes, que no tienen).
+          niveles={niveles.filter((n) => !n.torreId || n.torreId === tower.uuid)}
           codigosExistentes={codigosDelEdificio}
           onClose={closeParking}
           onSave={async (form) => {

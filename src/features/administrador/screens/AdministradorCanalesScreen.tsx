@@ -4,6 +4,8 @@ import { theme } from "@/config";
 import { Button, Modal, Cargando, ErrorAlCargar } from "@/shared/components";
 import { useCanales } from "../hooks/useCanales";
 import { CanalForm } from "../components/canales/CanalForm";
+import { PermisoConInterruptor } from "../components/PermisoConInterruptor";
+import { useChatEntreVecinos } from "@/features/home/hooks/useChatEntreVecinos";
 import {
   ROLES_DE_EDIFICIO,
   ROLES_DE_VIVIENDA,
@@ -29,6 +31,7 @@ import {
 export function AdministradorCanalesScreen() {
   const { canales, cargando, estado, guardando, guardar, archivar, archivando } =
     useCanales();
+  const chatEntreVecinos = useChatEntreVecinos();
   const [editando, setEditando] = useState<Canal | null>(null);
   const [abierto, setAbierto] = useState(false);
 
@@ -50,6 +53,33 @@ export function AdministradorCanalesScreen() {
             deja de aparecer.
           </Text>
         </View>
+
+        {/*
+          Sin chat entre vecinos (17/11/2026, pedido del cliente). Viene
+          apagado: en los canales solo escribe el personal del edificio.
+        */}
+        {chatEntreVecinos.fallo ? (
+          <ErrorAlCargar
+            texto="el ajuste del chat entre vecinos"
+            reintentar={chatEntreVecinos.reintentar}
+            enLinea
+          />
+        ) : (
+          <PermisoConInterruptor
+            seccion="Chat entre vecinos"
+            etiqueta="Los vecinos pueden escribir en los canales"
+            ayuda={{
+              titulo: "Chat entre vecinos",
+              descripcion:
+                "Si está desactivado, en los canales solo escribe la administración y los vecinos " +
+                "leen. Viene desactivado. El chat de cada vivienda con la portería y con la " +
+                "administración funciona igual.",
+            }}
+            valor={chatEntreVecinos.activo}
+            onCambiar={chatEntreVecinos.setActivo}
+            cargando={chatEntreVecinos.cargando || chatEntreVecinos.guardando}
+          />
+        )}
 
         <Button variant="primary" fullWidth onPress={() => abrir(null)}>
           + Nuevo canal

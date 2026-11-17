@@ -19,6 +19,8 @@ export interface ContactoDeLaVivienda {
   recibeLlamadasApp: boolean;
   /** Tiene cuenta (si no, no hay llamada por la app posible). */
   tieneCuenta: boolean;
+  /** Su cuenta, para llamarla a ella sola por la app (17/11/2026). */
+  usuarioId: string | null;
 }
 
 /**
@@ -56,5 +58,6 @@ export async function obtenerContactosDeLaVivienda(
         : null,
     recibeLlamadasApp: Boolean(f.recibe_llamadas_app),
     tieneCuenta: Boolean(f.usuario_id),
+    usuarioId: f.usuario_id ?? null,
   }));
 }

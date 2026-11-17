@@ -90,8 +90,8 @@ export function VisitasNuevoScreen() {
         fechaSalida={fechaSalida}
         esHT={tipoSeleccionado === "huesped-temporal"}
         /*
-          Quien registra desde la portería tiene a la persona en la puerta,
-          pero si hay que verificar su documento todavía no ha entrado (T-025).
+          Quien registra desde la portería tiene a la persona en la puerta:
+          desde el 17/11/2026 nace siempre «Ingresado» (`entraAlRegistrar`).
         */
         estado={nacenDentro ? "Ingresado" : "Pendiente"}
         siguientePaso={

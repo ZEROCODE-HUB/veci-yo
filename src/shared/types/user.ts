@@ -39,6 +39,13 @@ export type RolActivo =
   | 'inquilino-lider'
   | 'huesped-temporal'
   /*
+    El trabajador permanente con app (17/11/2026): la empleada, el chofer.
+    Solo contesta el intercomunicador de la vivienda; no ve nada más
+    (`capacidadesDelRol.ts`). No viene de `membresia_unidad` sino de
+    `trabajador_de_la_vivienda`.
+  */
+  | 'trabajador'
+  /*
     Quien opera Veciyo, no un edificio. Es el rol mas alto que existe y a la vez
     el que menos datos de personas ve: da de alta edificios, atiende las PQRS
     sobre la aplicacion y mira conteos. No tiene vivienda ni condominio, asi que

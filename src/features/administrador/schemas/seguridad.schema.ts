@@ -10,6 +10,7 @@ const turnoSchema = z.object({
 
 const base = z.object({
     nombre: z.string().trim().min(1, "Escribe el nombre"),
+    cargo: z.string().optional(),
     correo: z.string().trim(),
     cedula: z
       .string()

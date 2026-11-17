@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import { useEffect, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -11,6 +11,7 @@ import { PageHeader as LayoutPageHeader } from "@/shared/layouts";
 import { guardiaSchemaPara } from "../../schemas";
 import { weekDays, type GuardiaFormValues } from "../../types";
 import { useFranjasDeTurno } from "../../hooks/useFranjasDeTurno";
+import { useLista } from "@/shared/hooks/useLista";
 
 type Props = {
   editing: Guardia | null;
@@ -32,12 +33,15 @@ export function GuardiaForm({
 }: Props) {
   const esAlta = !editing;
   const { etiquetas: hourRanges, franjaDeEtiqueta } = useFranjasDeTurno();
+  const cargos = useLista("cargos_de_porteria");
   const [validationError, setValidationError] = useState("");
   const { control, handleSubmit, reset } = useForm<GuardiaFormValues>({
     resolver: zodResolver(guardiaSchemaPara(esAlta)),
     defaultValues: initial,
   });
   const { fields, append, remove } = useFieldArray({ control, name: "turnos" });
+  const turnosEscritos = useWatch({ control, name: "turnos" });
+  const turnosCargados = (turnosEscritos ?? []).some((t) => t?.dia && t?.horaInicio);
 
   useEffect(() => {
     reset(initial);
@@ -109,6 +113,27 @@ export function GuardiaForm({
               </Text>
             </View>
           )}
+          {/*
+            El cargo (17/11/2026): sale delante del nombre cuando un vecino
+            elige a quién escribir en la portería --«Conserje · Federico
+            Valverde»--. La lista es `cargos_de_porteria`, editable desde el
+            panel. Como el horario, se pone cuando la persona ya aceptó.
+          */}
+          {!esAlta && (
+            <Controller
+              control={control}
+              name="cargo"
+              render={({ field }) => (
+                <Select
+                  label="Cargo"
+                  placeholder="Seguridad"
+                  value={field.value || "seguridad"}
+                  options={cargos.opciones.map((o) => ({ value: o.codigo, label: o.etiqueta }))}
+                  onChange={(valor) => field.onChange(String(valor))}
+                />
+              )}
+            />
+          )}
           <Controller
             control={control}
             name="cedula"
@@ -138,6 +163,16 @@ export function GuardiaForm({
               <Ionicons name="add-circle-outline" size={25} color={theme.colors.primary} />
             </Pressable>
           </View>
+          {/*
+            Sin horario cargado cuenta como de turno siempre (17/11/2026): los
+            vecinos le pueden escribir a cualquier hora. Se dice para que la
+            administración sepa qué pasa si lo deja vacío.
+          */}
+          {!turnosCargados ? (
+            <Text className="text-sm text-gray-500">
+              Sin horario cargado: los vecinos le pueden escribir a cualquier hora.
+            </Text>
+          ) : null}
           {fields.map((field, index) => (
             <View key={field.id} className="flex-row items-end gap-2">
               <View className="flex-1">

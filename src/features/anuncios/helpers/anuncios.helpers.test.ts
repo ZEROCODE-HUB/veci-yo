@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { participaEnLaEncuesta, veResultadosEnCurso } from "./anuncios.helpers";
+import { dirigidoA, participaEnLaEncuesta, veResultadosEnCurso } from "./anuncios.helpers";
 
 describe("participaEnLaEncuesta", () => {
   const paraPorteria = { votacion: true, paraPorteria: true };
@@ -41,5 +41,29 @@ describe("veResultadosEnCurso", () => {
 
   it("cerrada ya no es «en curso»: salen los resultados finales", () => {
     expect(veResultadosEnCurso(encuesta, "administrador", true)).toBe(false);
+  });
+});
+
+describe("dirigidoA (17/11/2026)", () => {
+  it("nombra los roles marcados, en el orden del formulario", () => {
+    expect(
+      dirigidoA({ paraPropietarios: true, paraResidentes: true, paraHuespedes: false, paraPorteria: true }),
+    ).toBe("Propietarios, Residentes, Portería");
+  });
+
+  it("solo los marcados: quitar uno lo quita del texto", () => {
+    expect(
+      dirigidoA({ paraPropietarios: false, paraResidentes: true, paraHuespedes: true, paraPorteria: false }),
+    ).toBe("Residentes, Huéspedes temporales");
+  });
+
+  it("sin casillas guardadas vale lo de la base: propietarios y residentes", () => {
+    expect(dirigidoA({})).toBe("Propietarios, Residentes");
+  });
+
+  it("sin ninguna marcada no dice nada", () => {
+    expect(
+      dirigidoA({ paraPropietarios: false, paraResidentes: false, paraHuespedes: false, paraPorteria: false }),
+    ).toBe("");
   });
 });

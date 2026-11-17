@@ -25,7 +25,13 @@ type Nav = NativeStackNavigationProp<PerfilStackParamList>;
 
 export function PerfilScreen() {
   const navigation = useNavigation<Nav>();
-  const { cerrarSesion } = useAuthStore();
+  const { cerrarSesion, rolActivo } = useAuthStore();
+  /*
+    El trabajador permanente (17/11/2026) no es miembro de la vivienda: solo
+    contesta el intercomunicador. La base le rechaza el S.O.S., así que no se
+    le ofrece.
+  */
+  const esTrabajador = rolActivo === "trabajador";
   const { nombre, esGuardia, esHuespedTemporal, guardiaActual, turnoActual } =
     usePerfil();
   const aliasForm = useAlias();
@@ -94,45 +100,53 @@ export function PerfilScreen() {
       </View>
 
       {/* Seguridad / S.O.S */}
-      <View className="flex-row gap-3">
-        <PerfilAccionCard
-          icon={iconSeguridad}
-          label="Seguridad"
-          onPress={() => navigation.navigate("Seguridad")}
-        />
-        <PerfilAccionCard
-          icon={iconSOS}
-          label="S.O.S"
-          onPress={() => navigation.navigate("SOS")}
-        />
-      </View>
+      {esTrabajador ? null : (
+        <>
+          <View className="flex-row gap-3">
+            <PerfilAccionCard
+              icon={iconSeguridad}
+              label="Seguridad"
+              onPress={() => navigation.navigate("Seguridad")}
+            />
+            <PerfilAccionCard
+              icon={iconSOS}
+              label="S.O.S"
+              onPress={() => navigation.navigate("SOS")}
+            />
+          </View>
 
-      {/* Info SOS */}
-      <View
-        className="flex-row gap-2.5 p-3.5 rounded-xl"
-        style={{ backgroundColor: theme.colors.warningLight }}
-      >
-        <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
-        <Text
-          className="flex-1 text-xs"
-          style={{ color: theme.colors.iconAmberDark, lineHeight: 18 }}
-        >
-          El botón de S.O.S activa una alarma sonora en la aplicación que
-          reciben el personal de seguridad de turno y la administración. Si la
-          activa un huésped, también se entera su anfitrión. Se brindan los datos de la persona que activó la alarma: departamento,
-          nombre y demás datos relevantes.
-        </Text>
-      </View>
-      {/* El historial (15/10/2026): abrirlo no activa nada. */}
-      <Pressable
-        accessibilityRole="link"
-        onPress={() => navigation.navigate("HistorialSos")}
-        className="self-start"
-      >
-        <Text className="text-sm font-semibold" style={{ color: theme.colors.primary }}>
-          Ver el historial de S.O.S. ›
-        </Text>
-      </Pressable>
+          {/* Info SOS */}
+          <View
+            className="flex-row gap-2.5 p-3.5 rounded-xl"
+            style={{ backgroundColor: theme.colors.warningLight }}
+          >
+            <Text style={{ fontSize: 18, marginTop: 1 }}>ℹ️</Text>
+            <Text
+              className="flex-1 text-xs"
+              style={{ color: theme.colors.iconAmberDark, lineHeight: 18 }}
+            >
+              El botón de S.O.S activa una alarma sonora en la aplicación que
+              reciben el personal de seguridad de turno y la administración. Si
+              la activa un huésped, también se entera su anfitrión. Se brindan
+              los datos de la persona que activó la alarma: departamento, nombre
+              y demás datos relevantes.
+            </Text>
+          </View>
+          {/* El historial (15/10/2026): abrirlo no activa nada. */}
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => navigation.navigate("HistorialSos")}
+            className="self-start"
+          >
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: theme.colors.primary }}
+            >
+              Ver el historial de S.O.S. ›
+            </Text>
+          </Pressable>
+        </>
+      )}
 
       {/* Turno actual — solo para guardia */}
       {esGuardia && guardiaActual && (
@@ -145,7 +159,13 @@ export function PerfilScreen() {
         borraba el alias de verdad (13/11/2026): silueta mientras tanto.
       */}
       {!esGuardia && (
-        <SegunLaCarga estado={aliasForm.carga} texto="tu alias" forma="formulario" cuantos={2} enLinea>
+        <SegunLaCarga
+          estado={aliasForm.carga}
+          texto="tu alias"
+          forma="formulario"
+          cuantos={2}
+          enLinea
+        >
           <PerfilAliasCard
             alias={aliasForm.alias}
             usaCuadroHonor={aliasForm.usaEnCuadroHonor}

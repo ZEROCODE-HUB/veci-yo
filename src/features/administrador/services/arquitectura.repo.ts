@@ -104,6 +104,8 @@ export interface NivelDeEstacionamiento {
   nombre: string;
   nomenclatura: string;
   orden: number;
+  /** La torre del sótano (17/11/2026); vacía en los de antes. */
+  torreId: string | null;
 }
 
 export interface Arquitectura {
@@ -133,7 +135,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       supabase.from("torre").select("*").is("deleted_at", null).order("numero"),
       supabase
         .from("unidad")
-        .select("id, codigo, piso, estado, tipologia_id, torre:torre_id ( id, numero )")
+        .select("id, codigo, piso, estado, tipologia_id, indice_votacion, torre:torre_id ( id, numero )")
         .is("deleted_at", null)
         .order("codigo"),
       supabase
@@ -157,7 +159,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
         .order("codigo"),
       supabase
         .from("nivel_estacionamiento")
-        .select("id, nombre, nomenclatura, orden")
+        .select("id, nombre, nomenclatura, orden, torre_id")
         .order("orden")
         .order("nombre"),
     ]);
@@ -199,6 +201,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
         torreId: f.torre?.id,
         piso: f.piso,
         tipologiaId: f.tipologia_id ?? undefined,
+        indiceVotacion: Number(f.indice_votacion),
         estado: f.estado,
         estacionamientos: privados.length,
         codigosEstacionamiento: privados.map((p) => p.codigo),
@@ -231,6 +234,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
       nombre: n.nombre,
       nomenclatura: n.nomenclatura,
       orden: n.orden,
+      torreId: n.torre_id,
     })),
     estacionamientos: (estacionamientos.data ?? []).map((f) => ({
       uuid: f.id,
@@ -518,7 +522,7 @@ export async function eliminarTorre(uuid: string) {
  */
 export async function crearUnidad(
   condominioId: string,
-  datos: { torreId: string; codigo: string; piso: number; tipologiaId?: string },
+  datos: { torreId: string; codigo: string; piso: number; tipologiaId?: string; indiceVotacion?: number },
 ): Promise<string> {
   const codigo = datos.codigo.trim();
   const { data: existente, error: errorExistente } = await supabase
@@ -539,6 +543,7 @@ export async function crearUnidad(
         torre_id: datos.torreId,
         piso: datos.piso,
         tipologia_id: datos.tipologiaId ?? null,
+        indice_votacion: datos.indiceVotacion ?? 1,
         estado: "disponible",
         deleted_at: null,
       })
@@ -555,6 +560,7 @@ export async function crearUnidad(
       codigo,
       piso: datos.piso,
       tipologia_id: datos.tipologiaId ?? null,
+      indice_votacion: datos.indiceVotacion ?? 1,
     })
     .select("id")
     .single();
@@ -569,6 +575,8 @@ export async function actualizarUnidad(
     piso?: number;
     estado?: EstadoUnidadDB;
     tipologiaId?: string | null;
+    /** Índice de votación (17/11/2026). Sin él no se toca. */
+    indiceVotacion?: number;
   },
 ) {
   const { error } = await supabase
@@ -578,6 +586,7 @@ export async function actualizarUnidad(
       piso: datos.piso,
       estado: datos.estado,
       tipologia_id: datos.tipologiaId,
+      indice_votacion: datos.indiceVotacion,
     })
     .eq("id", uuid);
   if (error) throw error;
@@ -811,6 +820,8 @@ export async function actualizarEstacionamiento(
 export interface DatosNivel {
   nombre: string;
   nomenclatura: string;
+  /** Primero la torre, después el sótano (17/11/2026). */
+  torreId?: string | null;
 }
 
 /** Crea uno o varios («Crear los sugeridos»), al final del orden. */
@@ -828,6 +839,7 @@ export async function crearNiveles(condominioId: string, niveles: DatosNivel[]) 
       nombre: n.nombre.trim(),
       nomenclatura: n.nomenclatura,
       orden: (orden += 1),
+      torre_id: n.torreId ?? null,
     })),
   );
   if (error?.code === "23505") {
@@ -839,7 +851,11 @@ export async function crearNiveles(condominioId: string, niveles: DatosNivel[]) 
 export async function actualizarNivel(uuid: string, datos: DatosNivel) {
   const { error } = await supabase
     .from("nivel_estacionamiento")
-    .update({ nombre: datos.nombre.trim(), nomenclatura: datos.nomenclatura })
+    .update({
+      nombre: datos.nombre.trim(),
+      nomenclatura: datos.nomenclatura,
+      ...(datos.torreId === undefined ? {} : { torre_id: datos.torreId }),
+    })
     .eq("id", uuid);
   if (error?.code === "23505") {
     throw new Error("Ya hay un nivel con esa nomenclatura en el edificio.");

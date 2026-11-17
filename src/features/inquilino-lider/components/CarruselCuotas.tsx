@@ -4,11 +4,14 @@ import { View, Text, ScrollView, Pressable,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
-import { formatAmount } from "@/shared/utils";
+import { formatAmount, formatMoney } from "@/shared/utils";
 import { useParametrosDeLaBase } from "@/shared/hooks";
+import type { PuntualidadMes } from "../helpers/puntualidad";
+import { PuntualidadDelMes } from "./cuadroHonor/PuntualidadDelMes";
 
 interface CuotaHistorial {
   mes: string;
+  moneda?: string | null;
   esperado: number;
   recibido: number;
   alDia: number;
@@ -16,30 +19,60 @@ interface CuotaHistorial {
   porcentaje: number;
   /** Si ese mes tiene cuota definida. Sin ella, el 0% no acusa a nadie. */
   tieneCuota?: boolean;
+  /** A tiempo, con atraso y pendiente, de la base (17/11/2026). */
+  puntualidad?: PuntualidadMes;
 }
 
 interface CarruselCuotasProps {
   historial: CuotaHistorial[];
+  /**
+   * El relleno lateral de la pantalla que lo contiene. El carrusel se sale de
+   * él para que la tarjeta de al lado asome hasta el borde del teléfono, y no
+   * se corte en seco a 16 px del borde.
+   */
+  sangria?: number;
 }
 
 /**
- * El ancho de cada tarjeta, como mucho. Era el ancho fijo, y en un celular de
- * 320 el hueco mide 288: la tarjeta se cortaba por la derecha (auditoría de
- * responsividad, 25/10/2026). Ahora mide lo que haya de hueco, hasta esto.
+ * Como mucho este ancho, y en un celular estrecho lo que haya de hueco. Antes
+ * el ancho era fijo y en uno de 320 la tarjeta se cortaba (25/10/2026).
  */
-const CARD_WIDTH_MAX = 320;
+const CARD_WIDTH_MAX = 340;
 const CARD_GAP = 12;
+/** Cuánto asoma la tarjeta siguiente por la derecha (y la anterior por la izquierda). */
+const ASOMA = 20;
 
-export function CarruselCuotas({ historial }: CarruselCuotasProps) {
+/**
+ * Las cuotas, mes a mes, en un carrusel (rediseño pedido por el cliente,
+ * 17/11/2026: «la tarjeta se ve rara»). La tarjeta del mes que se mira va
+ * centrada y la siguiente asoma un poco por la derecha, para que se vea que
+ * hay más; se pasa de una en una (`snapToInterval`).
+ *
+ * Es un `ScrollView` horizontal dentro de la pantalla, que se desliza en
+ * vertical: direcciones distintas, así que no hace falta `nestedScrollEnabled`.
+ */
+export function CarruselCuotas({ historial, sangria = 16 }: CarruselCuotasProps) {
   const scrollRef = useRef<ScrollView>(null);
   const [activo, setActivo] = useState(0);
-  const [anchoTarjeta, setAnchoTarjeta] = useState(CARD_WIDTH_MAX);
+  const [anchoVisible, setAnchoVisible] = useState(0);
+
+  const unaSola = historial.length <= 1;
+  // El hueco que se ve: el de la pantalla más la sangría a los dos lados.
+  const anchoDelCarrusel = anchoVisible + sangria * 2;
+  const anchoTarjeta = Math.max(
+    0,
+    unaSola
+      ? Math.min(CARD_WIDTH_MAX, anchoVisible)
+      : Math.min(CARD_WIDTH_MAX, anchoDelCarrusel - 2 * (ASOMA + CARD_GAP)),
+  );
   const intervalo = anchoTarjeta + CARD_GAP;
+  // Relleno a los lados para que la tarjeta quede en el centro.
+  const margenLateral = Math.max(0, (anchoDelCarrusel - anchoTarjeta) / 2);
+
   /*
-    Desde qué porcentaje al día se pinta verde o amarillo: lo decide el
-    edificio (`honor_umbral_verde`, `honor_umbral_amarillo`). Eran un 80 y un
-    50 escritos aquí. Mientras no llegan, el número sale sin color: no se
-    pinta un semáforo con umbrales inventados.
+    Desde qué porcentaje se pinta verde o amarillo lo decide el edificio
+    (`honor_umbral_verde`, `honor_umbral_amarillo`). Mientras no llegan, el
+    número sale sin color: no se pinta un semáforo con umbrales inventados.
   */
   const parametrosDeLaBase = useParametrosDeLaBase();
   const colorDelPorcentaje = (porcentaje: number) => {
@@ -53,18 +86,22 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
     return theme.colors.danger;
   };
 
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const x = e.nativeEvent.contentOffset.x;
-    const idx = Math.round(x / intervalo);
-    setActivo(idx);
+  const alMoverse = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (intervalo <= 0) return;
+    const idx = Math.round(e.nativeEvent.contentOffset.x / intervalo);
+    const acotado = Math.min(Math.max(idx, 0), Math.max(historial.length - 1, 0));
+    if (acotado !== activo) setActivo(acotado);
   };
+
+  const dinero = (monto: number, moneda?: string | null) =>
+    moneda ? formatMoney(monto, moneda) : `$${formatAmount(monto)}`;
 
   return (
     <View
       className="gap-2.5"
       onLayout={(e) => {
-        const ancho = Math.min(CARD_WIDTH_MAX, Math.floor(e.nativeEvent.layout.width));
-        if (ancho > 0 && ancho !== anchoTarjeta) setAnchoTarjeta(ancho);
+        const ancho = Math.floor(e.nativeEvent.layout.width);
+        if (ancho > 0 && ancho !== anchoVisible) setAnchoVisible(ancho);
       }}
     >
       <Text className="text-lg font-bold text-gray-900 px-0.5">
@@ -77,91 +114,74 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
         </Text>
       ) : null}
 
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onScroll}
-        snapToInterval={intervalo}
-        snapToAlignment="start"
-        decelerationRate="fast"
-      >
-        {historial.map((h) => (
-          <View
-            key={h.mes}
-            className="bg-white rounded-xl p-5 gap-3.5"
-            style={{
-              width: anchoTarjeta,
-              marginRight: CARD_GAP,
-              shadowColor: theme.colors.shadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}
-          >
-            <View className="items-center">
-              <Text className="text-xs text-gray-500 mb-0.5">
-                {h.mes} — Cuota de administración
-              </Text>
+      {/* Hasta medir el hueco no se pinta: con ancho 0 las tarjetas saltarían. */}
+      {anchoVisible > 0 && historial.length > 0 ? (
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={!unaSola}
+          onScroll={alMoverse}
+          scrollEventThrottle={32}
+          onMomentumScrollEnd={alMoverse}
+          snapToInterval={intervalo}
+          snapToAlignment="start"
+          disableIntervalMomentum
+          decelerationRate="fast"
+          style={unaSola ? undefined : { marginHorizontal: -sangria }}
+          contentContainerStyle={unaSola ? undefined : { paddingHorizontal: margenLateral }}
+        >
+          {historial.map((h, i) => (
+            <View
+              key={h.mes}
+              accessibilityLabel={`Cuota de ${h.mes}, ${i + 1} de ${historial.length}`}
+              className="bg-white rounded-2xl p-5 gap-4"
+              style={{
+                width: anchoTarjeta,
+                marginRight: i === historial.length - 1 ? 0 : CARD_GAP,
+                // Las de al lado, más tenues: se ve cuál es la que se está mirando.
+                opacity: unaSola || i === activo ? 1 : 0.6,
+                boxShadow: theme.shadows.card,
+              }}
+            >
+              <View className="items-center gap-0.5">
+                <Text className="text-sm font-semibold text-gray-700">{h.mes}</Text>
+                {/*
+                  El mes en curso sale aunque nadie le haya puesto cuota
+                  (03/10/2026). Pintarle un «0%» sería acusar a los vecinos de
+                  no pagar algo que no se les ha pedido: se dice eso, y no un
+                  número.
+                */}
+                {h.tieneCuota === false ? (
+                  <>
+                    <Text className="text-[22px] font-bold text-gray-400">Sin cuota</Text>
+                    <Text className="text-center text-sm text-gray-500">
+                      Este mes todavía no tiene cuota definida.
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text
+                      className="text-[36px] font-bold"
+                      style={{ color: colorDelPorcentaje(h.porcentaje) }}
+                    >
+                      {h.porcentaje} %
+                    </Text>
+                    <Text className="text-xs text-gray-500">recaudado</Text>
+                    <Text className="text-sm text-gray-600 text-center">
+                      {dinero(h.recibido, h.moneda)} de {dinero(h.esperado, h.moneda)}
+                    </Text>
+                  </>
+                )}
+              </View>
+
               {/*
-                El mes en curso sale siempre desde el 03/10/2026, aunque nadie
-                le haya puesto cuota todavía. Pintarle un «0%» en rojo sería
-                acusar a los vecinos de no pagar algo que no se les ha pedido:
-                cuando no hay cuota se dice eso, y no un número.
+                Sin cuota tampoco hay barra: decía «Al día 0 / 4» en un mes en
+                que nadie debe nada (06/10/2026).
               */}
-              {h.tieneCuota === false ? (
-                <>
-                  <Text className="text-[22px] font-bold text-gray-400">
-                    Sin cuota
-                  </Text>
-                  <Text className="mt-0.5 text-center text-sm text-gray-500">
-                    Este mes todavía no tiene cuota definida.
-                  </Text>
-                </>
+              {h.tieneCuota === false ? null : h.puntualidad ? (
+                <PuntualidadDelMes puntualidad={h.puntualidad} />
               ) : (
-                <>
-                  <Text
-                    className="text-[36px] font-bold"
-                    style={{ color: colorDelPorcentaje(h.porcentaje) }}
-                  >
-                    {h.porcentaje}%
-                  </Text>
-                  <Text className="text-sm text-gray-500 mt-0.5">
-                    ${formatAmount(h.recibido)} de ${formatAmount(h.esperado)}{" "}
-                    recibido
-                  </Text>
-                </>
-              )}
-            </View>
-
-            {/*
-              Aqui habia una segunda barra, «Con retraso / Deudor», en rojo y
-              justo debajo. No añadia ni un dato --es la de arriba al reves-- y
-              era lo que convertia un tablero de reconocimiento en uno de
-              morosidad: quien no sale en la lista de abajo queda señalado por
-              descarte, y la barra roja invitaba a hacer esa cuenta.
-
-              La morosidad con nombres vive en la pantalla de la
-              administracion, que es donde se puede hacer algo con ella.
-              Decidido con el cliente el 29/09/2026 (punto 71).
-            */}
-            {/*
-              Y la barra tampoco, cuando no hay cuota.
-
-              El titular ya decia «Sin cuota» desde el 03/10/2026, con su
-              motivo escrito arriba --«pintarle un 0% en rojo seria acusar a los
-              vecinos de no pagar algo que no se les ha pedido»--. Pero la barra
-              se quedo fuera de esa condicion y decia **«Al dia 0 / 4»** en un
-              mes en que nadie debe nada: la misma acusacion con otra forma, y a
-              dos lineas del comentario que explica por que no.
-
-              Salio caminando el Cuadro de Honor como Sofia el 06/10/2026.
-              Es la familia de «un arreglo a medias es peor si lleva
-              comentario», aqui con el comentario del lado correcto.
-            */}
-            {h.tieneCuota === false ? null : (
-              <View className="gap-2">
                 <View>
                   <View className="flex-row justify-between mb-1">
                     <Text className="text-xs text-gray-500">Al día</Text>
@@ -173,12 +193,7 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                     <View
                       className="h-full rounded-full"
                       style={{
-                        /*
-                          Sin nadie en la vivienda el divisor es cero y `width`
-                          sale `NaN%`, que el navegador ignora y el telefono no
-                          sabe leer. No pasa hoy --siempre hay cuatro
-                          viviendas-- y cuesta una linea cerrarlo.
-                        */
+                        // Sin viviendas el divisor es cero: `NaN%` no lo lee el teléfono.
                         width: `${
                           h.alDia + h.atrasados > 0
                             ? (h.alDia / (h.alDia + h.atrasados)) * 100
@@ -189,40 +204,41 @@ export function CarruselCuotas({ historial }: CarruselCuotasProps) {
                     />
                   </View>
                 </View>
-              </View>
-            )}
-          </View>
-        ))}
-      </ScrollView>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      ) : null}
 
-      <View className="flex-row justify-center gap-1.5">
-        {historial.map((_, i) => (
-          <Pressable
-            key={i}
-            /*
-              Cual se esta viendo se veia **solo** por el tamano y el color del
-              punto. Y el punto no decia siquiera a que lleva.
-            */
-            accessibilityRole="tab"
-            accessibilityLabel={`Ver la cuota ${i + 1} de ${historial.length}`}
-            accessibilityState={{ selected: i === activo }}
-            aria-selected={i === activo}
-            onPress={() => {
-              scrollRef.current?.scrollTo({
-                x: i * intervalo,
-                animated: true,
-              });
-            }}
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor:
-                i === activo ? theme.colors.primary : theme.colors.border,
-            }}
-          />
-        ))}
-      </View>
+      {unaSola ? null : (
+        <View className="flex-row justify-center gap-1.5">
+          {historial.map((h, i) => (
+            <Pressable
+              key={h.mes}
+              /*
+                Cuál se está viendo se veía solo por el tamaño y el color del
+                punto; el punto no decía siquiera a qué lleva.
+              */
+              accessibilityRole="tab"
+              accessibilityLabel={`Ver la cuota de ${h.mes}`}
+              accessibilityState={{ selected: i === activo }}
+              aria-selected={i === activo}
+              hitSlop={8}
+              onPress={() => {
+                setActivo(i);
+                scrollRef.current?.scrollTo({ x: i * intervalo, animated: true });
+              }}
+              style={{
+                width: i === activo ? 18 : 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor:
+                  i === activo ? theme.colors.primary : theme.colors.border,
+              }}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }

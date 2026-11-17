@@ -4,6 +4,7 @@ import { theme } from "@/config";
 import { Cargando, Checkbox, Toggle } from "@/shared/components";
 import { Etiqueta } from "./Etiqueta";
 import { ESTILO_DE_TARJETA, ROL_COLORES } from "./gruposDeResidentes";
+import { porQueNoPuedeSerResidente } from "../../helpers/porQueNoPuedeSerResidente";
 
 interface Props {
   nombre: string;
@@ -14,6 +15,8 @@ interface Props {
   rentaCortaEnMarcha: boolean;
   /** Se alquila por noches o le quedan reservas (D-70): no se puede ser residente. */
   viviendaEnAlquiler?: boolean;
+  /** Hay un inquilino líder activo: no se vuelve a ser residente hasta quitarlo (17/11/2026). */
+  hayInquilinoLider?: boolean;
   /** Pide confirmar el cambio de residente a no residente, o al revés. */
   onCambiarResidencia: () => void;
   onMarcarAnfitrion: () => void;
@@ -34,6 +37,7 @@ export function TarjetaDelPropietario({
   esResidente,
   rentaCortaEnMarcha,
   viviendaEnAlquiler = false,
+  hayInquilinoLider = false,
   onCambiarResidencia,
   onMarcarAnfitrion,
   onMarcarAdministrador,
@@ -43,6 +47,13 @@ export function TarjetaDelPropietario({
 }: Props) {
   const bloqueadas = ocupado || pendiente !== null;
   const rolResidencia = esResidente ? "Residente" : "Corresidente";
+  const motivo = porQueNoPuedeSerResidente({
+    esResidente,
+    viviendaEnAlquiler,
+    anfitrionPrimario,
+    rentaCortaEnMarcha,
+    hayInquilinoLider,
+  });
   return (
     <>
       <Text className="text-sm font-bold text-gray-900 mt-1">Propietario</Text>
@@ -85,11 +96,12 @@ export function TarjetaDelPropietario({
               Una vivienda o es para vivir o es para alquilar por noches
               (D-70, 29/10/2026; la base lo sujeta): mientras se alquila o le
               quedan huéspedes, no se ofrece ser residente. Quien ya lo era
-              puede dejar de serlo.
+              puede dejar de serlo. Y lo mismo con un inquilino líder activo
+              (17/11/2026): quien vive ahí es él.
             */}
-            {(viviendaEnAlquiler || (anfitrionPrimario && rentaCortaEnMarcha)) && !esResidente ? (
+            {motivo ? (
               <Text className="shrink text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
-                Esta vivienda se alquila por noches (o le quedan reservas): no puedes ser residente. Da de baja la renta corta y, cuando terminen las reservas, podrás declararte residente.
+                {motivo}
               </Text>
             ) : (
               <View className="flex-row items-center gap-2 mt-1">

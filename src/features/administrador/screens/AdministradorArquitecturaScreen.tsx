@@ -55,7 +55,6 @@ export function AdministradorArquitecturaScreen() {
     deleteNivel,
   } = useAdministradorArquitectura();
   const codigosDelEdificio = estacionamientos.map((e) => e.codigo);
-  const sotanosMaximo = Math.max(0, ...torres.map((t) => Number(t.sotanos) || 0));
 
   const selectedTower = selectedTowerId
     ? torres.find((tower) => tower.uuid === selectedTowerId) || null
@@ -84,6 +83,7 @@ export function AdministradorArquitecturaScreen() {
             codigo: form.codigo,
             piso: Number(form.piso) || 1,
             tipologiaId: form.tipologiaId || undefined,
+            indiceVotacion: Number(form.indiceVotacion.replace(",", ".")) || 1,
           })
         }
         onUpdateUnit={(unit, form) =>
@@ -92,6 +92,7 @@ export function AdministradorArquitecturaScreen() {
             piso: Number(form.piso) || 1,
             estado: form.estado,
             tipologiaId: form.tipologiaId || null,
+            indiceVotacion: Number(form.indiceVotacion.replace(",", ".")) || 1,
           })
         }
         onDeleteUnit={(uuid) => deleteUnit(uuid)}
@@ -161,7 +162,6 @@ export function AdministradorArquitecturaScreen() {
             towers={torres}
             unidades={unidades}
             estacionamientos={estacionamientos}
-            niveles={niveles}
             onSelect={(tower) => setSelectedTowerId(tower.uuid ?? null)}
             onCreate={(form, construccion) => createTower(form, construccion)}
             onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}
@@ -174,7 +174,7 @@ export function AdministradorArquitecturaScreen() {
           <EstacionamientosTab
             niveles={niveles}
             estacionamientos={estacionamientos}
-            sotanosMaximo={sotanosMaximo}
+            torres={torres}
             onCreate={(datos) => createNiveles(datos)}
             onUpdate={(uuid, datos) => updateNivel(uuid, datos)}
             onDelete={(uuid) => deleteNivel(uuid)}

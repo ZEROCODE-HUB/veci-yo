@@ -165,3 +165,32 @@ describe("con quién viene un menor (hueco 36, 27/10/2026)", () => {
     expect(screen.getByText(/viene con Armando Barrera/)).toBeDefined();
   });
 });
+
+describe("la visita que registró la portería (17/11/2026)", () => {
+  const registrada = {
+    ...visita,
+    aviso: "notificar_y_anunciar",
+    instruccionDocumento: "verificar",
+    instruccionesCumplidas: { llamoAnuncie: true },
+    invitados: [{ uuid: "a1", nombre: "Armando Barrera", llego: true }],
+  } as unknown as VisitaItem;
+
+  it("no ofrece verificar el documento y el anuncio ya está hecho", () => {
+    render(
+      <VisitaGuardiaDetail
+        item={{ ...registrada, registradaEnPorteria: true }}
+        personIndex={0}
+      />,
+    );
+    expect(screen.queryByText(/Foto y verificación del documento/)).toBeNull();
+    expect(screen.getByText("Registrada en portería al llegar.")).toBeDefined();
+    expect(
+      screen.getByRole("switch", { name: "Anuncié al residente" }).getAttribute("aria-checked"),
+    ).toBe("true");
+  });
+
+  it("una visita anunciada por un vecino sí lo ofrece", () => {
+    render(<VisitaGuardiaDetail item={registrada} personIndex={0} />);
+    expect(screen.getByText(/Foto y verificación del documento/)).toBeDefined();
+  });
+});

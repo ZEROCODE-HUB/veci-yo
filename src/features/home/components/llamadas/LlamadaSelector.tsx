@@ -30,6 +30,13 @@ interface LlamadaSelectorProps {
    * «El edificio no tiene a quién llamar todavía» (13/11/2026).
    */
   cargaDestinos?: EstadoDeLaCarga;
+  /**
+   * A quién de la vivienda elegida (17/11/2026): «Todos» y cada persona que
+   * recibe llamadas por la app. Vacía: no se pregunta.
+   */
+  opcionesDeLaVivienda?: Opcion[];
+  aQuienDeLaVivienda?: string;
+  onAQuienDeLaViviendaChange?: (usuarioId: string) => void;
 }
 
 /**
@@ -40,6 +47,10 @@ interface LlamadaSelectorProps {
  * y nunca enseñaba lo elegido. Ahora el vecino elige **a quién llamar**, y el
  * personal elige primero a quién --una vivienda u otro destino (28/10/2026)--
  * y, si es una vivienda, **torre y vivienda**.
+ *
+ * 17/11/2026, pedido del cliente: después de la vivienda, **a quién de ella**:
+ * una persona que reciba llamadas por la app, o «Todos» (suena en todos y
+ * contesta el primero).
  */
 export function LlamadaSelector({
   esPersonal,
@@ -55,6 +66,9 @@ export function LlamadaSelector({
   opcionesDelPersonal = [],
   aUnaVivienda = true,
   cargaDestinos = { cargando: false },
+  opcionesDeLaVivienda = [],
+  aQuienDeLaVivienda = "",
+  onAQuienDeLaViviendaChange,
 }: LlamadaSelectorProps) {
   if (!esPersonal) {
     return (
@@ -97,6 +111,14 @@ export function LlamadaSelector({
             onChange={(valor) => onViviendaChange(String(valor))}
             placeholder="Elige la vivienda"
           />
+          {unidadId && opcionesDeLaVivienda.length > 0 && onAQuienDeLaViviendaChange ? (
+            <Select
+              label="¿A quién de la vivienda?"
+              value={aQuienDeLaVivienda}
+              options={opcionesDeLaVivienda}
+              onChange={(valor) => onAQuienDeLaViviendaChange(String(valor))}
+            />
+          ) : null}
         </>
       ) : null}
     </>

@@ -45,6 +45,8 @@ const vacio = (v: string | number) => `${v}`.trim() === "";
 export function planDeTorre(
   pedido: PedidoDeTorre,
   tope: number,
+  /** `torre_viviendas_por_piso_maximo` (17/11/2026). */
+  topePorPiso = 99,
 ): { viviendas: ViviendaPlaneada[]; motivo: string } {
   const { desde, hasta, porPiso, numeracion } = pedido;
   if (vacio(desde) && vacio(hasta) && vacio(porPiso)) return { viviendas: [], motivo: "" };
@@ -61,14 +63,14 @@ export function planDeTorre(
   if (fin < inicio) {
     return { viviendas: [], motivo: "El último piso no puede ser menor que el primero." };
   }
-  const maximoPorPiso = numeracion === "letra" ? LETRAS.length : 99;
+  const maximoPorPiso = Math.min(numeracion === "letra" ? LETRAS.length : 99, topePorPiso);
   if (cuantos > maximoPorPiso) {
     return {
       viviendas: [],
       motivo:
-        numeracion === "letra"
-          ? `Con letras caben ${LETRAS.length} por piso (de la A a la Z).`
-          : "Caben 99 departamentos por piso como mucho.",
+        maximoPorPiso === topePorPiso
+          ? `Caben ${topePorPiso} departamentos por piso como mucho.`
+          : `Con letras caben ${LETRAS.length} por piso (de la A a la Z).`,
     };
   }
   const total = (fin - inicio + 1) * cuantos;

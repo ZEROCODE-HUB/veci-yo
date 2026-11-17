@@ -44,6 +44,11 @@ export const PRESENTACION_DE_ROL: Record<
     descripcion: "Ver tu alojamiento durante tu estadía",
     icono: "bag-outline",
   },
+  trabajador: {
+    titulo: "Trabajador permanente",
+    descripcion: "Contestar el intercomunicador de la vivienda",
+    icono: "call-outline",
+  },
   /*
     Operar la plataforma es un rol como los demás y se elige igual: quien además
     vive en un edificio tiene los dos y cambia cuando quiere. No es un permiso

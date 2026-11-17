@@ -15,6 +15,10 @@ interface Props {
   /** Si devuelven una promesa, el botón espera y no se pulsa dos veces. */
   onSilenciar: () => Promise<unknown> | void;
   onColgar: () => Promise<unknown> | void;
+  /** Si la voz sale por el altavoz (true) o por el auricular (false). */
+  altavoz?: boolean;
+  /** Cambia entre altavoz y auricular. Sin él, no hay botón. */
+  onAltavoz?: () => Promise<unknown> | void;
 }
 
 /**
@@ -24,6 +28,8 @@ interface Props {
  * «mejorar la interfaz de la llamada en curso»). Ahora se ve con quién se
  * habla, si está sonando o ya contestaron, el tiempo en grande, y los dos
  * controles redondos de cualquier teléfono: silenciar y colgar.
+ *
+ * 17/11/2026, pedido del cliente: botón Altavoz, entre los dos.
  */
 export function LlamadaEnCurso({
   etiqueta,
@@ -32,6 +38,8 @@ export function LlamadaEnCurso({
   silencio,
   onSilenciar,
   onColgar,
+  altavoz = false,
+  onAltavoz,
 }: Props) {
   /*
     Colgar y silenciar tardan lo que tarde la red, y no decían nada: se
@@ -39,6 +47,7 @@ export function LlamadaEnCurso({
   */
   const [silenciando, setSilenciando] = useState(false);
   const [colgando, setColgando] = useState(false);
+  const [cambiandoSalida, setCambiandoSalida] = useState(false);
   const esperar = async (
     accion: () => Promise<unknown> | void,
     marcar: (valor: boolean) => void,
@@ -86,7 +95,7 @@ export function LlamadaEnCurso({
         ) : null}
       </View>
 
-      <View className="flex-row items-start justify-center gap-10 mt-1">
+      <View className="flex-row items-start justify-center gap-8 mt-1">
         <View className="items-center gap-1.5">
           <Pressable
             onPress={() => void esperar(onSilenciar, setSilenciando)}
@@ -122,6 +131,39 @@ export function LlamadaEnCurso({
             {silencio ? "Micrófono apagado" : "Silenciar"}
           </Text>
         </View>
+
+        {onAltavoz ? (
+          <View className="items-center gap-1.5">
+            <Pressable
+              onPress={() => void esperar(onAltavoz, setCambiandoSalida)}
+              disabled={cambiandoSalida || colgando}
+              accessibilityRole="button"
+              accessibilityLabel={altavoz ? "Quitar el altavoz" : "Poner el altavoz"}
+              aria-pressed={altavoz}
+              aria-busy={cambiandoSalida}
+              accessibilityState={{ selected: altavoz, busy: cambiandoSalida }}
+              className="h-16 w-16 items-center justify-center rounded-full"
+              style={{
+                backgroundColor: altavoz ? theme.colors.text : theme.colors.bgMuted,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+              }}
+            >
+              {cambiandoSalida ? (
+                <Cargando variante="control" texto="el altavoz" />
+              ) : (
+                <Ionicons
+                  name={altavoz ? "volume-high" : "volume-low"}
+                  size={28}
+                  color={altavoz ? theme.colors.textInverse : theme.colors.text}
+                />
+              )}
+            </Pressable>
+            <Text className="text-xs text-gray-600">
+              {altavoz ? "Altavoz activado" : "Altavoz"}
+            </Text>
+          </View>
+        ) : null}
 
         <View className="items-center gap-1.5">
           <Pressable

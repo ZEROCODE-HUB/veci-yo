@@ -2,6 +2,27 @@
   {
     "fecha": "2026-11-17",
     "puntos": [
+      "Torres: «Nueva Torre» ya no pide sótanos ni estacionamientos. Primero se crea la torre; después, en Estacionamientos, cada sótano se crea eligiendo de qué torre es, y la lista dice en qué torre está.",
+      "Al crear una torre se dice cuántos departamentos caben como máximo por piso (20, cambiable desde el panel).",
+      "La visita que registra la portería entra directamente como «Ingresado»: ya sale «Anuncié al residente», no hace falta verificar el documento después y al departamento le llega el aviso «Nueva visita».",
+      "Los anuncios y encuestas muestran «Dirigido a: Propietarios, Residentes…».",
+      "Sin chat entre vecinos: en los canales del edificio solo escribe la administración. Se puede activar en Canales del chat.",
+      "Mensajería: ves a la gente de la portería con su cargo y nombre (Conserje · Federico Valverde). Solo puedes escribir a quien está de turno; los demás salen en gris con su horario. La administración pone el cargo en la ficha de cada guardia.",
+      "Votaciones: cada departamento tiene un índice de votación (Arquitectura › editar departamento). Al crear una encuesta se elige quién vota (la vivienda o cada residente), cómo se cuenta (igual o por índice) y cuándo se aprueba (mayoría simple o un % mínimo).",
+      "El resultado de cada encuesta dice cuánto falta para aprobarse, con una barra que marca el umbral; la administración ve la participación total y por torre.",
+      "Cuadro de Honor: los huéspedes ya no lo ven, y lo recaudado solo lo ven propietarios, residentes y la administración. Muestra cuánto se pagó a tiempo y cuánto con atraso, en viviendas y en dinero, y la tarjeta se desliza mes a mes con el siguiente asomando.",
+      "Cuando un vecino paga tarde, su pago cubre primero la cuota más antigua que debe; lo que sobra pasa al mes siguiente o queda a su favor.",
+      "Reglamento: el archivo subido (PDF o Word) se ve con su nombre, su fecha y un botón «Ver documento» que lo abre en el celular.",
+      "Si la vivienda tiene inquilino líder, el propietario no puede volver a marcarse residente: primero debe quitar al inquilino líder.",
+      "Al invitar a un residente, «Es menor de edad» lo anota sin correo ni invitación: un menor no tiene cuenta. No se pide fecha de nacimiento.",
+      "Trabajador permanente (empleada, chofer): al agregarlo eliges si le das usuario. Sin app, sale en el directorio para que la portería lo ubique; con app, solo contesta el intercomunicador de la vivienda.",
+      "Al invitar a alguien a la vivienda, el formulario dice qué podrá y qué no podrá hacer con ese rol.",
+      "Llamadas: eliges a quién llamar, a una persona o a «Todos» (suena en todos y contesta el primero; a los demás se les avisa). Hay botón de Altavoz y la voz conecta más rápido al contestar."
+    ]
+  },
+  {
+    "fecha": "2026-11-17",
+    "puntos": [
       "Correspondencia: el detalle ya no se cierra al pulsar «Notificado por otro medio»; se queda abierto, el progreso lo anota y el botón deja de ofrecerse.",
       "«Marcar como entregado» se confirma dentro del mismo detalle (sin abrir otra ventana encima, que tardaba en irse). Lo ya hecho desaparece y los botones esperan hasta que la lista está al día.",
       "Reglamentos (administración): si el edificio todavía no tiene un reglamento, ahora aparece «Subir reglamento» para cargar el primero."

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CLAVE_SERVICIO,
+  CONDOMINIO,
   CUENTA,
   MARCA_PRUEBA,
   URL,
@@ -100,6 +101,19 @@ beforeAll(async () => {
   );
   expect(canales.datos?.length, "hace falta el canal de residentes").toBe(1);
   canal = canales.datos[0].id;
+
+  /*
+    Sofía es vecina y escribe en el canal: desde el 17/11/2026 eso pide que el
+    edificio encienda `chat_entre_vecinos` (viene apagado). Se enciende en el
+    edificio de pruebas y no se devuelve: `los-canales-del-edificio` también lo
+    necesita y corre a la vez. El caso apagado está en
+    `sin-chat-entre-vecinos.test.ts`, en el segundo edificio.
+  */
+  const ajuste = await servicio(`condominio?id=eq.${CONDOMINIO}`, {
+    method: "PATCH",
+    body: JSON.stringify({ chat_entre_vecinos: true }),
+  });
+  expect(ajuste.status, await ajuste.text()).toBeLessThan(300);
 
   /*
     El propio cero. Una corrida que muera a mitad deja sus mensajes con la
