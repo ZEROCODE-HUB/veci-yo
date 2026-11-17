@@ -8,6 +8,24 @@ import type {
   EstacionamientoFormValues,
 } from "../../types";
 import { depositToForm, estacionamientoToForm } from "../../types";
+import { codigoConNivel, siguientesCodigos } from "../../helpers/arquitectura.helpers";
+
+/** Los niveles del edificio y los códigos que ya hay (16/11/2026). */
+export interface NivelesParaCrear {
+  niveles: Array<{ uuid: string; nombre: string; nomenclatura: string }>;
+  codigosDelEdificio: string[];
+}
+
+/** Las opciones del selector de nivel y la sugerencia de código de cada uno. */
+function opcionesDeNivel({ niveles, codigosDelEdificio }: NivelesParaCrear) {
+  return {
+    niveles: niveles.map((n) => ({ value: n.uuid, label: `${n.nombre} (${n.nomenclatura})` })),
+    sugerir: (nivelId: string) => {
+      const nivel = niveles.find((n) => n.uuid === nivelId);
+      return nivel ? siguientesCodigos(nivel.nomenclatura, "privado", 1, codigosDelEdificio)[0] : "";
+    },
+  };
+}
 
 /**
  * Los estacionamientos y depósitos de un departamento, desde su ficha
@@ -26,8 +44,10 @@ export function RecursosDeLaVivienda({
   onUpdateParking,
   onCreateDeposit,
   onUpdateDeposit,
+  nivelesParaCrear,
 }: {
   unidadId: string;
+  nivelesParaCrear: NivelesParaCrear;
   parkings: EstacionamientoDeTorre[];
   deposits: Deposito[];
   onCreateParking: (form: EstacionamientoFormValues) => unknown;
@@ -46,18 +66,22 @@ export function RecursosDeLaVivienda({
         titulo={`Estacionamientos (${suyos.length})`}
         asignados={suyos.map((p) => ({
           clave: p.uuid,
-          texto: [p.codigo, p.ubicacion].filter(Boolean).join(" · "),
+          texto: codigoConNivel(p.codigo, p.nivel),
           quitar: () => onUpdateParking(p, { ...estacionamientoToForm(p), unidadId: "" }),
         }))}
         libres={libres.map((p) => ({
           clave: p.uuid,
-          texto: [p.codigo, p.ubicacion].filter(Boolean).join(" · "),
+          // «S1-03 · Sótano 1» (16/11/2026): el nivel dice dónde está.
+          texto: codigoConNivel(p.codigo, p.nivel),
         }))}
         onAsignar={(clave) => {
           const p = libres.find((x) => x.uuid === clave);
           if (p) onUpdateParking(p, { ...estacionamientoToForm(p), tipo: "privado", unidadId });
         }}
-        onCrear={(codigo, ubicacion) => onCreateParking({ codigo, ubicacion, tipo: "privado", unidadId })}
+        onCrear={(codigo, ubicacion, nivelId) =>
+          onCreateParking({ codigo, ubicacion, nivelId, tipo: "privado", unidadId })
+        }
+        {...opcionesDeNivel(nivelesParaCrear)}
         nombre="estacionamiento"
       />
       <Bloque
@@ -89,17 +113,28 @@ export function Bloque({
   onAsignar,
   onCrear,
   nombre,
+  niveles,
+  sugerir,
 }: {
   titulo: string;
   asignados: Array<{ clave: string; texto: string; quitar: () => unknown }>;
   libres: Array<{ clave: string; texto: string }>;
   onAsignar: (clave: string) => unknown;
-  onCrear: (codigo: string, ubicacion: string) => unknown;
+  onCrear: (codigo: string, ubicacion: string, nivelId: string) => unknown;
   nombre: string;
+  /**
+   * Con niveles, «+ Crear nuevo» pide el nivel antes que nada y sugiere el
+   * código (16/11/2026: «Ubicación obligatoria al crear Estacionamiento»).
+   */
+  niveles?: Array<{ value: string; label: string }>;
+  sugerir?: (nivelId: string) => string;
 }) {
   const [creando, setCreando] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [ubicacion, setUbicacion] = useState("");
+  const [nivelId, setNivelId] = useState("");
+  const [sugerido, setSugerido] = useState("");
+  const faltaNivel = Boolean(niveles) && !nivelId;
   /*
     Lo que se está guardando ahora (13/11/2026, tester: «al asignar no hay un
     estado de carga»): «asignar», «crear» o la clave de lo que se quita.
@@ -153,17 +188,44 @@ export function Bloque({
       )}
       {creando ? (
         <View className="gap-2">
-          <Input label="Código *" value={codigo} onChangeText={setCodigo} placeholder="Ej: T1-P05" />
-          <Input label="Ubicación (opcional)" value={ubicacion} onChangeText={setUbicacion} placeholder="Ej: Sótano 1" />
+          {niveles ? (
+            <Select
+              label="Nivel *"
+              value={nivelId}
+              placeholder="Elegir el nivel…"
+              textoSinOpciones="Todavía no hay niveles. Créalos en Arquitectura › Estacionamientos."
+              options={niveles}
+              onChange={(valor) => {
+                const id = String(valor);
+                setNivelId(id);
+                // Se sugiere el siguiente código del nivel, salvo que se haya
+                // escrito otro a mano.
+                if (sugerir && (!codigo || codigo === sugerido)) {
+                  const nuevo = sugerir(id);
+                  setSugerido(nuevo);
+                  setCodigo(nuevo);
+                }
+              }}
+            />
+          ) : null}
+          <Input label="Código *" value={codigo} onChangeText={setCodigo} placeholder={niveles ? "Ej: S1-05" : "Ej: D-05"} />
+          <Input
+            label={niveles ? "Detalle de ubicación (opcional)" : "Ubicación (opcional)"}
+            value={ubicacion}
+            onChangeText={setUbicacion}
+            placeholder={niveles ? "Ej: Junto al ascensor" : "Ej: Sótano 1"}
+          />
           <View className="flex-row gap-2">
             <Button
               size="sm"
-              disabled={!codigo.trim() || ocupado !== null}
+              disabled={!codigo.trim() || faltaNivel || ocupado !== null}
               loading={ocupado === "crear"}
               onPress={() =>
-                void hacer("crear", () => onCrear(codigo.trim(), ubicacion.trim())).then(() => {
+                void hacer("crear", () => onCrear(codigo.trim(), ubicacion.trim(), nivelId)).then(() => {
                   setCodigo("");
                   setUbicacion("");
+                  setNivelId("");
+                  setSugerido("");
                   setCreando(false);
                 })
               }
@@ -187,7 +249,7 @@ export function Bloque({
 /** Lo elegido para un departamento que todavía no se guardó (29/10/2026). */
 export interface BorradorDeRecursos {
   estacionamientos: string[];
-  estacionamientosNuevos: Array<{ codigo: string; ubicacion: string }>;
+  estacionamientosNuevos: Array<{ codigo: string; ubicacion: string; nivelId: string }>;
   depositos: string[];
   depositosNuevos: Array<{ codigo: string; ubicacion: string }>;
 }
@@ -209,7 +271,9 @@ export function RecursosDelBorrador({
   deposits,
   borrador,
   onCambiar,
+  nivelesParaCrear,
 }: {
+  nivelesParaCrear: NivelesParaCrear;
   parkings: EstacionamientoDeTorre[];
   deposits: Deposito[];
   borrador: BorradorDeRecursos;
@@ -229,13 +293,13 @@ export function RecursosDelBorrador({
             .filter((p) => borrador.estacionamientos.includes(p.uuid))
             .map((p) => ({
               clave: p.uuid,
-              texto: texto(p.codigo, p.ubicacion),
+              texto: codigoConNivel(p.codigo, p.nivel),
               quitar: () =>
                 onCambiar({ ...borrador, estacionamientos: borrador.estacionamientos.filter((x) => x !== p.uuid) }),
             })),
           ...borrador.estacionamientosNuevos.map((n, i) => ({
             clave: `nuevo-${i}`,
-            texto: `${texto(n.codigo, n.ubicacion)} (nuevo)`,
+            texto: `${codigoConNivel(n.codigo, nivelesParaCrear.niveles.find((x) => x.uuid === n.nivelId)?.nombre)} (nuevo)`,
             quitar: () =>
               onCambiar({
                 ...borrador,
@@ -245,11 +309,22 @@ export function RecursosDelBorrador({
         ]}
         libres={libres
           .filter((p) => !borrador.estacionamientos.includes(p.uuid))
-          .map((p) => ({ clave: p.uuid, texto: texto(p.codigo, p.ubicacion) }))}
+          .map((p) => ({ clave: p.uuid, texto: codigoConNivel(p.codigo, p.nivel) }))}
         onAsignar={(clave) => onCambiar({ ...borrador, estacionamientos: [...borrador.estacionamientos, clave] })}
-        onCrear={(codigo, ubicacion) =>
-          onCambiar({ ...borrador, estacionamientosNuevos: [...borrador.estacionamientosNuevos, { codigo, ubicacion }] })
+        onCrear={(codigo, ubicacion, nivelId) =>
+          onCambiar({
+            ...borrador,
+            estacionamientosNuevos: [...borrador.estacionamientosNuevos, { codigo, ubicacion, nivelId }],
+          })
         }
+        {...opcionesDeNivel({
+          ...nivelesParaCrear,
+          // Lo ya apuntado en el borrador también cuenta para el siguiente código.
+          codigosDelEdificio: [
+            ...nivelesParaCrear.codigosDelEdificio,
+            ...borrador.estacionamientosNuevos.map((n) => n.codigo),
+          ],
+        })}
         nombre="estacionamiento"
       />
       <Bloque

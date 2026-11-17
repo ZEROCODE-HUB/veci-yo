@@ -9,12 +9,14 @@ import { desdeLaBase, formatDate } from "@/shared/utils";
 import { useAdminStore, type Deposito, type Torre, type Unidad } from "@/stores/admin-store";
 import { obtenerContactosDeLaVivienda } from "@/features/directorio/services/contactos.repo";
 import { PAPEL_EN_LA_VIVIENDA } from "@/features/directorio/helpers/contactos";
+import { PersonalPermanenteDeLaVivienda } from "@/features/directorio/components/PersonalPermanenteDeLaVivienda";
 import {
   propietarioPendiente,
   quitarPropietario,
   revocarInvitacion,
 } from "@/features/propietario/services/invitacionesUnidad.repo";
 import type { EstacionamientoDeTorre } from "../../types";
+import { codigoConNivel } from "../../helpers/arquitectura.helpers";
 
 /**
  * «Ver detalle» de un departamento (29/10/2026), según el prototipo
@@ -160,12 +162,17 @@ export function UnidadDetalleModal({
         <Seccion titulo="Estacionamientos y depósitos">
           <Dato
             etiqueta="Estacionamientos"
-            valor={suyos.length ? suyos.map((p) => p.codigo).join(", ") : "Ninguno"}
+            valor={suyos.length ? suyos.map((p) => codigoConNivel(p.codigo, p.nivel)).join(", ") : "Ninguno"}
           />
           <Dato
             etiqueta="Depósitos"
             valor={susDepositos.length ? susDepositos.map((d) => d.codigo).join(", ") : "Ninguno"}
           />
+        </Seccion>
+
+        {/* Quien trabaja ahí de forma fija, con sus datos (16/11/2026). */}
+        <Seccion titulo="Personal permanente">
+          <PersonalPermanenteDeLaVivienda unidadId={unidadId} />
         </Seccion>
       </View>
       <Modal visible={Boolean(porQuitar)} onClose={() => setPorQuitar(null)} title="Quitar propietario">

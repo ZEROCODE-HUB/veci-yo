@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParametros } from "@/shared/hooks";
 import { ScrollView, View } from "react-native";
 import { PageHeader } from "@/shared/layouts";
 import { SegunLaCarga, Tabs } from "@/shared/components";
 import {
   CondominioTab,
+  EstacionamientosTab,
   PorteriasTab,
   TorreDetailView,
   TorresTab,
 } from "../components/arquitectura";
 import { useAdministradorArquitectura } from "../hooks";
 
-const TABS = ["Condominio", "Torres", "Porterías"];
+// «Estacionamientos»: los niveles del edificio (16/11/2026).
+const TABS = ["Condominio", "Torres", "Estacionamientos", "Porterías"];
 
 export function AdministradorArquitecturaScreen() {
-  const [tab, setTab] = useState("Condominio");
+  /*
+    La lista «Tu edificio, paso a paso» del inicio abre directamente en la
+    pestaña del paso (16/11/2026). Una que no exista se ignora.
+  */
+  const pestana = useParametros("AdministradorArquitectura")?.pestana;
+  const [tab, setTab] = useState(pestana && TABS.includes(pestana) ? pestana : "Condominio");
+  useEffect(() => {
+    if (pestana && TABS.includes(pestana)) setTab(pestana);
+  }, [pestana]);
   const [selectedTowerId, setSelectedTowerId] = useState<string | null>(null);
   const {
     torres,
@@ -21,6 +32,7 @@ export function AdministradorArquitecturaScreen() {
     estacionamientos,
     depositos,
     porterias,
+    niveles,
     estado,
     createTower,
     updateTower,
@@ -37,7 +49,13 @@ export function AdministradorArquitecturaScreen() {
     createPorteria,
     updatePorteria,
     deletePorteria,
+    createGaritas,
+    createNiveles,
+    updateNivel,
+    deleteNivel,
   } = useAdministradorArquitectura();
+  const codigosDelEdificio = estacionamientos.map((e) => e.codigo);
+  const sotanosMaximo = Math.max(0, ...torres.map((t) => Number(t.sotanos) || 0));
 
   const selectedTower = selectedTowerId
     ? torres.find((tower) => tower.uuid === selectedTowerId) || null
@@ -95,10 +113,13 @@ export function AdministradorArquitecturaScreen() {
         }
         onDeleteDeposit={(uuid) => deleteDeposit(uuid)}
         parkings={parkings}
+        niveles={niveles}
+        codigosDelEdificio={codigosDelEdificio}
         onCreateParking={(form) =>
           createEstacionamiento({
             codigo: form.codigo,
             tipo: form.tipo,
+            nivelId: form.nivelId,
             ubicacion: form.ubicacion,
             torreId: selectedTower.uuid ?? "",
             // Una cochera de visita no es de nadie: el formulario solo pide el
@@ -110,6 +131,7 @@ export function AdministradorArquitecturaScreen() {
           updateEstacionamiento(parking.uuid, {
             codigo: form.codigo,
             tipo: form.tipo,
+            nivelId: form.nivelId,
             ubicacion: form.ubicacion,
             unidadId: form.tipo === "privado" ? form.unidadId || null : null,
           })
@@ -139,10 +161,23 @@ export function AdministradorArquitecturaScreen() {
             towers={torres}
             unidades={unidades}
             estacionamientos={estacionamientos}
+            niveles={niveles}
             onSelect={(tower) => setSelectedTowerId(tower.uuid ?? null)}
-            onCreate={(form) => createTower(form)}
+            onCreate={(form, construccion) => createTower(form, construccion)}
             onUpdate={(tower) => updateTower(tower.uuid ?? "", tower)}
             onDelete={(tower) => deleteTower(tower.uuid ?? "")}
+          />
+          </SegunLaCarga>
+        )}
+        {tab === "Estacionamientos" && (
+          <SegunLaCarga estado={estado} texto="los niveles" forma="filas" enLinea>
+          <EstacionamientosTab
+            niveles={niveles}
+            estacionamientos={estacionamientos}
+            sotanosMaximo={sotanosMaximo}
+            onCreate={(datos) => createNiveles(datos)}
+            onUpdate={(uuid, datos) => updateNivel(uuid, datos)}
+            onDelete={(uuid) => deleteNivel(uuid)}
           />
           </SegunLaCarga>
         )}
@@ -150,6 +185,8 @@ export function AdministradorArquitecturaScreen() {
           <SegunLaCarga estado={estado} texto="las porterías" forma="filas" enLinea>
           <PorteriasTab
             items={porterias}
+            torres={torres}
+            onCrearGaritas={(garitas) => createGaritas(garitas)}
             // El tipo lo elige quien da de alta la porteria. Estaba escrito a
             // fuego aqui, asi que un edificio con garaje no podia registrar su
             // acceso vehicular.

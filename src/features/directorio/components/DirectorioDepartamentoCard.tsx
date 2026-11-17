@@ -2,7 +2,7 @@ import { theme } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import type { DirectorioContactos, Unidad } from "../types/directorio";
-import { PAPEL_EN_LA_VIVIENDA } from "../helpers/contactos";
+import { propietariosDe } from "../helpers/filtrosDelDirectorio";
 import type { VehiculoDelDirectorio } from "../services/vehiculos.repo";
 
 /**
@@ -23,6 +23,7 @@ export function DirectorioDepartamentoCard({
   depositos,
   vehiculos = [],
   onPress,
+  marcada,
 }: {
   item: Unidad;
   contactos: DirectorioContactos;
@@ -30,13 +31,21 @@ export function DirectorioDepartamentoCard({
   depositos: string[];
   /** Los de la vivienda y los de las visitas que están dentro. */
   vehiculos?: VehiculoDelDirectorio[];
+  /** Al tocarla: abre el detalle o, seleccionando, la marca o desmarca. */
   onPress: () => void;
+  /**
+   * Solo mientras la administración selecciona viviendas para un mensaje
+   * (16/11/2026): la casilla y si está puesta. Sin esto, no hay casilla.
+   */
+  marcada?: boolean;
 }) {
   // Con copropietarios, todos; los nombres vienen completos de la base.
-  const propietarios = contactos.personas
-    .filter((p) => p.papel === PAPEL_EN_LA_VIVIENDA.propietario)
-    .map((p) => p.nombre);
-  const estacionamientos = item.codigosEstacionamiento ?? [];
+  const propietarios = propietariosDe(contactos);
+  const seleccionando = marcada !== undefined;
+  // Con su nivel al lado, «S1-03 · Sótano 1» (16/11/2026).
+  const estacionamientos = (item.codigosEstacionamiento ?? []).map((c, i) =>
+    item.nivelesEstacionamiento?.[i] ? `${c} · ${item.nivelesEstacionamiento[i]}` : c,
+  );
   const propios = vehiculos.filter((v) => v.de === "residente").map((v) => v.placa);
   const deVisitas = vehiculos.filter((v) => v.de === "visita").map((v) => v.placa);
 
@@ -44,6 +53,10 @@ export function DirectorioDepartamentoCard({
     <Pressable
       onPress={onPress}
       className="active:opacity-80"
+      accessibilityRole={seleccionando ? "checkbox" : "button"}
+      accessibilityLabel={`Torre ${item.torreNumero} · Depto ${item.codigo}`}
+      accessibilityState={seleccionando ? { checked: marcada } : undefined}
+      aria-checked={seleccionando ? marcada : undefined}
       style={{
         backgroundColor: theme.colors.bgCard,
         borderRadius: 20,
@@ -53,18 +66,46 @@ export function DirectorioDepartamentoCard({
       }}
     >
       <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
+        {seleccionando ? (
+          <Ionicons
+            name={marcada ? "checkbox" : "square-outline"}
+            size={24}
+            color={marcada ? theme.colors.primary : theme.colors.textMuted}
+          />
+        ) : null}
         <View className="flex-1" style={{ gap: 2 }}>
           <Text className="text-base font-bold text-gray-900">
             {`Torre ${item.torreNumero} · Depto ${item.codigo}`}
           </Text>
           <Text className="text-xs text-gray-500">{`Piso ${item.piso}`}</Text>
-          <Text className="text-sm text-gray-900">
-            {propietarios.length > 1
-              ? `Propietarios: ${propietarios.join(", ")}`
-              : `Propietario: ${propietarios[0] ?? "Sin asignar"}`}
-          </Text>
+          {propietarios.length ? (
+            <Text className="text-sm text-gray-900">
+              {propietarios.length > 1
+                ? `Propietarios: ${propietarios.join(", ")}`
+                : `Propietario: ${propietarios[0]}`}
+            </Text>
+          ) : (
+            /*
+              En rojo, para que salte a la vista (16/11/2026, cliente: «poner
+              indicador rojo para Propietarios: Sin Asignar»). Era el mismo
+              texto gris que un nombre.
+            */
+            <View className="flex-row items-center" style={{ gap: 6 }}>
+              <Text className="text-sm text-gray-900">Propietario:</Text>
+              <View
+                className="rounded-full"
+                style={{ backgroundColor: theme.colors.dangerLight, paddingHorizontal: 8, paddingVertical: 2 }}
+              >
+                <Text className="text-xs font-semibold" style={{ color: theme.colors.dangerDark }}>
+                  Sin asignar
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
-        <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+        {seleccionando ? null : (
+          <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+        )}
       </View>
       {estacionamientos.length || depositos.length || vehiculos.length ? (
         <View className="flex-row flex-wrap" style={{ marginTop: 8, gap: 6 }}>

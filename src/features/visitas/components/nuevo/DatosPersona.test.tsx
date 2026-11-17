@@ -137,3 +137,43 @@ describe("la portería registrando una visita (16/10/2026)", () => {
     expect(screen.getByText("Documento (opcional)")).toBeTruthy();
   });
 });
+
+/*
+  16/11/2026: la portería vuelve a registrar amigos y familiares. Si les pide
+  documento lo decide el edificio («La portería pide documento a amigos y
+  familiares», en Permisos), no una casilla del formulario.
+*/
+describe("la portería registra a un amigo o familiar", () => {
+  const casilla = "Que la portería verifique su documento al llegar";
+
+  it("con la regla del edificio apagada, el documento es opcional y no hay casilla", () => {
+    render(<DatosPersona {...props} tipoSeleccionado="amigos" esGuardia />);
+    expect(screen.getByText("Documento (opcional)")).toBeTruthy();
+    expect(screen.queryByText(casilla)).toBeNull();
+  });
+
+  it("con la regla encendida, el documento es obligatorio", () => {
+    render(
+      <DatosPersona {...props} tipoSeleccionado="amigos" esGuardia porteriaPideDocumento />,
+    );
+    expect(screen.queryByText("Documento (opcional)")).toBeNull();
+    expect(screen.getByText("Documento")).toBeTruthy();
+    expect(screen.queryByText(casilla)).toBeNull();
+  });
+
+  it("la casilla de quien invita no cuenta en la portería", () => {
+    // Un `verificaDocumento` que se quedara de antes no lo vuelve obligatorio.
+    render(
+      <DatosPersona {...props} tipoSeleccionado="amigos" esGuardia verificaDocumento />,
+    );
+    expect(screen.getByText("Documento (opcional)")).toBeTruthy();
+  });
+
+  it("al profesional temporal se le pide siempre", () => {
+    render(
+      <DatosPersona {...props} tipoSeleccionado="temporal" esProfesional esGuardia />,
+    );
+    expect(screen.queryByText("Documento (opcional)")).toBeNull();
+    expect(screen.getByText("Documento")).toBeTruthy();
+  });
+});

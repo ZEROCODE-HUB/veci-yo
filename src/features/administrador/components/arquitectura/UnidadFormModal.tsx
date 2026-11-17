@@ -17,6 +17,7 @@ import {
   RecursosDeLaVivienda,
   RecursosDelBorrador,
   type BorradorDeRecursos,
+  type NivelesParaCrear,
 } from "./RecursosDeLaVivienda";
 import { AsignarPropietario } from "./AsignarPropietario";
 
@@ -54,6 +55,8 @@ type Props = {
   onUpdateParking?: (parking: EstacionamientoDeTorre, form: EstacionamientoFormValues) => unknown;
   onCreateDeposit?: (form: DepositFormValues) => unknown;
   onUpdateDeposit?: (deposit: Deposito, form: DepositFormValues) => unknown;
+  /** Para «+ Crear un estacionamiento nuevo», que pide el nivel (16/11/2026). */
+  nivelesParaCrear?: NivelesParaCrear;
 };
 
 export function UnidadFormModal({
@@ -69,6 +72,7 @@ export function UnidadFormModal({
   onUpdateParking,
   onCreateDeposit,
   onUpdateDeposit,
+  nivelesParaCrear = { niveles: [], codigosDelEdificio: [] },
 }: Props) {
   // Las del edificio: se crean en Arquitectura › Condominio.
   const tipologias = useAdminStore((s) => s.tipologias);
@@ -178,6 +182,7 @@ export function UnidadFormModal({
               onUpdateParking={onUpdateParking}
               onCreateDeposit={onCreateDeposit}
               onUpdateDeposit={onUpdateDeposit}
+              nivelesParaCrear={nivelesParaCrear}
             />
             <AsignarPropietario
               unidadId={editing.uuid}
@@ -192,6 +197,7 @@ export function UnidadFormModal({
               deposits={deposits}
               borrador={borrador}
               onCambiar={setBorrador}
+              nivelesParaCrear={nivelesParaCrear}
             />
             <View className="gap-2 rounded-xl border border-gray-200 p-3">
               <Text className="text-sm font-bold text-gray-900">Asignar propietario (opcional)</Text>
