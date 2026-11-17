@@ -9,6 +9,7 @@ import {
 } from "@/features/propietario/services/invitacionesUnidad.repo";
 import { desdeLaBase, formatDate } from "@/shared/utils";
 import { useUIStore } from "@/stores";
+import { ElegidoDeLaVivienda } from "./ElegidoDeLaVivienda";
 
 /**
  * La administración asigna el propietario de una vivienda, desde la vivienda
@@ -83,9 +84,28 @@ export function AsignarPropietario({
       setAviso((e as { message?: string } | null)?.message ?? "No se pudo asignar el propietario"),
   });
 
+  /*
+    Con un dueño ya registrado, lo que se agrega aquí es un copropietario
+    (17/11/2026, cliente: «mejora los textos e indicaciones»). El título y la
+    ayuda lo dicen, y el dueño que ya figura se ve marcado como los
+    estacionamientos.
+  */
+  const esCopropietario = Boolean(propietarioActual);
   return (
-    <View style={{ gap: 10 }}>
-      <Text className="text-base font-bold text-gray-900">Asignar propietario (opcional)</Text>
+    <View className="rounded-xl border border-gray-200 p-3" style={{ gap: 10 }}>
+      <View className="gap-0.5">
+        <Text className="text-sm font-bold text-gray-900">
+          {esCopropietario ? "Agregar un copropietario (opcional)" : "Propietario (opcional)"}
+        </Text>
+        <Text className="text-xs text-gray-500">
+          {esCopropietario
+            ? "Otro dueño de la vivienda. Solo la administración puede agregarlo. Recibe un correo con su invitación para aceptar la vivienda."
+            : "El propietario recibe un correo con su invitación para aceptar la vivienda. Queda como propietario cuando la acepta en la app."}
+        </Text>
+      </View>
+      {propietarioActual ? (
+        <ElegidoDeLaVivienda texto={propietarioActual} estado="asignado" etiqueta="Propietario" />
+      ) : null}
       {pendiente.data ? (
         <View
           className="rounded-xl p-3"
@@ -97,11 +117,6 @@ export function AsignarPropietario({
           </Text>
         </View>
       ) : null}
-      {propietarioActual ? (
-        <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-          Ya figura {propietarioActual}. Si la vivienda tiene otro dueño, asígnalo aquí.
-        </Text>
-      ) : null}
       <Input
         label="Nombre y apellido *"
         soloLetras
@@ -111,16 +126,20 @@ export function AsignarPropietario({
       />
       <Input label="Correo *" type="email" value={correo} onChangeText={setCorreo} placeholder="ana@correo.com" />
       <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-        Tiene que aceptar la invitación en la app, y aparte los estacionamientos y depósitos de
-        la vivienda. Le llega un correo para que descargue la app e inicie sesión con este
-        correo (o cree su cuenta con él).
+        {esCopropietario
+          ? "Le llega un correo para que descargue la app y entre con este correo (o cree su cuenta con él)."
+          : "Le llega un correo para que descargue la app y entre con este correo (o cree su cuenta con él). Los estacionamientos y depósitos de arriba van con la invitación, y los acepta aparte."}
       </Text>
       <Button
         variant="primary"
         disabled={Boolean(falta) || asignar.isPending}
         onPress={() => asignar.mutate()}
       >
-        {asignar.isPending ? "Asignando…" : "Asignar propietario"}
+        {asignar.isPending
+          ? "Enviando…"
+          : esCopropietario
+            ? "Enviar invitación al copropietario"
+            : "Enviar invitación al propietario"}
       </Button>
       {falta && (nombre || correo) ? (
         <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>

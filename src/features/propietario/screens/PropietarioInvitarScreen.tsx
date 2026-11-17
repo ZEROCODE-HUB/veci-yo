@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import {
+  DarAccesoALaApp,
   FormularioInvitacion,
   InvitacionesPendientes,
   PersonasDeLaUnidad,
-  RegistrarMenor,
 } from "../components/invitar";
 import { useInvitarAUnidad } from "../hooks/useInvitarAUnidad";
 
@@ -32,18 +33,17 @@ export function PropietarioInvitarScreen() {
     setForm,
     rolesInvitables,
     esHuesped,
+    sinApp,
+    documentosOfrecidos,
     error,
     enlace,
     cerrarEnlace,
     invitar,
     invitando,
     revocar,
-    menor,
-    setMenor,
-    errorMenor,
-    registrarMenor,
-    registrandoMenor,
   } = useInvitarAUnidad();
+  /** A quién se le está dando acceso a la app (17/11/2026). */
+  const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
 
   if (!puedeInvitar) {
     return (
@@ -69,7 +69,7 @@ export function PropietarioInvitarScreen() {
           cuantos={3}
           enLinea
         >
-          <PersonasDeLaUnidad personas={personas} />
+          <PersonasDeLaUnidad personas={personas} onDarAcceso={setDarAccesoA} />
         </SegunLaCarga>
         <SegunLaCarga
           estado={cargaDePendientes}
@@ -89,20 +89,16 @@ export function PropietarioInvitarScreen() {
           form={form}
           rolesInvitables={rolesInvitables}
           esHuesped={esHuesped}
+          sinApp={sinApp}
+          documentosOfrecidos={documentosOfrecidos}
           error={error}
           invitando={invitando}
           onChange={setForm}
           onEnviar={invitar}
         />
-
-        <RegistrarMenor
-          valores={menor}
-          error={errorMenor}
-          registrando={registrandoMenor}
-          onChange={setMenor}
-          onRegistrar={registrarMenor}
-        />
       </ScrollView>
+
+      <DarAccesoALaApp persona={darAccesoA} onClose={() => setDarAccesoA(null)} />
 
       {/* Mientras el envio de correo este apagado, el enlace se muestra para
           poder pasarlo a mano. Con el envio encendido no vuelve y este modal

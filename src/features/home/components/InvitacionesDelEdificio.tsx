@@ -21,7 +21,12 @@ const ROL: Record<string, string> = {
   administrador: "administración",
   inquilino_lider: "inquilino líder",
   residente: "residente",
-  corresidente: "corresidente",
+  corresidente: "residente",
+};
+
+/** En una vivienda, el `coadministrador` es el anfitrión (17/11/2026). */
+const ROL_EN_LA_VIVIENDA: Record<string, string> = {
+  coadministrador: "anfitrión",
 };
 
 interface Pendiente {
@@ -88,7 +93,7 @@ export function InvitacionesDelEdificio() {
     ...(deLaVivienda.data ?? []).map((inv) => ({
       id: inv.id,
       de: "vivienda" as const,
-      texto: `Te invitaron como ${ROL[inv.rol] ?? inv.rol} de Torre ${inv.torre} · Depto ${inv.unidad}, ${inv.edificio}.`,
+      texto: `Te invitaron como ${ROL_EN_LA_VIVIENDA[inv.rol] ?? ROL[inv.rol] ?? inv.rol} de Torre ${inv.torre} · Depto ${inv.unidad}, ${inv.edificio}.`,
       invitadaPor: inv.invitadaPor,
     })),
   ];

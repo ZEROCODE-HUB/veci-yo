@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Cargando, Checkbox } from "@/shared/components";
+import { Badge, Cargando, Checkbox } from "@/shared/components";
 import type { ResidenteDeUnidad } from "../../services/residentes.repo";
 import { ESTILO_DE_TARJETA } from "./gruposDeResidentes";
 
@@ -10,6 +10,11 @@ interface Props {
   residente: ResidenteDeUnidad;
   /** Se ofrece «Puede registrar visitas» en los huéspedes. */
   mostrarPermisoDeVisitas: boolean;
+  /**
+   * Sin las casillas de anfitrión y administrador primario: las ve quien
+   * gestiona la vivienda, no un residente (17/11/2026).
+   */
+  soloLectura?: boolean;
   onMarcarAnfitrion: () => void;
   onMarcarAdministrador: () => void;
   onCambiarPermisoDeVisitas: () => void;
@@ -24,6 +29,7 @@ interface Props {
 export function TarjetaDeResidente({
   residente: r,
   mostrarPermisoDeVisitas,
+  soloLectura = false,
   onMarcarAnfitrion,
   onMarcarAdministrador,
   onCambiarPermisoDeVisitas,
@@ -64,6 +70,15 @@ export function TarjetaDeResidente({
             <Text className="text-sm" style={gris}>CI: {r.ci}</Text>
             <Text className="text-sm" style={gris}>{r.fecha}</Text>
           </View>
+          {/*
+            Vive aquí sin la app (17/11/2026): un niño, un abuelo. Que se
+            sepa por qué no le llega nada.
+          */}
+          {r.usuarioId ? null : (
+            <View className="flex-row mt-1">
+              <Badge status="Sin app">{r.esMenor ? "Sin app · menor de edad" : "Sin app"}</Badge>
+            </View>
+          )}
           <View className="flex-row gap-1.5 flex-wrap mt-1">
             <Text className="text-xs" style={suave}>
               {r.datosVisibles === false ? "🔒 Datos ocultos" : "👁️ Datos visibles"}
@@ -75,8 +90,8 @@ export function TarjetaDeResidente({
               {r.contactableWhatsapp ? "📱 WhatsApp" : "📱✕"}
             </Text>
           </View>
-          {(r.rol === "Residente" ||
-            r.rol === "Corresidente" ||
+          {!soloLectura && (r.rol === "Residente" ||
+            r.rol === "Anfitrión" ||
             r.rol === "Inquilino Lider" ||
             r.rol === "Propietario") && (
             <View className="flex-row items-center gap-2">
@@ -104,7 +119,7 @@ export function TarjetaDeResidente({
               {rueda("visitas", "el permiso de visitas")}
             </View>
           ) : null}
-          {(r.rol === "Coadministrador" || r.rol === "Propietario") && (
+          {!soloLectura && (r.rol === "Anfitrión" || r.rol === "Propietario") && (
             <View className="flex-row items-center gap-2">
               <Checkbox
                 checked={!!r.esAdministradorPrimario}

@@ -93,7 +93,7 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
     // para cambiar de sitio. REVISAR-A-OJO 81.
     if (!ubicacionActiva) return "";
     // Con el rol delante (16/10/2026): «Propietario · Las Barranqueras · 102».
-    const rol = etiquetaDeRol(ubicacionActiva.rol ?? rolActivo);
+    const rol = etiquetaDeRol(ubicacionActiva.rol ?? rolActivo, ubicacionActiva.papel);
     return rol
       ? `${rol} · ${nombreDeVivienda(ubicacionActiva)}`
       : nombreDeVivienda(ubicacionActiva);

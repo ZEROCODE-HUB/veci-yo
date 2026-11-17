@@ -390,6 +390,7 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
     // de una y huesped de otra entraba como huesped y veia la primera: "Mi
     // alojamiento" mostraba la vivienda equivocada y su guestbook vacio.
     rol: refinarRolPropietario(m),
+    papel: m.rol,
   }));
 
   return {

@@ -1,6 +1,7 @@
 import { theme } from "@/config";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { ahora, formatDateInput, formatDateIso } from "@/shared/utils";
+import { Badge } from "@/shared/components";
 import { ETIQUETA_ROL } from "../../hooks/useInvitarAUnidad";
 import type { PersonaDeLaUnidad } from "../../services/invitacionesUnidad.repo";
 
@@ -11,7 +12,7 @@ const detalle = (persona: PersonaDeLaUnidad, hoy: string) => {
   // Un menor figura en la vivienda pero no tiene cuenta. Decirlo evita que
   // alguien se pregunte por que no le llego ninguna invitacion.
   const rol = persona.esMenor
-    ? `${etiquetaRol(persona.rol)} · menor de edad, sin cuenta`
+    ? `${etiquetaRol(persona.rol)} · menor de edad`
     : etiquetaRol(persona.rol);
   if (!persona.vigenteHasta) return rol;
   if (persona.vigenteHasta < hoy)
@@ -30,8 +31,14 @@ const detalle = (persona: PersonaDeLaUnidad, hoy: string) => {
  */
 export function PersonasDeLaUnidad({
   personas,
+  onDarAcceso,
 }: {
   personas: PersonaDeLaUnidad[];
+  /**
+   * «Darle acceso a la app» a quien vive aquí sin ella (17/11/2026). A un
+   * menor no: la base no le deja tener cuenta.
+   */
+  onDarAcceso?: (persona: PersonaDeLaUnidad) => void;
 }) {
   const hoy = formatDateInput(ahora());
   const presentes = personas.filter(
@@ -54,6 +61,21 @@ export function PersonasDeLaUnidad({
         <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
           {detalle(persona, hoy)}
         </Text>
+      </View>
+      <View className="items-end gap-1">
+        {persona.sinApp ? <Badge status="Sin app" /> : null}
+        {persona.sinApp && !persona.esMenor && onDarAcceso ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Darle acceso a la app a ${persona.nombre}`}
+            onPress={() => onDarAcceso(persona)}
+            hitSlop={8}
+          >
+            <Text className="text-xs font-semibold" style={{ color: theme.colors.primary }}>
+              Darle acceso a la app
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );

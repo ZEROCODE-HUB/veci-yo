@@ -9,6 +9,7 @@ import type {
 } from "../../types";
 import { depositToForm, estacionamientoToForm } from "../../types";
 import { codigoConNivel, siguientesCodigos } from "../../helpers/arquitectura.helpers";
+import { ElegidoDeLaVivienda, type EstadoElegido } from "./ElegidoDeLaVivienda";
 
 /** Los niveles del edificio y los códigos que ya hay (16/11/2026). */
 export interface NivelesParaCrear {
@@ -64,6 +65,8 @@ export function RecursosDeLaVivienda({
     <View className="gap-4">
       <Bloque
         titulo={`Estacionamientos (${suyos.length})`}
+        explicacion="Los estacionamientos de este departamento. Lo que eliges se asigna al momento."
+        estado="asignado"
         asignados={suyos.map((p) => ({
           clave: p.uuid,
           texto: codigoConNivel(p.codigo, p.nivel),
@@ -86,6 +89,8 @@ export function RecursosDeLaVivienda({
       />
       <Bloque
         titulo={`Depósitos (${susDepositos.length})`}
+        explicacion="Los depósitos de este departamento. Lo que eliges se asigna al momento."
+        estado="asignado"
         asignados={susDepositos.map((d) => ({
           clave: d.uuid ?? String(d.id),
           texto: [d.codigo, d.ubicacion].filter(Boolean).join(" · "),
@@ -108,6 +113,8 @@ export function RecursosDeLaVivienda({
 
 export function Bloque({
   titulo,
+  explicacion,
+  estado,
   asignados,
   libres,
   onAsignar,
@@ -117,7 +124,11 @@ export function Bloque({
   sugerir,
 }: {
   titulo: string;
-  asignados: Array<{ clave: string; texto: string; quitar: () => unknown }>;
+  /** Una línea que dice para qué es el bloque y cuándo se guarda (17/11/2026). */
+  explicacion: string;
+  /** Lo elegido ya está escrito o se escribe al guardar el departamento. */
+  estado: EstadoElegido;
+  asignados: Array<{ clave: string; texto: string; nota?: string; quitar: () => unknown }>;
   libres: Array<{ clave: string; texto: string }>;
   onAsignar: (clave: string) => unknown;
   onCrear: (codigo: string, ubicacion: string, nivelId: string) => unknown;
@@ -151,23 +162,23 @@ export function Bloque({
 
   return (
     <View className="gap-2 rounded-xl border border-gray-200 p-3">
-      <Text className="text-sm font-bold text-gray-900">{titulo}</Text>
+      <View className="gap-0.5">
+        <Text className="text-sm font-bold text-gray-900">{titulo}</Text>
+        <Text className="text-xs text-gray-500">{explicacion}</Text>
+      </View>
       {asignados.length === 0 ? (
-        <Text className="text-xs text-gray-500">{`Sin ${nombre} asignado.`}</Text>
+        <Text className="text-xs text-gray-500">{`Todavía no tiene ${nombre}.`}</Text>
       ) : (
         asignados.map((a) => (
-          <View key={a.clave} className="flex-row items-center gap-2">
-            <Text className="flex-1 text-sm text-gray-900">{a.texto}</Text>
-            <Button
-              size="sm"
-              variant="ghost"
-              loading={ocupado === a.clave}
-              disabled={ocupado !== null}
-              onPress={() => void hacer(a.clave, a.quitar)}
-            >
-              Quitar
-            </Button>
-          </View>
+          <ElegidoDeLaVivienda
+            key={a.clave}
+            texto={a.texto}
+            nota={a.nota}
+            estado={estado}
+            quitando={ocupado === a.clave}
+            bloqueado={ocupado !== null}
+            onQuitar={() => void hacer(a.clave, a.quitar)}
+          />
         ))
       )}
       {ocupado === "asignar" ? (
@@ -175,16 +186,16 @@ export function Bloque({
       ) : null}
       {libres.length > 0 ? (
         <Select
-          label={`Asignar un ${nombre} libre (opcional)`}
+          label={asignados.length ? `Agregar otro ${nombre} (opcional)` : `Elegir un ${nombre} libre (opcional)`}
           value=""
-          placeholder="Elegir…"
+          placeholder="Elegir de los libres de la torre…"
           options={libres.map((l) => ({ value: l.clave, label: l.texto }))}
           onChange={(valor) => {
             if (valor && ocupado === null) void hacer("asignar", () => onAsignar(String(valor)));
           }}
         />
       ) : (
-        <Text className="text-xs text-gray-500">{`No hay ningún ${nombre} libre en la torre.`}</Text>
+        <Text className="text-xs text-gray-500">{asignados.length ? `No quedan más ${nombre}s libres en la torre.` : `No hay ningún ${nombre} libre en la torre.`}</Text>
       )}
       {creando ? (
         <View className="gap-2">
@@ -230,7 +241,7 @@ export function Bloque({
                 })
               }
             >
-              Crear y asignar
+              {estado === "asignado" ? "Crear y asignar" : "Agregar a la lista"}
             </Button>
             <Button size="sm" variant="ghost" onPress={() => setCreando(false)}>
               Cancelar
@@ -288,6 +299,8 @@ export function RecursosDelBorrador({
     <View className="gap-4">
       <Bloque
         titulo={`Estacionamientos (${borrador.estacionamientos.length + borrador.estacionamientosNuevos.length})`}
+        explicacion="Los estacionamientos de este departamento. Se asignan al guardar el departamento."
+        estado="al-guardar"
         asignados={[
           ...libres
             .filter((p) => borrador.estacionamientos.includes(p.uuid))
@@ -299,7 +312,8 @@ export function RecursosDelBorrador({
             })),
           ...borrador.estacionamientosNuevos.map((n, i) => ({
             clave: `nuevo-${i}`,
-            texto: `${codigoConNivel(n.codigo, nivelesParaCrear.niveles.find((x) => x.uuid === n.nivelId)?.nombre)} (nuevo)`,
+            texto: codigoConNivel(n.codigo, nivelesParaCrear.niveles.find((x) => x.uuid === n.nivelId)?.nombre),
+            nota: "nuevo",
             quitar: () =>
               onCambiar({
                 ...borrador,
@@ -329,6 +343,8 @@ export function RecursosDelBorrador({
       />
       <Bloque
         titulo={`Depósitos (${borrador.depositos.length + borrador.depositosNuevos.length})`}
+        explicacion="Los depósitos de este departamento. Se asignan al guardar el departamento."
+        estado="al-guardar"
         asignados={[
           ...depositosLibres
             .filter((d) => borrador.depositos.includes(claveDep(d)))
@@ -340,7 +356,8 @@ export function RecursosDelBorrador({
             })),
           ...borrador.depositosNuevos.map((n, i) => ({
             clave: `nuevo-${i}`,
-            texto: `${texto(n.codigo, n.ubicacion)} (nuevo)`,
+            texto: texto(n.codigo, n.ubicacion),
+            nota: "nuevo",
             quitar: () =>
               onCambiar({ ...borrador, depositosNuevos: borrador.depositosNuevos.filter((_, j) => j !== i) }),
           })),

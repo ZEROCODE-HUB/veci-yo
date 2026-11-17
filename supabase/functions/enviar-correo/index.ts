@@ -147,7 +147,12 @@ const json = (cuerpo: unknown, status: number) =>
 /** «Te invitaron …» según el rol; recibe « de la vivienda 301» o "". */
 const COMO_QUE: Record<string, (vivienda: string) => string> = {
   administrador: () => "a administrar el edificio",
-  coadministrador: (vivienda) => (vivienda ? `a la coadministración${vivienda}` : "a la coadministración del edificio"),
+  /*
+    El `coadministrador` de una vivienda se llama «anfitrión» en la app desde
+    el 17/11/2026: es quien atiende la renta corta por el dueño. El de un
+    edificio (sin vivienda) sigue siendo la coadministración.
+  */
+  coadministrador: (vivienda) => (vivienda ? `como anfitrión${vivienda}` : "a la coadministración del edificio"),
   guardia: () => "como guardia de portería",
   propietario: (vivienda) => `como propietario${vivienda}`,
   inquilino_lider: (vivienda) => `como inquilino líder${vivienda}`,

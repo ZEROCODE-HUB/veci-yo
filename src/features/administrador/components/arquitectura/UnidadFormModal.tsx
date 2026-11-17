@@ -200,11 +200,21 @@ export function UnidadFormModal({
               nivelesParaCrear={nivelesParaCrear}
             />
             <View className="gap-2 rounded-xl border border-gray-200 p-3">
-              <Text className="text-sm font-bold text-gray-900">Asignar propietario (opcional)</Text>
+              <View className="gap-0.5">
+                <Text className="text-sm font-bold text-gray-900">Propietario (opcional)</Text>
+                {/*
+                  Decía «Queda asignado al guardar, sin tener que aceptar», y
+                  desde el 30/10/2026 no es así: al guardar se le manda la
+                  invitación y queda propietario cuando la acepta (17/11/2026).
+                */}
+                <Text className="text-xs text-gray-500">
+                  Al guardar el departamento, el propietario recibe un correo con su invitación para aceptar la vivienda.
+                </Text>
+              </View>
               <Input label="Nombre y apellido" soloLetras value={duenoNombre} onChangeText={setDuenoNombre} placeholder="Ej. Ana Restrepo" />
               <Input label="Correo" type="email" value={duenoCorreo} onChangeText={setDuenoCorreo} placeholder="ana@correo.com" />
               <Text className="text-xs text-gray-500">
-                Queda asignado al guardar, sin tener que aceptar. Le llega un correo para que descargue la app e inicie sesión con este correo.
+                Entra a la app con este correo (o crea su cuenta con él) y acepta. Los estacionamientos y depósitos de arriba van con la invitación.
               </Text>
             </View>
           </>
@@ -230,7 +240,11 @@ export function UnidadFormModal({
             )()
           }
         >
-          Guardar
+          {editing
+            ? "Guardar cambios"
+            : duenoNombre.trim() && duenoCorreo.trim()
+              ? "Guardar y enviar la invitación"
+              : "Guardar departamento"}
         </Button>
       </View>
     </Modal>

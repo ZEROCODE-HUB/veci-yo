@@ -110,6 +110,14 @@ export function useInquilinoLiderHome() {
     ? (unidadActiva?.esResidente ?? true)
     : !esGuardia && !esAdmin && !sinPropiedades && !!rolActivo;
   const noResidente = esNoResidente(rolActivo, esResidente);
+  /*
+    El residente ve solo lo de vivir ahí (17/11/2026, plan aprobado por el
+    cliente): nada de sus huéspedes ni de la renta corta. Lo dice su rol en
+    la vivienda activa; la vista sigue siendo la del inquilino líder.
+  */
+  const esSoloResidente =
+    rolActivo === "inquilino-lider" &&
+    (unidadActiva?.rol === "residente" || unidadActiva?.rol === "corresidente");
   const puedeVerTrafico = esGuardia || esAdmin;
 
   const [planDia, setPlanDia] = useState("Hoy");
@@ -162,6 +170,7 @@ export function useInquilinoLiderHome() {
     esResidente,
     sinPropiedades,
     noResidente,
+    esSoloResidente,
     puedeVerTrafico,
     nombre: usuario?.nombre ?? "",
     planDia,

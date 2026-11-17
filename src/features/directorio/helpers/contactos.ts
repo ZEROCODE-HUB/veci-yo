@@ -5,8 +5,10 @@ export const PAPEL_EN_LA_VIVIENDA: Record<string, string> = {
   propietario: "Propietario",
   inquilino_lider: "Inquilino líder",
   residente: "Residente",
-  corresidente: "Corresidente",
-  coadministrador: "Coadministrador de la vivienda",
+  // 17/11/2026: ya no hay corresidentes y el coadministrador de la
+  // vivienda se llama «Anfitrión».
+  corresidente: "Residente",
+  coadministrador: "Anfitrión",
   huesped_temporal: "Huésped temporal",
 };
 

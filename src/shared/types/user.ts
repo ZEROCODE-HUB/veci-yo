@@ -59,6 +59,13 @@ export interface Ubicacion {
    * propietaria de una e inquilina o huesped de otra.
    */
   rol?: RolActivo;
+  /**
+   * El papel en la vivienda tal como está en la base (`residente`,
+   * `coadministrador`…). El residente y el anfitrión operan con la vista del
+   * inquilino líder, pero la barra de arriba tiene que decir lo que son
+   * (17/11/2026).
+   */
+  papel?: string;
   direccion: string;
   alias?: string;
   /**

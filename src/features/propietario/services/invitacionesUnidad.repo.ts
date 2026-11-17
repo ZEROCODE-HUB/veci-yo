@@ -25,6 +25,8 @@ export interface PersonaDeLaUnidad {
   id: string;
   nombre: string;
   rol: RolUnidad;
+  /** Sin cuenta: vive en la vivienda y no usa la app (17/11/2026). */
+  sinApp: boolean;
   /** Solo el huésped temporal las tiene. */
   vigenteDesde: string | null;
   vigenteHasta: string | null;
@@ -47,7 +49,7 @@ export async function obtenerPersonasDeUnidad(
 
   const { data, error } = await supabase
     .from("membresia_unidad")
-    .select("id, nombre, rol, vigente_desde, vigente_hasta, es_menor")
+    .select("id, usuario_id, nombre, rol, vigente_desde, vigente_hasta, es_menor")
     .eq("unidad_id", unidadId)
     .eq("activo", true);
 
@@ -57,6 +59,7 @@ export async function obtenerPersonasDeUnidad(
     id: fila.id,
     nombre: fila.nombre ?? "",
     rol: fila.rol,
+    sinApp: !fila.usuario_id,
     vigenteDesde: fila.vigente_desde,
     vigenteHasta: fila.vigente_hasta,
     esMenor: fila.es_menor,
@@ -219,29 +222,21 @@ export async function revocarInvitacion(invitacionId: string) {
   if (error) throw error;
 }
 
-
 /**
- * Da de alta a un residente menor de edad.
+ * Da de alta a un residente menor de edad, con el teléfono de quien responde
+ * por él.
  *
- * No lleva correo ni invitación a propósito: el KT decide que un menor figura
- * en la vivienda **sin acceso a la plataforma**, y la invitación existe
- * justamente para crear una cuenta. La base lo garantiza con una restricción,
- * no con esta función: un menor no puede tener `usuario_id` ni `puede_acceder`.
+ * Desde el 17/11/2026 la pantalla anota a los menores con
+ * `agregarPersonaSinApp` (nombre, documento y la casilla de menor). Esta se
+ * queda porque `registrar_menor` es lo que llaman las versiones instaladas y
+ * el recorrido `el-telefono-sabe-de-que-pais-es` comprueba que guarda el país.
  */
 export async function registrarMenor(datos: {
   unidadId: string;
   nombre: string;
   telefono?: string;
-  /**
-   * El pais del telefono, en ISO 3166-1 alfa-2.
-   *
-   * `membresia_unidad.codigo_pais` existia desde el primer dia y nadie la
-   * escribia. Y `registrar_menor` recibia el pais del **contacto de
-   * emergencia** y no el del telefono del propio menor: el del adulto que
-   * responde por el se guardaba y el del niño no.
-   */
+  /** El país del teléfono, en ISO 3166-1 alfa-2. */
   codigoPais?: string;
-  /** De un menor es de quien más falta hace saber a quién llamar. */
   contactoEmergencia?: { nombre?: string; codigo?: string; telefono?: string };
 }) {
   const { error } = await supabase.rpc("registrar_menor", {
@@ -254,4 +249,56 @@ export async function registrarMenor(datos: {
     p_contacto_telefono: datos.contactoEmergencia?.telefono || undefined,
   });
   if (error) throw error;
+}
+
+type TipoDocumento = Database["public"]["Enums"]["tipo_documento"];
+
+/**
+ * Anota a alguien que vive en la vivienda y no va a usar la app: un niño, un
+ * abuelo (17/11/2026). Sin correo ni cuenta; el documento es opcional.
+ *
+ * Quién puede y la regla de la renta corta los pone la base
+ * (`agregar_persona_sin_app`): aquí solo se llama.
+ */
+export async function agregarPersonaSinApp(datos: {
+  unidadId: string;
+  nombre: string;
+  tipoDocumento?: TipoDocumento;
+  documento?: string;
+  esMenor: boolean;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("agregar_persona_sin_app", {
+    p_unidad_id: datos.unidadId,
+    p_nombre: datos.nombre,
+    p_tipo_documento: datos.documento ? datos.tipoDocumento : undefined,
+    p_documento: datos.documento || undefined,
+    p_es_menor: datos.esMenor,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+/**
+ * Le da la app a quien ya vive en la vivienda sin ella (17/11/2026): una
+ * invitación de residente que, al aceptarla, se une a **su misma fila** en vez
+ * de crear otra persona. El correo sale como el de cualquier invitación.
+ */
+export async function darAccesoALaApp(datos: {
+  membresiaId: string;
+  nombre: string;
+  correo: string;
+}) {
+  const correo = datos.correo.trim().toLowerCase();
+  const { data, error } = await supabase.rpc("dar_acceso_a_la_app", {
+    p_membresia_id: datos.membresiaId,
+    p_correo: correo,
+  });
+  if (error) throw error;
+  const fila = Array.isArray(data) ? data[0] : data;
+  return enviarInvitacion({
+    invitacionId: fila?.invitacion_id as string,
+    token: fila?.token as string,
+    correo,
+    nombre: datos.nombre,
+  });
 }

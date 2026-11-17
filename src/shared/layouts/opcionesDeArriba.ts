@@ -71,7 +71,7 @@ export function opcionesDeArriba({
     if (vistas.has(clave)) continue;
     vistas.add(clave);
     const rol =
-      etiquetaDeRol(rolDeLaVivienda) || PRESENTACION_DE_ROL[rolDeLaVivienda].titulo;
+      etiquetaDeRol(rolDeLaVivienda, u.papel) || PRESENTACION_DE_ROL[rolDeLaVivienda].titulo;
     opciones.push({
       clave,
       etiqueta: `${rol} · ${nombreDeVivienda(u)}`,
