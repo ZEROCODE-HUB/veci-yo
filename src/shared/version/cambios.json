@@ -2,6 +2,14 @@
   {
     "fecha": "2026-11-17",
     "puntos": [
+      "Correspondencia: el detalle ya no se cierra al pulsar «Notificado por otro medio»; se queda abierto, el progreso lo anota y el botón deja de ofrecerse.",
+      "«Marcar como entregado» se confirma dentro del mismo detalle (sin abrir otra ventana encima, que tardaba en irse). Lo ya hecho desaparece y los botones esperan hasta que la lista está al día.",
+      "Reglamentos (administración): si el edificio todavía no tiene un reglamento, ahora aparece «Subir reglamento» para cargar el primero."
+    ]
+  },
+  {
+    "fecha": "2026-11-17",
+    "puntos": [
       "Quién vive en la vivienda, más claro: el propietario agrega Inquilino líder, Residente o Anfitrión (quien atiende la renta corta por él, antes «coadministrador»). Ya no existe «corresidente»: todos son residentes. El copropietario lo agrega la administración.",
       "Al agregar un residente se pregunta «¿Usará la app?». Si no (un niño, un abuelo), basta el nombre, sin correo; aparece con «Sin app» y más adelante se le puede dar acceso desde su nombre.",
       "El residente ya no ve opciones del propietario (invitar, servicios, renta corta, contrato), y la barra de arriba dice «Residente» o «Anfitrión».",

@@ -3,13 +3,13 @@ import {
   Button,
   BottomSheet,
   BottomSheetOption,
-  Input,
   Modal,
 } from "@/shared/components";
 import { Text, View } from "react-native";
 import type { CorrespondenciaItem } from "@/shared/types";
 import { CorrespondenciaDetalleModal } from "./CorrespondenciaDetalleModal";
 import { CorrespondenciaEstadoBadge } from "./CorrespondenciaEstadoBadge";
+import { FormularioDeEntrega } from "./FormularioDeEntrega";
 import {
   opcionesDeCorrespondencia,
   type AccionDeCorrespondencia,
@@ -76,7 +76,7 @@ export function CorrespondenciaActionOverlays(
       */}
       <BottomSheet visible={!!menuItem} onClose={onCloseMenu}>
         {menuItem
-          ? opcionesDeCorrespondencia(menuItem.estado).map((opcion) => (
+          ? opcionesDeCorrespondencia(menuItem.estado, Boolean(menuItem.fechaNotificado)).map((opcion) => (
               <BottomSheetOption
                 key={opcion.accion}
                 label={
@@ -89,8 +89,12 @@ export function CorrespondenciaActionOverlays(
             ))
           : null}
       </BottomSheet>
+      {/*
+        Con el detalle abierto, la confirmación va dentro de él: cerrar una
+        ventana y abrir otra encima tardaba en Android (17/11/2026).
+      */}
       <Modal
-        visible={!!deleteItem}
+        visible={!!deleteItem && !detailItem}
         onClose={onCloseDelete}
         title="Eliminar Correspondencia"
       >
@@ -133,7 +137,7 @@ export function CorrespondenciaActionOverlays(
         </View>
       </Modal>
       <Modal
-        visible={!!entregaItem}
+        visible={!!entregaItem && !detailItem}
         onClose={onCloseEntrega}
         /*
           Ya no es solo la entrega a puerta: tambien cuando el vecino baja a
@@ -146,32 +150,12 @@ export function CorrespondenciaActionOverlays(
             : "Entrega en Portería"
         }
       >
-        <View className="gap-4">
-          {/*
-            Pedía también la hora, en un campo de texto libre, y no se guardaba:
-            la hora de entrega la pone la base en el momento de confirmar.
-          */}
-          <Text className="text-sm text-gray-500 text-center">
-            Indica quién recibió la encomienda. La hora queda registrada al
-            confirmar.
-          </Text>
-          <Input
-            label="Nombre de quien recibe"
-            soloLetras
-            value={entregaNombre}
-            onChangeText={onNombreChange}
-            placeholder="Nombre y apellido"
-          />
-          <Button
-            variant="primary"
-            fullWidth
-            disabled={entregaNombre.trim() === ""}
-            loading={entregando}
-            onPress={onConfirmEntrega}
-          >
-            Confirmar Entrega
-          </Button>
-        </View>
+        <FormularioDeEntrega
+          nombre={entregaNombre}
+          onNombreChange={onNombreChange}
+          onConfirmar={onConfirmEntrega}
+          entregando={entregando}
+        />
       </Modal>
       <Modal
         visible={!!detailItem}
@@ -181,11 +165,43 @@ export function CorrespondenciaActionOverlays(
         {detailItem && <CorrespondenciaDetalleModal item={detailItem} />}
         {/*
           Las mismas acciones de los tres puntos, al final del detalle (Para
-          Claude 167, 29/10/2026).
+          Claude 167, 29/10/2026). Desde el 17/11/2026 el detalle no se cierra
+          al usarlas: se queda con el progreso al día, y lo ya hecho deja de
+          ofrecerse. Entregar y eliminar se confirman aquí mismo.
         */}
-        {detailItem && puedeModificarEstado ? (
+        {detailItem && puedeModificarEstado && entregaItem ? (
+          <View className="gap-3 mt-4">
+            <Text className="text-base font-bold text-gray-900">
+              {entregaItem.entregaEnPuerta ? "Entrega en puerta" : "Entrega en portería"}
+            </Text>
+            <FormularioDeEntrega
+              nombre={entregaNombre}
+              onNombreChange={onNombreChange}
+              onConfirmar={onConfirmEntrega}
+              entregando={entregando}
+              onCancelar={onCloseEntrega}
+            />
+          </View>
+        ) : null}
+        {detailItem && puedeModificarEstado && !entregaItem && deleteItem ? (
           <View className="gap-2 mt-4">
-            {opcionesDeCorrespondencia(detailItem.estado).map((opcion) => (
+            <Text className="text-base text-gray-900 text-center">
+              ¿Seguro que quieres eliminar este registro?
+            </Text>
+            <Button variant="danger" fullWidth loading={eliminando} onPress={onConfirmDelete}>
+              Sí, eliminar
+            </Button>
+            <Button variant="secondary" fullWidth disabled={eliminando} onPress={onCloseDelete}>
+              Cancelar
+            </Button>
+          </View>
+        ) : null}
+        {detailItem && puedeModificarEstado && !entregaItem && !deleteItem ? (
+          <View className="gap-2 mt-4">
+            {opcionesDeCorrespondencia(
+              detailItem.estado,
+              Boolean(detailItem.fechaNotificado),
+            ).map((opcion) => (
               <Button
                 key={opcion.accion}
                 variant={opcion.peligrosa ? "danger" : "secondary"}

@@ -65,6 +65,14 @@ export function useCorrespondencia() {
   const invalidar = () => {
     void queryClient.invalidateQueries({ queryKey: correspondenciaQueryKey });
   };
+  /*
+    Para los cambios de estado, la mutación espera a que la lista vuelva
+    (17/11/2026): el detalle se queda abierto y lee el envío de la lista, así
+    que el botón sigue esperando hasta que el progreso ya dice lo nuevo. Sin
+    esto, se soltaba antes y se podía pulsar otra vez lo que ya estaba hecho.
+  */
+  const refrescar = () =>
+    queryClient.invalidateQueries({ queryKey: correspondenciaQueryKey });
 
   /*
     Lo que cambia otro --la portería registra, entrega o borra-- llega solo.
@@ -112,13 +120,13 @@ export function useCorrespondencia() {
       estado: CorrespondenciaItem["estado"];
       extras?: { entregadoA?: string };
     }) => cambiarEstadoCorrespondencia(uuid, estado, extras),
-    onSuccess: invalidar,
+    onSuccess: refrescar,
     onError: alFallar,
   });
 
   const notificar = useMutation({
     mutationFn: (uuid: string) => notificarPorOtroMedio(uuid),
-    onSuccess: invalidar,
+    onSuccess: refrescar,
     onError: alFallar,
   });
 
