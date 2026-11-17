@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Linking, Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Cargando } from "@/shared/components";
+import { Badge, Cargando } from "@/shared/components";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useCondominioActivo, useNavegacion, useNombreDelCitofono } from "@/shared/hooks";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -202,6 +202,11 @@ function Persona({
           <Text className="text-sm font-bold text-gray-900">{p.nombre}</Text>
           <Text className="text-xs text-gray-500">{tarjeta.papel}</Text>
         </View>
+        {/*
+          Vive aquí y no usa la app (17/11/2026): que la portería sepa que es
+          de la vivienda aunque no la pueda llamar por la app.
+        */}
+        {p.tieneCuenta ? null : <Badge status="Sin app" />}
       </View>
       {numero ? <NumeroGrande numero={numero} /> : null}
       {numero || porLaApp || p.chat ? (
@@ -234,7 +239,7 @@ function Persona({
           {`La administración no te habilitó las llamadas por el ${citofono}.`}
         </Text>
       ) : null}
-      {!p.telefono && !p.chat && !p.recibeLlamadasApp ? (
+      {p.tieneCuenta && !p.telefono && !p.chat && !p.recibeLlamadasApp ? (
         <Text className="text-xs text-gray-500">No dejó teléfono ni aceptó el chat.</Text>
       ) : null}
       {p.alterno ? (

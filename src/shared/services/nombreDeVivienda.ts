@@ -64,6 +64,17 @@ const ETIQUETA_DE_ROL: Record<string, string> = {
   "huesped-temporal": "Huésped",
 };
 
-export function etiquetaDeRol(rol: string | null | undefined): string {
-  return (rol && ETIQUETA_DE_ROL[rol]) || "";
+/**
+ * Lo que es en la vivienda, cuando dice más que el rol con que opera: un
+ * residente o un anfitrión entran con la vista del inquilino líder, y la barra
+ * decía «Inquilino líder» a quien no lo es (17/11/2026).
+ */
+const ETIQUETA_DEL_PAPEL: Record<string, string> = {
+  residente: "Residente",
+  corresidente: "Residente",
+  coadministrador: "Anfitrión",
+};
+
+export function etiquetaDeRol(rol: string | null | undefined, papel?: string | null): string {
+  return (papel && ETIQUETA_DEL_PAPEL[papel]) || (rol && ETIQUETA_DE_ROL[rol]) || "";
 }

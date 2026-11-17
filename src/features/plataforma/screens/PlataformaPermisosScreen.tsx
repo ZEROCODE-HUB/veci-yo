@@ -12,8 +12,9 @@ import type { AccionDeRol, PermisoDeRol, RolConPermisos } from "../services/plat
 const ROLES: { rol: RolConPermisos; titulo: string; detalle: string }[] = [
   { rol: "inquilino_lider", titulo: "Inquilino líder", detalle: "Quien alquila la vivienda y la gestiona" },
   { rol: "residente", titulo: "Residente", detalle: "Vive en la vivienda" },
-  { rol: "corresidente", titulo: "Corresidente", detalle: "Vive en la vivienda con otro residente" },
-  { rol: "coadministrador_vivienda", titulo: "Coadministrador de la vivienda", detalle: "Ayuda a gestionar la vivienda" },
+  // 17/11/2026: sin corresidentes (pasaron a residente) y el coadministrador
+  // de la vivienda se llama «Anfitrión», que es lo que hace.
+  { rol: "coadministrador_vivienda", titulo: "Anfitrión", detalle: "Atiende la renta corta por el dueño, por ejemplo una empresa de Airbnb o un familiar" },
   { rol: "coadministrador_edificio", titulo: "Coadministrador del edificio", detalle: "Ayuda a la administración del edificio" },
 ];
 

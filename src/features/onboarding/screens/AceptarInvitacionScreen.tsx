@@ -32,7 +32,7 @@ const ETIQUETA_ROL: Record<string, string> = {
   propietario: "Propietario",
   inquilino_lider: "Inquilino líder",
   residente: "Residente",
-  corresidente: "Corresidente",
+  corresidente: "Residente",
   coadministrador: "Coadministrador",
   administrador: "Administrador",
   guardia: "Seguridad",
@@ -207,7 +207,12 @@ export function AceptarInvitacionScreen() {
           {detalle.unidad ? <Dato etiqueta="Unidad" valor={detalle.unidad} /> : null}
           <Dato
             etiqueta="Rol"
-            valor={ETIQUETA_ROL[detalle.rol] ?? detalle.rol}
+            valor={
+              // En una vivienda, el `coadministrador` es el anfitrión (17/11/2026).
+              detalle.unidad && detalle.rol === "coadministrador"
+                ? "Anfitrión"
+                : (ETIQUETA_ROL[detalle.rol] ?? detalle.rol)
+            }
           />
           <Dato etiqueta="Correo" valor={detalle.correo} />
         </View>

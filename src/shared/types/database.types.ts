@@ -1774,6 +1774,7 @@ export type Database = {
           id: string
           invitada_por: string | null
           invitado_id: string | null
+          membresia_unidad_id: string | null
           nombre: string
           permisos: Json | null
           porteria_id: string | null
@@ -1804,6 +1805,7 @@ export type Database = {
           id?: string
           invitada_por?: string | null
           invitado_id?: string | null
+          membresia_unidad_id?: string | null
           nombre: string
           permisos?: Json | null
           porteria_id?: string | null
@@ -1834,6 +1836,7 @@ export type Database = {
           id?: string
           invitada_por?: string | null
           invitado_id?: string | null
+          membresia_unidad_id?: string | null
           nombre?: string
           permisos?: Json | null
           porteria_id?: string | null
@@ -1859,6 +1862,13 @@ export type Database = {
             columns: ["invitado_id"]
             isOneToOne: false
             referencedRelation: "invitado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_membresia_unidad_id_fkey"
+            columns: ["membresia_unidad_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_unidad"
             referencedColumns: ["id"]
           },
           {
@@ -2515,6 +2525,7 @@ export type Database = {
           contacto_emergencia_telefono: string | null
           created_at: string
           datos_visibles: boolean
+          documento: string | null
           elegida_en: string | null
           es_admin_primario: boolean
           es_anfitrion_primario: boolean
@@ -2527,6 +2538,7 @@ export type Database = {
           puede_registrar_visitas: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono: string | null
+          tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
           unidad_id: string
           updated_at: string
           usuario_id: string | null
@@ -2544,6 +2556,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          documento?: string | null
           elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
@@ -2556,6 +2569,7 @@ export type Database = {
           puede_registrar_visitas?: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
+          tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           unidad_id: string
           updated_at?: string
           usuario_id?: string | null
@@ -2573,6 +2587,7 @@ export type Database = {
           contacto_emergencia_telefono?: string | null
           created_at?: string
           datos_visibles?: boolean
+          documento?: string | null
           elegida_en?: string | null
           es_admin_primario?: boolean
           es_anfitrion_primario?: boolean
@@ -2585,6 +2600,7 @@ export type Database = {
           puede_registrar_visitas?: boolean
           rol?: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
+          tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
           unidad_id?: string
           updated_at?: string
           usuario_id?: string | null
@@ -5625,6 +5641,16 @@ export type Database = {
           soy_yo: boolean
         }[]
       }
+      agregar_persona_sin_app: {
+        Args: {
+          p_documento?: string
+          p_es_menor?: boolean
+          p_nombre: string
+          p_tipo_documento?: Database["public"]["Enums"]["tipo_documento"]
+          p_unidad_id: string
+        }
+        Returns: string
+      }
       agregar_vehiculo_de_estancia: {
         Args: {
           p_placa: string
@@ -6087,6 +6113,13 @@ export type Database = {
         Returns: boolean
       }
       cuenta_por_correo: { Args: { p_correo: string }; Returns: string }
+      dar_acceso_a_la_app: {
+        Args: { p_correo: string; p_membresia_id: string }
+        Returns: {
+          invitacion_id: string
+          token: string
+        }[]
+      }
       datos_para_el_sire: {
         Args: { p_visita_id: string }
         Returns: {
@@ -8438,6 +8471,7 @@ export type Database = {
         | "prorroga_solicitada"
         | "prorroga_respondida"
         | "visitas_en_la_estancia"
+        | "residencia_cambiada"
       movimiento_tra: "entrada" | "salida"
       nombre_catalogo:
         | "motivos_de_viaje"
@@ -8849,6 +8883,7 @@ export const Constants = {
         "prorroga_solicitada",
         "prorroga_respondida",
         "visitas_en_la_estancia",
+        "residencia_cambiada",
       ],
       movimiento_tra: ["entrada", "salida"],
       nombre_catalogo: [

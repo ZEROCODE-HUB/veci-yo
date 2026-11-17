@@ -154,7 +154,11 @@ export function UnidadDetalleModal({
         {otros.length > 0 ? (
           <Seccion titulo="Personas registradas">
             {otros.map((p) => (
-              <Dato key={p.membresiaId} etiqueta={PAPEL_EN_LA_VIVIENDA[p.rol] ?? p.rol} valor={p.nombre} />
+              <Dato
+                key={p.membresiaId}
+                etiqueta={PAPEL_EN_LA_VIVIENDA[p.rol] ?? p.rol}
+                valor={p.tieneCuenta ? p.nombre : `${p.nombre} · Sin app`}
+              />
             ))}
           </Seccion>
         ) : null}

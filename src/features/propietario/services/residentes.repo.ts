@@ -24,8 +24,10 @@ const HACIA_ETIQUETA: Record<RolUnidadDB, string> = {
   propietario: "Propietario",
   inquilino_lider: "Inquilino Lider",
   residente: "Residente",
-  corresidente: "Corresidente",
-  coadministrador: "Coadministrador",
+  // Ya no hay corresidentes (17/11/2026): eran residentes. Y el
+  // coadministrador de la vivienda se llama «Anfitrión».
+  corresidente: "Residente",
+  coadministrador: "Anfitrión",
   huesped_temporal: "Huesped Temporal",
 };
 
@@ -83,7 +85,7 @@ const SELECT_RESIDENTE = `
   puede_registrar_visitas,
   vigente_desde, vigente_hasta,
   contacto_emergencia_nombre, contacto_emergencia_codigo,
-  contacto_emergencia_telefono
+  contacto_emergencia_telefono, documento
 ` as const;
 
 export async function obtenerResidentes(
@@ -136,7 +138,8 @@ export async function obtenerResidentes(
       usuarioId: fila.usuario_id,
       nombre: delPerfil || fila.nombre || "Sin nombre",
       rol: HACIA_ETIQUETA[fila.rol as RolUnidadDB] ?? fila.rol,
-      ci: perfil?.identificacion ?? "",
+      // Quien vive aquí sin la app lleva el documento en su membresía (17/11/2026).
+      ci: perfil?.identificacion ?? fila.documento ?? "",
       fecha: fila.created_at ? formatDate(desdeLaBase(fila.created_at)) : "",
       vigenteDesde: fila.vigente_desde ?? null,
       vigenteHasta: fila.vigente_hasta ?? null,

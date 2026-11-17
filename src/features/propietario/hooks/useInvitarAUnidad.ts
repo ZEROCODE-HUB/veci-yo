@@ -1,28 +1,39 @@
 import { useMemo, useState } from "react";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
+import { RESIDENTES_UNIDAD_KEY } from "./usePropietarioConfiguracion";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
-import { useCondominioActivo } from "@/shared/hooks";
+import { useCondominioActivo, useDocumentosDelEdificio, useUnidadActiva } from "@/shared/hooks";
 import { estadoDe } from "@/shared/components";
 import type { Database } from "@/shared/types/database.types";
 import {
+  agregarPersonaSinApp,
   invitarAUnidad,
   obtenerInvitacionesPendientes,
   obtenerPersonasDeUnidad,
-  registrarMenor,
   revocarInvitacion,
 } from "../services/invitacionesUnidad.repo";
-import { paisPorDefecto } from "@/shared/constants";
 
 type RolUnidad = Database["public"]["Enums"]["rol_unidad"];
+type TipoDocumento = Database["public"]["Enums"]["tipo_documento"];
 
 /** Las etiquetas que ve la gente; el enum vive en la base. */
 export const ETIQUETA_ROL: Record<RolUnidad, string> = {
   propietario: "Propietario",
   inquilino_lider: "Inquilino líder",
   residente: "Residente",
-  corresidente: "Corresidente",
-  coadministrador: "Coadministrador",
+  /*
+    Desde el 17/11/2026 ya no hay corresidentes: los que había pasaron a
+    residente. El valor sigue en la base para las versiones viejas.
+  */
+  corresidente: "Residente",
+  /*
+    El `coadministrador` de una vivienda se llama «Anfitrión» (17/11/2026,
+    plan aprobado por el cliente): atiende la renta corta por el dueño. En la
+    base el valor no cambia.
+  */
+  coadministrador: "Anfitrión",
   huesped_temporal: "Huésped temporal",
 };
 
@@ -47,11 +58,27 @@ export const ETIQUETA_ROL: Record<RolUnidad, string> = {
   se añade aquí es un **copropietario**: el primero lo registra la
   administración al crear la vivienda.
 */
+/*
+  17/11/2026: sale «Corresidente» --era lo mismo que un residente-- y vuelve
+  el coadministrador con su nombre de verdad, «Anfitrión».
+*/
 const ROLES_DE_LA_VIVIENDA: RolUnidad[] = [
   "inquilino_lider",
   "residente",
-  "corresidente",
+  "coadministrador",
 ];
+
+/*
+  El anfitrión lo pone el dueño: atiende **su** renta corta. Al inquilino
+  líder no se le ofrece.
+*/
+const ROLES_SOLO_DEL_DUENO: RolUnidad[] = ["coadministrador"];
+
+/** Una línea bajo el desplegable que dice qué es el rol elegido. */
+export const AYUDA_DEL_ROL: Partial<Record<RolUnidad, string>> = {
+  coadministrador:
+    "Quien atiende la renta corta por ti, por ejemplo una empresa de Airbnb o un familiar",
+};
 
 const ROLES_SOLO_ADMINISTRACION: RolUnidad[] = ["propietario"];
 
@@ -60,12 +87,33 @@ const ETIQUETA_EN_LA_INVITACION: Partial<Record<RolUnidad, string>> = {
   propietario: "Copropietario",
 };
 
+/** Las opciones del desplegable «Rol en la vivienda» para quien invita. */
+export function rolesQuePuedeInvitar(quien: { esDueno: boolean; esAdministracion: boolean }) {
+  return [
+    ...ROLES_DE_LA_VIVIENDA.filter(
+      (rol) => quien.esDueno || quien.esAdministracion || !ROLES_SOLO_DEL_DUENO.includes(rol),
+    ),
+    ...(quien.esAdministracion ? ROLES_SOLO_ADMINISTRACION : []),
+  ].map((value) => ({
+    value,
+    label: ETIQUETA_EN_LA_INVITACION[value] ?? ETIQUETA_ROL[value],
+  }));
+}
+
 export interface FormularioInvitacion {
   nombre: string;
   correo: string;
   rol: RolUnidad;
   vigenteDesde: string;
   vigenteHasta: string;
+  /**
+   * Solo cuenta para un residente (17/11/2026): si no va a usar la app --un
+   * niño, un abuelo-- se anota sin correo.
+   */
+  usaApp: boolean;
+  tipoDocumento: string;
+  documento: string;
+  esMenor: boolean;
 }
 
 const VACIO: FormularioInvitacion = {
@@ -74,6 +122,10 @@ const VACIO: FormularioInvitacion = {
   rol: "residente",
   vigenteDesde: "",
   vigenteHasta: "",
+  usaApp: true,
+  tipoDocumento: "",
+  documento: "",
+  esMenor: false,
 };
 
 const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -96,17 +148,14 @@ export function useInvitarAUnidad() {
   const esAdministracion = condominios.some(
     (c) => c.rol === "administrador" || c.rol === "coadministrador",
   );
+  const esDueno = useUnidadActiva()?.rol === "propietario";
   const rolesInvitables = useMemo(
-    () =>
-      [
-        ...ROLES_DE_LA_VIVIENDA,
-        ...(esAdministracion ? ROLES_SOLO_ADMINISTRACION : []),
-      ].map((value) => ({
-        value,
-        label: ETIQUETA_EN_LA_INVITACION[value] ?? ETIQUETA_ROL[value],
-      })),
-    [esAdministracion],
+    () => rolesQuePuedeInvitar({ esDueno, esAdministracion }),
+    [esAdministracion, esDueno],
   );
+
+  /** Los documentos del país del edificio, como en los demás formularios. */
+  const documentos = useDocumentosDelEdificio(condominioId);
 
   const [form, setForm] = useState<FormularioInvitacion>(VACIO);
   const [enlace, setEnlace] = useState<string | null>(null);
@@ -124,6 +173,12 @@ export function useInvitarAUnidad() {
   });
 
   const esHuesped = form.rol === "huesped_temporal";
+  /** Un residente que no usará la app: se anota, no se invita (17/11/2026). */
+  const sinApp = form.rol === "residente" && !form.usaApp;
+  const documentosOfrecidos = useMemo(
+    () => opcionesDeDocumento(documentos.reglas, form.esMenor ? "menores" : "adultos"),
+    [documentos.reglas, form.esMenor],
+  );
 
   /**
    * La validación vive aquí para poder decir qué falta antes de llamar a la
@@ -131,6 +186,17 @@ export function useInvitarAUnidad() {
    */
   const error = useMemo(() => {
     if (!form.nombre.trim()) return "Falta el nombre de la persona";
+    if (sinApp) {
+      const numero = form.documento.trim();
+      if (!numero) return null;
+      if (!form.tipoDocumento) return "Elige el tipo de documento";
+      const regla = documentos.reglaDe(form.tipoDocumento);
+      if (regla?.soloCifras && !/^\d+$/.test(numero))
+        return "El número de documento lleva solo cifras";
+      if (regla && (numero.length < regla.largoMinimo || numero.length > regla.largoMaximo))
+        return `El documento tiene entre ${regla.largoMinimo} y ${regla.largoMaximo} caracteres`;
+      return null;
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.correo.trim()))
       return "El correo no parece válido";
     if (esHuesped) {
@@ -144,7 +210,7 @@ export function useInvitarAUnidad() {
       if (form.vigenteHasta < hoy) return "Esa estancia ya terminó";
     }
     return null;
-  }, [form, esHuesped]);
+  }, [form, esHuesped, sinApp, documentos]);
 
   const invitar = useMutation({
     mutationFn: async () => {
@@ -177,32 +243,27 @@ export function useInvitarAUnidad() {
   });
 
   /**
-   * Un menor no se invita: se registra. El KT (flujo 4.3 paso 3) decide que
-   * figura en la vivienda **sin acceso a la plataforma**, y una invitacion
-   * existe justamente para crear una cuenta. Hasta ahora no habia forma de
-   * darlo de alta: el unico camino exigia un correo.
+   * Quien vive en la vivienda y no usará la app (17/11/2026): un niño, un
+   * abuelo. Reemplaza al «Registrar a un menor» de antes, que solo servía
+   * para menores: el KT (flujo 4.3 paso 3) decide que figuran en la vivienda
+   * sin acceso a la plataforma, y ahora también puede ser un adulto.
    */
-  const [menor, setMenor] = useState({
-    nombre: "",
-    telefono: "",
-    codigoPais: paisPorDefecto(),
-  });
-
-  const registrar = useMutation({
+  const agregar = useMutation({
     mutationFn: () =>
-      registrarMenor({
+      agregarPersonaSinApp({
         unidadId,
-        nombre: menor.nombre.trim(),
-        telefono: menor.telefono.trim() || undefined,
-        codigoPais: menor.codigoPais || undefined,
+        nombre: form.nombre.trim(),
+        tipoDocumento: (form.tipoDocumento || undefined) as TipoDocumento | undefined,
+        documento: form.documento.trim() || undefined,
+        esMenor: form.esMenor,
       }),
     onSuccess: () => {
-      setMenor({ nombre: "", telefono: "", codigoPais: paisPorDefecto() });
+      setForm(VACIO);
       queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
-      addToast("Residente menor registrado", "success");
+      queryClient.invalidateQueries({ queryKey: RESIDENTES_UNIDAD_KEY });
+      addToast("Agregado a la vivienda", "success");
     },
-    onError: (e: Error) =>
-      addToast(e?.message ?? "No se pudo registrar", "error"),
+    onError: (e: Error) => addToast(e?.message ?? "No se pudo agregar", "error"),
   });
 
   const revocar = useMutation({
@@ -235,13 +296,11 @@ export function useInvitarAUnidad() {
     error,
     enlace,
     cerrarEnlace: () => setEnlace(null),
-    invitar: () => invitar.mutate(),
-    invitando: invitar.isPending,
-    menor,
-    setMenor,
-    errorMenor: menor.nombre.trim() ? null : "Falta el nombre",
-    registrarMenor: () => registrar.mutate(),
-    registrandoMenor: registrar.isPending,
+    sinApp,
+    documentosOfrecidos,
+    /** «Enviar invitación» o, sin app, «Agregar a la vivienda». */
+    invitar: () => (sinApp ? agregar.mutate() : invitar.mutate()),
+    invitando: invitar.isPending || agregar.isPending,
     revocar: (id: string) => revocar.mutate(id),
   };
 }

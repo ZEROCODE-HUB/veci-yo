@@ -23,6 +23,8 @@ import { MenuDeResidente } from "../components/configuracion/MenuDeResidente";
 import { DarDeBajaResidente } from "../components/configuracion/DarDeBajaResidente";
 import { DeclaracionDeResidencia } from "../components/configuracion/DeclaracionDeResidencia";
 import { useRentaCortaPermitida } from "../hooks/useRentaCortaPermitida";
+import { DarAccesoALaApp } from "../components/invitar/DarAccesoALaApp";
+import { loQueVeEnLaVivienda } from "../helpers/loQueVeEnLaVivienda";
 
 type Nav = NativeStackNavigationProp<
   PropietarioStackParamList & SharedStackParamList,
@@ -39,37 +41,21 @@ type Nav = NativeStackNavigationProp<
 export function PropietarioConfiguracionScreen() {
   const navigation = useNavigation<Nav>();
   const { rolActivo, usuario } = useAuthStore();
-  /*
-    Quien puede dar de alta gente en la vivienda.
-
-    La base lo dice en `puede_invitar_a_unidad`: el propietario y el inquilino
-    lider de la unidad, y nadie mas. Pero la aplicacion le da la vista del
-    inquilino lider tambien a `residente`, `corresidente` y `coadministrador`
-    --decision D-01, todavia abierta-- asi que a un residente se le ofrecia el
-    formulario de invitar, lo rellenaba, y recibia «No tenés permiso para
-    invitar a esta unidad». Esto no decide D-01 --que va de que *ve* un
-    residente--: solo deja de ofrecerle lo que la base ya le niega.
-  */
   const unidadActiva = useUnidadActiva();
-  const puedeGestionarLaVivienda =
-    unidadActiva?.rol === "propietario" ||
-    unidadActiva?.rol === "inquilino_lider";
-  /*
-    La renta corta la configura además el coadministrador de la vivienda: es
-    lo que dice `puede_configurar_alojamiento` en la base. Un residente no
-    (hueco 21, 15/10/2026: le salían las tarjetas y fallaban al tocarlas).
-  */
   const rentaCortaPermitida = useRentaCortaPermitida(unidadActiva?.unidadId);
-  const puedeConfigurarElAlojamiento =
-    puedeGestionarLaVivienda || unidadActiva?.rol === "coadministrador";
-  /*
-    Invitar a la vivienda lo decide el rol (huecos 9 y 14, 26/10/2026): el
-    administrador de la app lo permite o no a cada uno desde el panel. El
-    propietario siempre puede.
-  */
   const permisos = usePermisosEnLaVivienda();
-  const puedeInvitar =
-    unidadActiva?.rol === "propietario" || permisos.puede("invitar_a_la_vivienda");
+  /*
+    Qué se le ofrece según su rol en la vivienda: lo decide
+    `loQueVeEnLaVivienda` (17/11/2026: el residente ve solo lo de vivir ahí).
+  */
+  const {
+    esSoloResidente,
+    puedeGestionarLaVivienda,
+    puedeConfigurarElAlojamiento,
+    puedeInvitar,
+  } = loQueVeEnLaVivienda(unidadActiva?.rol, permisos.puede("invitar_a_la_vivienda"));
+  /** Darle la app a quien vive aquí sin ella (17/11/2026). */
+  const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
   const { addToast } = useUIStore();
   const {
     cargaDelPropietario,
@@ -171,7 +157,7 @@ export function PropietarioConfiguracionScreen() {
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
-        <AyudaDelCoadministrador />
+        {esSoloResidente ? null : <AyudaDelCoadministrador />}
 
         {/*
           Aquí había una tarjeta «Tienes una propiedad asignada» con su botón
@@ -235,6 +221,7 @@ export function PropietarioConfiguracionScreen() {
             pendiente={pendiente}
             deHoy={deHoy}
             mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
+            soloLectura={esSoloResidente}
             onMarcarAnfitrion={(r) =>
               r.esAnfitrionPrimario
                 ? rentaCortaEnMarcha || viviendaEnAlquiler
@@ -271,6 +258,8 @@ export function PropietarioConfiguracionScreen() {
       <MenuDeResidente
         residente={menuResidente}
         puedeGestionar={puedeGestionarLaVivienda}
+        puedeDarAcceso={puedeInvitar}
+        onDarAcceso={(r) => setDarAccesoA({ id: r.id, nombre: r.nombre })}
         onClose={() => setMenuResidente(null)}
         onEditar={(r) => navigation.navigate("CrearRol", { editar: r })}
         onDarDeBaja={setDeleteResidente}
@@ -282,6 +271,8 @@ export function PropietarioConfiguracionScreen() {
           })
         }
       />
+
+      <DarAccesoALaApp persona={darAccesoA} onClose={() => setDarAccesoA(null)} />
 
       <DarDeBajaResidente
         residente={deleteResidente}

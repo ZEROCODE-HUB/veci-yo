@@ -82,6 +82,21 @@ function comprobar(paso: string, error: { message: string } | null) {
 
 export async function setup() {
   const existentes = await cuentasExistentes();
+  /*
+    Laura entra a la 205 como inquilina líder, y desde el 17/11/2026 eso marca
+    a los propietarios de la 205 como no residentes y les deja un aviso
+    (`membresia_unidad_inquilino_lider_propietario_no_reside`). Aquí Laura es
+    decorado, no el asunto: se guarda cómo estaban los propietarios y se
+    devuelve, y el aviso que le deja a Guillermo se retira. El disparador lo
+    comprueba su propio recorrido, `inquilino-lider-y-propietario`.
+  */
+  const { data: duenos205, error: errorDuenos } = await servicio
+    .from("membresia_unidad")
+    .select("id, es_residente")
+    .eq("unidad_id", U205)
+    .eq("rol", "propietario")
+    .eq("activo", true);
+  comprobar("propietarios de la 205", errorDuenos);
 
   for (const p of PERSONAS) {
     let id = existentes.get(p.correo);
@@ -108,6 +123,24 @@ export async function setup() {
       comprobar(`edificio de ${p.correo}`, (await servicio.from("membresia_condominio").insert({ ...p.condominio, usuario_id: id })).error);
     }
   }
+
+  for (const dueno of duenos205 ?? []) {
+    comprobar(
+      "residencia del propietario de la 205",
+      (await servicio.from("membresia_unidad").update({ es_residente: dueno.es_residente }).eq("id", dueno.id)).error,
+    );
+  }
+  comprobar(
+    "aviso de Laura en la 205",
+    (
+      await servicio
+        .from("notificacion")
+        .delete()
+        .eq("tipo", "residencia_cambiada")
+        .eq("entidad_id", U205)
+        .like("mensaje", "Laura %")
+    ).error,
+  );
 }
 
 export async function teardown() {
