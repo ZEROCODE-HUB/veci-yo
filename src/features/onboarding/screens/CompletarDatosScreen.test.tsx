@@ -7,7 +7,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
  * con la base; lo que se comprueba es qué pide y que sin todo no guarda.
  */
 
-const guardar = vi.fn(async () => {});
+const guardar = vi.fn<(datos: unknown) => Promise<void>>(async () => {});
 vi.mock("@/shared/layouts", () => ({
   ScreenLayout: ({ children }: { children: React.ReactNode }) => children,
 }));
