@@ -44,6 +44,9 @@ export function CuadroHonorScreen() {
     cargaEstadoCuotas,
     cargaGratitud,
     gratitudSabida,
+    cargaPermisoRecaudacion,
+    puedeVerRecaudacion,
+    esHuesped,
   } = useCuadroHonor();
   /*
     Solo se ofrece dar cuando se sabe que se puede (13/11/2026). Antes, con el
@@ -69,20 +72,32 @@ export function CuadroHonorScreen() {
         </View>
       ) : puedeVerPagina ? (
         <DesplazableConTeclado className="flex-1" contentContainerClassName="p-4 gap-3.5">
-          <SegunLaCarga estado={cargaCarrusel} texto="las cuotas" forma="tarjetas" cuantos={1} enLinea>
-            <CarruselCuotas historial={cuotas} />
-          </SegunLaCarga>
           {/*
-            Sin esperar, se leía «Todavía nadie.» antes de saberlo, y la lista
-            saltaba de «solo el porcentaje» a lo publicado (13/11/2026).
+            La recaudación, solo para propietarios, residentes y la
+            administración (17/11/2026). A los demás no se les pinta ni el
+            hueco: lo decide la base, que tampoco se la daría.
           */}
-          <SegunLaCarga estado={cargaEstadoCuotas} texto="el estado de las cuotas" forma="lineas" enLinea>
-            <EstadoDeCuotas
-              miCuota={miCuota}
-              detalle={detalleCuotas}
-              visibilidad={visibilidadCuotas}
-              esAdmin={esAdmin}
-            />
+          <SegunLaCarga estado={cargaPermisoRecaudacion} texto="la recaudación" forma="tarjetas" cuantos={1} enLinea>
+            {puedeVerRecaudacion ? (
+              <>
+                <SegunLaCarga estado={cargaCarrusel} texto="las cuotas" forma="tarjetas" cuantos={1} enLinea>
+                  <CarruselCuotas historial={cuotas} />
+                </SegunLaCarga>
+                {/*
+                  Sin esperar, se leía «Todavía nadie.» antes de saberlo, y la
+                  lista saltaba de «solo el porcentaje» a lo publicado
+                  (13/11/2026).
+                */}
+                <SegunLaCarga estado={cargaEstadoCuotas} texto="el estado de las cuotas" forma="lineas" enLinea>
+                  <EstadoDeCuotas
+                    miCuota={miCuota}
+                    detalle={detalleCuotas}
+                    visibilidad={visibilidadCuotas}
+                    esAdmin={esAdmin}
+                  />
+                </SegunLaCarga>
+              </>
+            ) : null}
           </SegunLaCarga>
 
           {puedeParticipar && cargaGratitud.cargando ? (
@@ -155,14 +170,17 @@ export function CuadroHonorScreen() {
         </DesplazableConTeclado>
       ) : (
         <View className="flex-1 items-center justify-center p-4">
+          {/* El huésped llega aquí solo por un enlace viejo (17/11/2026). */}
           <Text className="text-base text-gray-500 text-center">
-            El Guardia de Seguridad no tiene acceso al Cuadro de Honor.
+            {esHuesped
+              ? "El Cuadro de Honor es solo para los vecinos del edificio."
+              : "El Guardia de Seguridad no tiene acceso al Cuadro de Honor."}
           </Text>
         </View>
       )}
 
       <ReconocimientoPopup
-        visible={showReconocimientoPopup && puedeDarAhora}
+        visible={showReconocimientoPopup && puedeDarAhora && puedeVerPagina}
         onClose={cerrarReconocimiento}
         destinatarioPreseleccionado={destinatario}
         candidatos={candidatos}

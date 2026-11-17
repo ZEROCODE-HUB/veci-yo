@@ -1,4 +1,5 @@
 import { theme } from "@/config";
+import type { ReactNode } from "react";
 import { Text, View } from "react-native";
 import { Button, CampoFecha, Checkbox, Input, Select, Tabs } from "@/shared/components";
 import type { Database } from "@/shared/types/database.types";
@@ -22,6 +23,8 @@ interface Props {
   invitando: boolean;
   onChange: (valores: Valores) => void;
   onEnviar: () => void;
+  /** El «Podrá / No podrá» del rol elegido, bajo el desplegable (17/11/2026). */
+  resumenDelRol?: (rol: RolUnidad) => ReactNode;
 }
 
 export function FormularioInvitacion({
@@ -34,6 +37,7 @@ export function FormularioInvitacion({
   invitando,
   onChange,
   onEnviar,
+  resumenDelRol,
 }: Props) {
   const set = (cambios: Partial<Valores>) => onChange({ ...form, ...cambios });
   const ayuda = AYUDA_DEL_ROL[form.rol];
@@ -56,20 +60,38 @@ export function FormularioInvitacion({
         label="Rol en la vivienda"
         value={form.rol}
         options={rolesInvitables}
-        onChange={(rol) => set({ rol: rol as Valores["rol"] })}
+        // «Es menor de edad» solo existe para un residente: al cambiar de rol
+        // no se queda marcado a escondidas (17/11/2026).
+        onChange={(rol) => set({ rol: rol as Valores["rol"], esMenor: rol === "residente" ? form.esMenor : false })}
       />
       {ayuda ? (
         <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
           {ayuda}
         </Text>
       ) : null}
+      {/* Qué podrá y qué no con ese rol (17/11/2026): lo pone la pantalla. */}
+      {resumenDelRol ? resumenDelRol(form.rol) : null}
 
       {/*
         Un residente puede no usar la app --un niño, un abuelo-- (17/11/2026,
         plan aprobado por el cliente). Entonces no se le pide correo: se anota
         en la vivienda para que la portería sepa que vive ahí.
       */}
+      {/*
+        «Es menor de edad» va primero (17/11/2026): a un menor no se le crea
+        cuenta, así que marcarlo quita la pregunta de la app y el correo. No
+        se pide fecha de nacimiento: basta con la casilla (decisión del
+        cliente).
+      */}
       {form.rol === "residente" ? (
+        <Checkbox
+          checked={form.esMenor}
+          onChange={(esMenor) => set({ esMenor, tipoDocumento: "" })}
+          label="Es menor de edad"
+        />
+      ) : null}
+
+      {form.rol === "residente" && !form.esMenor ? (
         <View className="gap-1.5">
           <Text className="text-sm font-semibold text-gray-900">¿Usará la app?</Text>
           <Tabs
@@ -97,14 +119,10 @@ export function FormularioInvitacion({
             value={form.documento}
             onChangeText={(documento) => set({ documento })}
           />
-          <Checkbox
-            checked={form.esMenor}
-            onChange={(esMenor) => set({ esMenor, tipoDocumento: "" })}
-            label="Es menor de edad"
-          />
           <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
-            No recibe invitación ni tiene cuenta. Si más adelante quiere usar la
-            app, puedes darle acceso desde su nombre en la lista.
+            {form.esMenor
+              ? "Un menor de edad no tiene cuenta en la app: se anota en la vivienda, sin correo ni invitación, para que la portería sepa que vive aquí."
+              : "No recibe invitación ni tiene cuenta. Si más adelante quiere usar la app, puedes darle acceso desde su nombre en la lista."}
           </Text>
         </View>
       ) : (

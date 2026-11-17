@@ -2,6 +2,7 @@ import { supabase } from "@/shared/services/supabase";
 import type { Columnas } from "@/shared/types";
 import { ahora, desdeLaBase, formatDate, haciaLaBase } from "@/shared/utils";
 import type { Anuncio } from "../types/anuncios";
+import { leerResultado, type ResultadoDeEncuesta } from "../helpers/resultadoDeEncuesta";
 import type { Database } from "@/shared/types/database.types";
 
 type CategoriaDB = Database["public"]["Enums"]["categoria_anuncio"];
@@ -196,6 +197,15 @@ export interface NuevoAnuncio {
   votoMultiple?: boolean;
   ocultarResultados?: boolean;
   umbral?: number;
+  /*
+    Cómo vota y cuándo se aprueba (17/11/2026). Si no llegan, la base pone los
+    de siempre: un voto igual por vivienda y mayoría simple.
+  */
+  quienVota?: Database["public"]["Enums"]["quien_vota_encuesta"];
+  comoSeCuenta?: Database["public"]["Enums"]["como_se_cuenta_voto"];
+  reglaAprobacion?: Database["public"]["Enums"]["regla_aprobacion_encuesta"];
+  /** % del total que hace falta, si la regla es «umbral». */
+  umbralAprobacion?: number | null;
   opciones?: string[];
   /**
    * Si al publicarse se avisa a su audiencia. Por defecto sí.
@@ -242,6 +252,11 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
       voto_multiple: datos.votoMultiple ?? false,
       ocultar_resultados: datos.ocultarResultados ?? false,
       umbral: datos.umbral ?? null,
+      quien_vota: datos.quienVota,
+      como_se_cuenta: datos.comoSeCuenta,
+      regla_aprobacion: datos.reglaAprobacion,
+      umbral_aprobacion:
+        datos.reglaAprobacion === "umbral" ? (datos.umbralAprobacion ?? null) : null,
       avisar: datos.avisar ?? true,
     })
     .select("id")
@@ -333,6 +348,48 @@ export async function detalleVotacion(
     votante: f.votante,
     unidad: f.unidad,
     emitidoEn: f.emitido_en,
+  }));
+}
+
+/**
+ * El resultado de la encuesta, calculado por la base (17/11/2026): total
+ * posible, participación, peso por opción, si se aprueba y cuánto falta. La
+ * base respeta quién puede ver la encuesta y si los resultados están ocultos.
+ */
+export async function resultadoDeEncuesta(
+  publicacionUuid: string,
+): Promise<ResultadoDeEncuesta | null> {
+  const { data, error } = await supabase.rpc("resultado_de_encuesta", {
+    p_publicacion_id: publicacionUuid,
+  });
+  if (error) throw error;
+  return leerResultado(data);
+}
+
+export interface ParticipacionDeTorre {
+  torreId: string;
+  torre: string;
+  electores: number;
+  votaron: number;
+}
+
+/**
+ * Cuántos pueden votar y cuántos votaron, por torre. Solo para la
+ * administración (a cualquier otro la base le devuelve vacío), y nunca dice
+ * qué votó nadie.
+ */
+export async function participacionPorTorre(
+  publicacionUuid: string,
+): Promise<ParticipacionDeTorre[]> {
+  const { data, error } = await supabase.rpc("participacion_de_encuesta_por_torre", {
+    p_publicacion_id: publicacionUuid,
+  });
+  if (error) throw error;
+  return (data ?? []).map((f) => ({
+    torreId: f.torre_id,
+    torre: f.torre,
+    electores: f.electores,
+    votaron: f.votaron,
   }));
 }
 

@@ -9,6 +9,7 @@ import type { SharedStackParamList, Conversation } from "@/shared/types";
 import { ChatComposer, ChatThread } from "../components/chat";
 import { useChatConversations } from "../hooks/useChatConversations";
 import { useChatConversacion } from "../hooks/useChatConversacion";
+import { usePuedeEscribir } from "../hooks/useChatEntreVecinos";
 import { useNavegacion } from "@/shared/hooks";
 import { useUIStore } from "@/stores";
 import { mensajeDeError } from "@/shared/utils/error.util";
@@ -58,6 +59,12 @@ export function ChatConversacionScreen() {
     navigation.setOptions({ title: titulo });
   }, [titulo, navigation]);
 
+  /*
+    Sin chat entre vecinos (17/11/2026): en un canal solo escribe el personal
+    si el edificio no lo abre. La base lo rechaza; aquí no se ofrece la caja.
+  */
+  const puedeEscribir = usePuedeEscribir(conversacionId, conversation.tipo === "grupo");
+
   /** Una foto o un PDF elegido para mandar con el mensaje (hueco 8). */
   const [adjunto, setAdjunto] = useState<ArchivoElegido | null>(null);
 
@@ -105,11 +112,12 @@ export function ChatConversacionScreen() {
           onRetirar={retirar}
           carga={carga}
         />
-        {conversation.archivado ? (
+        {conversation.archivado || !puedeEscribir ? (
           /*
             Un canal archivado conserva lo dicho y no recibe mas: lo rechaza un
             disparador en la base. Ofrecer la caja de escribir seria un control
-            que siempre falla, que es peor que no tenerlo.
+            que siempre falla, que es peor que no tenerlo. Lo mismo un canal
+            del edificio sin chat entre vecinos (17/11/2026).
           */
           <View
             className="px-4 py-3"
@@ -123,7 +131,9 @@ export function ChatConversacionScreen() {
               className="text-sm text-center"
               style={{ color: theme.colors.textMuted }}
             >
-              Este canal está archivado. Se puede leer, no escribir.
+              {conversation.archivado
+                ? "Este canal está archivado. Se puede leer, no escribir."
+                : "En este canal solo escribe la administración del edificio."}
             </Text>
           </View>
         ) : (

@@ -10,7 +10,10 @@ import {
   obtenerDetalleCuotas,
   obtenerMiCuota,
   obtenerResumenCuotas,
+  obtenerPuntualidadCuotas,
   obtenerVisibilidadCuotas,
+  puedeVerRecaudacion,
+  type PeriodoCuota,
   type UnidadCuadroHonor,
 } from "../services/cuadroHonor.repo";
 
@@ -31,17 +34,52 @@ export function useCuadroHonor() {
   const [destinatario, setDestinatario] =
     useState<DestinatarioReconocimiento | null>(null);
 
+  /*
+    El huésped temporal no ve nada del Cuadro de Honor (17/11/2026): ni se le
+    pide nada a la base. La base tampoco se lo daría --no es miembro del
+    edificio--, pero así no hay ni una llamada.
+  */
+  const esHuesped = rolActivo === "huesped-temporal";
+  const habilitado = Boolean(condominioId) && !esHuesped;
+
   const query = useQuery({
     queryKey: ["cuadro-honor", condominioId],
     queryFn: () => obtenerCuadroHonor(condominioId),
-    enabled: Boolean(condominioId),
+    enabled: habilitado,
   });
+
+  /*
+    La recaudación, solo para propietarios, residentes y la administración
+    (17/11/2026). Lo decide la base; hasta saberlo no se pide.
+  */
+  const permisoRecaudacion = useQuery({
+    queryKey: ["cuadro-honor", "puede-ver-recaudacion", condominioId, usuarioId],
+    queryFn: () => puedeVerRecaudacion(condominioId),
+    enabled: habilitado,
+  });
+  const veRecaudacion = permisoRecaudacion.data === true;
 
   const cuotas = useQuery({
     queryKey: ["cuadro-honor", "cuotas", condominioId],
     queryFn: () => obtenerResumenCuotas(condominioId),
-    enabled: Boolean(condominioId),
+    enabled: habilitado && veRecaudacion,
   });
+
+  const puntualidad = useQuery({
+    queryKey: ["cuadro-honor", "puntualidad", condominioId],
+    queryFn: () => obtenerPuntualidadCuotas(condominioId),
+    enabled: habilitado && veRecaudacion,
+  });
+
+  // Cada mes con su puntualidad, por el periodo: las dos vienen de la base.
+  const historial = useMemo<PeriodoCuota[]>(
+    () =>
+      (cuotas.data ?? []).map((mes) => ({
+        ...mes,
+        puntualidad: (puntualidad.data ?? []).find((p) => p.periodo === mes.periodo),
+      })),
+    [cuotas.data, puntualidad.data],
+  );
 
   /*
     Uno cada 30 días (16/10/2026). La misma clave que la portada, para que
@@ -70,17 +108,17 @@ export function useCuadroHonor() {
   const miCuota = useQuery({
     queryKey: ["cuadro-honor", "mi-cuota", condominioId, unidadId],
     queryFn: () => obtenerMiCuota(condominioId, unidadId ?? ""),
-    enabled: Boolean(condominioId && unidadId),
+    enabled: habilitado && veRecaudacion && Boolean(unidadId),
   });
   const detalle = useQuery({
     queryKey: ["cuadro-honor", "detalle", condominioId],
     queryFn: () => obtenerDetalleCuotas(condominioId),
-    enabled: Boolean(condominioId),
+    enabled: habilitado && veRecaudacion,
   });
   const visibilidad = useQuery({
     queryKey: ["visibilidad-cuotas", condominioId],
     queryFn: () => obtenerVisibilidadCuotas(condominioId),
-    enabled: Boolean(condominioId),
+    enabled: habilitado && veRecaudacion,
   });
 
   const departamentos = listaDe(query.data);
@@ -105,8 +143,8 @@ export function useCuadroHonor() {
   const esResidente = unidades.some(
     (u) => u.esResidente && u.rol !== "huesped_temporal",
   );
-  const puedeVerPagina = !esGuardia;
-  const sinPropiedades = !esAdmin && !esGuardia && unidades.length === 0;
+  const puedeVerPagina = !esGuardia && !esHuesped;
+  const sinPropiedades = !esAdmin && !esGuardia && !esHuesped && unidades.length === 0;
 
   const handleOpenReconocimiento = (elegido?: DestinatarioReconocimiento) => {
     setDestinatario(elegido ?? null);
@@ -127,14 +165,18 @@ export function useCuadroHonor() {
       de saberlo.
     */
     carga: estadoDe(query),
-    cargaCarrusel: estadoDe(cuotas),
+    cargaPermisoRecaudacion: estadoDe(permisoRecaudacion),
+    cargaCarrusel: juntarCargas(estadoDe(cuotas), estadoDe(puntualidad)),
     cargaEstadoCuotas: juntarCargas(estadoDe(miCuota), estadoDe(detalle), estadoDe(visibilidad)),
+    /** Propietarios, residentes y administración; ni portería ni huéspedes. */
+    puedeVerRecaudacion: veRecaudacion,
+    esHuesped,
     cargaGratitud: estadoDe(regalos),
     gratitudSabida,
     search,
     setSearch,
     filtered,
-    cuotas: cuotas.data ?? [],
+    cuotas: historial,
     miCuota: miCuota.data ?? null,
     detalleCuotas: detalle.data ?? [],
     visibilidadCuotas: visibilidad.data ?? "porcentaje",

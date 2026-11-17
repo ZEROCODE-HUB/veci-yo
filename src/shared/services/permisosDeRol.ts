@@ -25,3 +25,16 @@ export async function misPermisosEnLaVivienda(
   }
   return permisos;
 }
+
+/**
+ * Lo que puede cada rol de vivienda en ese edificio, para el resumen «Podrá /
+ * No podrá» al invitar (17/11/2026). Con la misma regla que la base aplica al
+ * guardar (`rol_puede`), así que el resumen no puede contradecirla.
+ */
+export async function permisosDeLosRolesDeLaVivienda(condominioId: string) {
+  const { data, error } = await supabase.rpc("permisos_de_los_roles_de_la_vivienda", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  return data ?? [];
+}

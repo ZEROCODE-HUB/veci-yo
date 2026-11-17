@@ -5,6 +5,8 @@ import { useCondominioActivo, useUnidadesDisponibles, useNavegacion } from "@/sh
 import { abrirConversacionArea } from "../services/chat.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ChatNewForm, type DestinoChat } from "../components/chat/ChatNewForm";
+import { ElegirAQuienEscribir } from "../components/chat/ElegirAQuienEscribir";
+import { usePersonalDePorteria } from "../hooks/usePersonalDePorteria";
 
 /**
  * El destino se codifica como `<area>:<unidadId>`, que es exactamente lo que
@@ -22,44 +24,54 @@ export function ChatNuevoScreen() {
   const esPersonal = rolActivo === "guardia" || rolActivo === "administrador";
   const areaPropia = rolActivo === "administrador" ? "administracion" : "seguridad";
 
-  const destinos = useMemo<DestinoChat[]>(() => {
-    if (esPersonal) {
-      // El personal escribe a una vivienda, siempre desde su propia área.
-      return unidades.map((u) => ({
+  // El personal escribe a una vivienda, siempre desde su propia área.
+  const destinos = useMemo<DestinoChat[]>(
+    () =>
+      unidades.map((u) => ({
         valor: `${areaPropia}:${u.unidadId}`,
         etiqueta: `${u.torre} · Dpto ${u.codigo}`,
-      }));
-    }
-
-    // Un residente escribe a la portería o a la administración, desde una de
-    // sus viviendas.
-    return unidadesPropias.flatMap((u) => [
-      {
-        valor: `seguridad:${u.unidadId}`,
-        etiqueta:
-          unidadesPropias.length > 1
-            ? `Seguridad · Dpto ${u.codigo}`
-            : "Seguridad",
-      },
-      {
-        valor: `administracion:${u.unidadId}`,
-        etiqueta:
-          unidadesPropias.length > 1
-            ? `Administración · Dpto ${u.codigo}`
-            : "Administración",
-      },
-    ]);
-  }, [esPersonal, areaPropia, unidades, unidadesPropias]);
-
+      })),
+    [areaPropia, unidades],
+  );
   const [destino, setDestino] = useState("");
+
+  /*
+    Un vecino elige a una persona de la portería --con su cargo y solo si
+    está de turno-- o la administración (17/11/2026). La conversación sigue
+    siendo la de su vivienda con la portería: la leen todos los que tienen el
+    chat habilitado, así que si quien la atiende termina su turno, la sigue
+    quien entre.
+  */
+  const { personal, cargando: cargandoPersonal } = usePersonalDePorteria(
+    condominioId,
+    !esPersonal,
+  );
+  const [viviendaElegida, setViviendaElegida] = useState("");
+  const viviendaId = viviendaElegida || unidadesPropias[0]?.unidadId || "";
+  const [elegido, setElegido] = useState("");
 
   const abrir = useMutation({
     mutationFn: async () => {
-      const [area, unidadId] = destino.split(":");
+      if (esPersonal) {
+        const [area, unidadId] = destino.split(":");
+        return abrirConversacionArea({
+          condominioId,
+          unidadId,
+          area: area as "seguridad" | "administracion",
+          usuarioId,
+        });
+      }
+      if (elegido.startsWith("porteria:")) {
+        const persona = personal.find((p) => `porteria:${p.membresiaId}` === elegido);
+        // La lista se refresca cada minuto: quien terminó su turno ya no vale.
+        if (!persona?.deTurno) {
+          throw new Error("Esa persona ya no está de turno. Elige a quien esté ahora.");
+        }
+      }
       return abrirConversacionArea({
         condominioId,
-        unidadId,
-        area: area as "seguridad" | "administracion",
+        unidadId: viviendaId,
+        area: elegido === "administracion" ? "administracion" : "seguridad",
         usuarioId,
       });
     },
@@ -69,19 +81,34 @@ export function ChatNuevoScreen() {
       addToast(mensajeDeError(error, "No se pudo abrir el chat"), "error"),
   });
 
+  if (!esPersonal) {
+    return (
+      <ElegirAQuienEscribir
+        viviendas={unidadesPropias.map((u) => ({
+          unidadId: u.unidadId,
+          etiqueta: `Dpto ${u.codigo}`,
+        }))}
+        viviendaId={viviendaId}
+        onVivienda={setViviendaElegida}
+        personal={personal}
+        cargandoPersonal={cargandoPersonal}
+        elegido={elegido}
+        onElegir={setElegido}
+        onStartChat={() => abrir.mutate()}
+        abriendo={abrir.isPending}
+      />
+    );
+  }
+
   return (
     <ChatNewForm
-      titulo={esPersonal ? "¿Con qué vivienda?" : "¿Con quién quieres hablar?"}
+      titulo="¿Con qué vivienda?"
       destinos={destinos}
       destino={destino}
       onDestinoChange={setDestino}
       onStartChat={() => abrir.mutate()}
       abriendo={abrir.isPending}
-      aviso={
-        esPersonal
-          ? "La conversación queda asociada a la vivienda: la atiende quien esté de turno."
-          : "Te responde quien esté de turno, no una persona en particular."
-      }
+      aviso="La conversación queda asociada a la vivienda: la atiende quien esté de turno."
     />
   );
 }

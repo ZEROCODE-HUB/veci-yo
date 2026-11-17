@@ -197,42 +197,86 @@ describe("designar al anfitrión primario", () => {
 });
 
 describe("declararse residente", () => {
+  /*
+    En la 205 vive Laura como inquilina líder, y desde el 17/11/2026 el
+    propietario no vuelve a ser residente mientras la haya. La declaración de
+    ida y vuelta se comprueba en la 101, también de Guillermo, sin inquilino
+    líder; y en la 205, que el paso a residente se rechaza con el motivo.
+  */
+  let membresiaGuillermo101 = "";
+  let residente101 = false;
+
+  beforeAll(async () => {
+    const fila = await leer(
+      guillermo,
+      `membresia_unidad?select=id,es_residente&unidad_id=eq.${UNIDAD.u101}&usuario_id=eq.${guillermo.usuarioId}&rol=eq.propietario&activo=is.true`,
+    );
+    membresiaGuillermo101 = fila.datos[0]?.id;
+    residente101 = Boolean(fila.datos[0]?.es_residente);
+    expect(membresiaGuillermo101).toBeTruthy();
+  });
+
+  afterAll(async () => {
+    await rpc(guillermo, "declararse_residente", { p_unidad_id: UNIDAD.u101, p_valor: residente101 });
+  });
+
   it("el propietario dice si vive en su vivienda, y eso cambia el dato", async () => {
     const fuera = await rpc(guillermo, "declararse_residente", {
-      p_unidad_id: UNIDAD.u205,
+      p_unidad_id: UNIDAD.u101,
       p_valor: false,
     });
     expect(fuera.estado).toBe(204);
 
     const tras = await leer(
       guillermo,
-      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo205}`,
+      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo101}`,
     );
     expect(tras.datos[0].es_residente).toBe(false);
 
     const dentro = await rpc(guillermo, "declararse_residente", {
-      p_unidad_id: UNIDAD.u205,
+      p_unidad_id: UNIDAD.u101,
       p_valor: true,
     });
     expect(dentro.estado).toBe(204);
 
     const vuelta = await leer(
       guillermo,
-      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo205}`,
+      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo101}`,
     );
     expect(vuelta.datos[0].es_residente).toBe(true);
   });
 
+  it("con inquilino líder no vuelve a ser residente: primero lo quita", async () => {
+    const fuera = await rpc(guillermo, "declararse_residente", {
+      p_unidad_id: UNIDAD.u205,
+      p_valor: false,
+    });
+    expect(fuera.estado).toBe(204);
+
+    const intento = await rpc(guillermo, "declararse_residente", {
+      p_unidad_id: UNIDAD.u205,
+      p_valor: true,
+    });
+    expect(fueRechazada(intento)).toBe(true);
+    expect(JSON.stringify(intento.datos)).toMatch(/primero quita al inquilino l/i);
+
+    const sigue = await leer(
+      guillermo,
+      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo205}`,
+    );
+    expect(sigue.datos[0].es_residente).toBe(false);
+  });
+
   it("nadie declara dónde vive su vecino", async () => {
     const intento = await rpc(sofia, "declararse_residente", {
-      p_unidad_id: UNIDAD.u205,
+      p_unidad_id: UNIDAD.u101,
       p_valor: false,
     });
     expect(fueRechazada(intento)).toBe(true);
 
     const sigue = await leer(
       guillermo,
-      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo205}`,
+      `membresia_unidad?select=es_residente&id=eq.${membresiaGuillermo101}`,
     );
     expect(sigue.datos[0].es_residente).toBe(true);
   });

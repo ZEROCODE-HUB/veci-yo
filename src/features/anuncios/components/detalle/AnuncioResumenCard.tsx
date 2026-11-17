@@ -2,6 +2,7 @@ import { theme } from "@/config";
 import { Text, View } from "react-native";
 import { useLista } from "@/shared/hooks/useLista";
 import type { Anuncio } from "../../types/anuncios";
+import { dirigidoA } from "../../helpers/anuncios.helpers";
 
 /**
  * La cabecera de un anuncio.
@@ -14,6 +15,8 @@ import type { Anuncio } from "../../types/anuncios";
  */
 export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
   const categorias = useLista("categorias_de_anuncio");
+  // A qué roles se notificó (17/11/2026). Vale igual para una encuesta.
+  const destinatarios = dirigidoA(anuncio);
   return (
     <View
       className="rounded-2xl p-4"
@@ -69,6 +72,13 @@ export function AnuncioResumenCard({ anuncio }: { anuncio: Anuncio }) {
 
       {anuncio.categoria ? (
         <Text className="text-sm text-gray-500">{categorias.etiquetaDe(anuncio.categoria)}</Text>
+      ) : null}
+
+      {destinatarios ? (
+        <Text className="mt-1 text-sm text-gray-500">
+          <Text className="font-bold text-gray-900">Dirigido a: </Text>
+          {destinatarios}
+        </Text>
       ) : null}
     </View>
   );

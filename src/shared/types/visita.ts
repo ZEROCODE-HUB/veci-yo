@@ -62,6 +62,11 @@ export interface VisitaItem {
   registradoPor?: string;
   autorizadoPor?: string;
   autorizadoPorRol?: string;
+  /**
+   * La registró el guardia en la portería con la persona delante (17/11/2026).
+   * La pone la base: nace anunciada y su documento cuenta como verificado.
+   */
+  registradaEnPorteria?: boolean;
   anotacionesIngreso?: string;
   anotacionesSalida?: string;
   fotosIngreso?: string[];

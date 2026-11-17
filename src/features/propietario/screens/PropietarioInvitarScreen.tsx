@@ -4,10 +4,15 @@ import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import {
   DarAccesoALaApp,
   FormularioInvitacion,
+  FormularioTrabajador,
   InvitacionesPendientes,
+  ListaDeTrabajadores,
   PersonasDeLaUnidad,
+  ResumenDelRol,
 } from "../components/invitar";
 import { useInvitarAUnidad } from "../hooks/useInvitarAUnidad";
+import { useTrabajadoresDeLaVivienda } from "../hooks/useTrabajadoresDeLaVivienda";
+import { rolQueSeCreaDe } from "@/shared/services/capacidadesDelRol";
 
 /**
  * Dar de alta a alguien en la vivienda.
@@ -44,6 +49,8 @@ export function PropietarioInvitarScreen() {
   } = useInvitarAUnidad();
   /** A quién se le está dando acceso a la app (17/11/2026). */
   const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
+  /** La empleada, el chofer (17/11/2026): van aparte, no son un rol de la vivienda. */
+  const trabajadores = useTrabajadoresDeLaVivienda();
 
   if (!puedeInvitar) {
     return (
@@ -95,6 +102,28 @@ export function PropietarioInvitarScreen() {
           invitando={invitando}
           onChange={setForm}
           onEnviar={invitar}
+          resumenDelRol={(rol) => <ResumenDelRol rol={rolQueSeCreaDe(rol)} />}
+        />
+
+        <SegunLaCarga
+          estado={trabajadores.carga}
+          texto="los trabajadores de la vivienda"
+          forma="filas"
+          cuantos={1}
+          enLinea
+        >
+          <ListaDeTrabajadores
+            trabajadores={trabajadores.trabajadores}
+            onDarDeBaja={trabajadores.darDeBaja}
+            dandoDeBajaId={trabajadores.dandoDeBajaId}
+          />
+        </SegunLaCarga>
+        <FormularioTrabajador
+          form={trabajadores.form}
+          error={trabajadores.error}
+          agregando={trabajadores.agregando}
+          onChange={trabajadores.setForm}
+          onAgregar={trabajadores.agregar}
         />
       </ScrollView>
 

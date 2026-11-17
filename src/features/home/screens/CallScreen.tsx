@@ -26,6 +26,9 @@ export function CallScreen() {
         opcionesDelPersonal={llamada.opcionesDelPersonal}
         aUnaVivienda={llamada.aUnaVivienda}
         cargaDestinos={llamada.cargaDestinos}
+        opcionesDeLaVivienda={llamada.opcionesDeLaVivienda}
+        aQuienDeLaVivienda={llamada.aQuienDeLaVivienda}
+        onAQuienDeLaViviendaChange={llamada.setAQuienDeLaVivienda}
       />
       <LlamadaPanel
         avatarEmoji={llamada.avatarEmoji}

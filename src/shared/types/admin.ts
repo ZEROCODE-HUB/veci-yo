@@ -4,6 +4,11 @@ export interface Guardia {
   porteriaId?: string;
   id: number;
   nombre: string;
+  /**
+   * Código de la lista `cargos_de_porteria` (seguridad, conserje…). Vacío
+   * cuenta como seguridad (17/11/2026).
+   */
+  cargo?: string;
   correo: string;
   cedula: string;
   diasCalendario: string;

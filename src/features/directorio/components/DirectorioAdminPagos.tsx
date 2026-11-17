@@ -125,11 +125,11 @@ export function DirectorioAdminPagos({
       setErrorPago("Escribe un importe mayor que cero, solo con números.");
       return;
     }
-    // Nunca por encima de lo que falta; la base lo comprueba igual.
-    if (monto > estadoPagando.saldo) {
-      setErrorPago(`No puede pasar de lo que falta: ${formatMoney(estadoPagando.saldo, moneda)}.`);
-      return;
-    }
+    /*
+      Aquí no se podía pasar de lo que faltaba del mes. Desde el 17/11/2026 el
+      pago va primero a lo más viejo que se deba y lo que sobra pasa al mes
+      siguiente o queda a favor: lo reparte la base y el aviso dice a dónde fue.
+    */
     try {
       await cuotas.abonar(pagando.uuid, monto);
       setPagando(null);
@@ -312,6 +312,11 @@ export function DirectorioAdminPagos({
               {`Total del mes: ${formatMoney(estadoPagando.total, moneda)}\nPagado hasta ahora: ${formatMoney(estadoPagando.abonado, moneda)}\nFalta por pagar: ${formatMoney(estadoPagando.saldo, moneda)}`}
             </Text>
           ) : null}
+          {/* Que no sorprenda que el pago no vaya a este mes (17/11/2026). */}
+          <Text className="text-xs leading-5 text-gray-500">
+            Si esta vivienda debe meses anteriores, el pago cubre primero el más
+            antiguo. Lo que sobre pasa al mes siguiente o queda a favor.
+          </Text>
           {/*
             La casilla llena el importe con todo lo que falta, y el pago queda
             «Pagado» al registrarlo. Se registra igual que a mano: un abono por

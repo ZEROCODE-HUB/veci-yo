@@ -27,8 +27,14 @@ export function llamadaPorInternet(datos: {
   /** La vivienda desde la que llama un vecino. */
   unidadActivaId: string | null | undefined;
   condominioId: string;
+  /**
+   * La persona de la vivienda elegida por el personal (17/11/2026). Vacío:
+   * «Todos», suena en todos y contesta el primero. Solo cuenta al llamar a una
+   * vivienda.
+   */
+  aUsuarioId?: string | null;
 }): DatosDeLlamada | null {
-  const { rolActivo, destino, unidadId, unidadActivaId, condominioId } = datos;
+  const { rolActivo, destino, unidadId, unidadActivaId, condominioId, aUsuarioId } = datos;
   const aLaPorteria = destino.startsWith("porteria:");
   const aLaAdministracion = destino === "administracion";
 
@@ -39,11 +45,37 @@ export function llamadaPorInternet(datos: {
     if (rolActivo === "administrador" && aLaPorteria) {
       return condominioId ? { destino: "porteria", condominioId } : null;
     }
-    return unidadId ? { destino: "vivienda", aUnidadId: unidadId } : null;
+    if (!unidadId) return null;
+    return aUsuarioId
+      ? { destino: "vivienda", aUnidadId: unidadId, aUsuarioId }
+      : { destino: "vivienda", aUnidadId: unidadId };
   }
 
   if (!unidadActivaId) return null;
   if (aLaPorteria) return { destino: "porteria", desdeUnidadId: unidadActivaId };
   if (aLaAdministracion) return { destino: "administracion", desdeUnidadId: unidadActivaId };
   return null;
+}
+
+/** «Todos» en el selector de a quién de la vivienda: sin persona. */
+export const TODOS_EN_LA_VIVIENDA = "";
+
+/**
+ * A quién de la vivienda se puede llamar por la app (17/11/2026, pedido del
+ * cliente: «hoy solo sale el departamento»). Primero «Todos» --suena en todos
+ * y contesta el primero-- y después cada persona con cuenta que recibe
+ * llamadas por la app, sin repetir (alguien puede tener dos papeles en la
+ * misma vivienda). Si nadie las recibe, la lista va vacía.
+ */
+export function quienesContestanEnLaVivienda(
+  personas: Array<{ usuarioId: string | null; nombre: string; recibeLlamadasApp: boolean }>,
+): Array<{ value: string; label: string }> {
+  const vistas = new Set<string>();
+  const una = personas.flatMap((p) => {
+    if (!p.usuarioId || !p.recibeLlamadasApp || vistas.has(p.usuarioId)) return [];
+    vistas.add(p.usuarioId);
+    return [{ value: p.usuarioId, label: p.nombre.trim() || "Sin nombre" }];
+  });
+  if (una.length === 0) return [];
+  return [{ value: TODOS_EN_LA_VIVIENDA, label: "Todos (contesta el primero)" }, ...una];
 }

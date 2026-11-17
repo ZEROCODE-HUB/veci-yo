@@ -130,6 +130,19 @@ const VACIO: FormularioInvitacion = {
 
 const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Si la persona se anota en la vivienda sin cuenta, en vez de invitarla
+ * (17/11/2026). Solo un residente: si no usará la app (un abuelo) o si es
+ * menor de edad. A un menor no se le crea cuenta --ni correo, ni invitación,
+ * ni app--, lo diga o no la pestaña «¿Usará la app?», y no se le pide fecha
+ * de nacimiento: basta con marcar «Es menor de edad» (decisión del cliente).
+ * La base lo sujeta igual (`membresia_unidad_menor_sin_acceso`,
+ * `invitacion_no_es_para_un_menor`).
+ */
+export function seAnotaSinApp(form: Pick<FormularioInvitacion, "rol" | "usaApp" | "esMenor">): boolean {
+  return form.rol === "residente" && (form.esMenor || !form.usaApp);
+}
+
 export function useInvitarAUnidad() {
   const { addToast } = useUIStore();
   const queryClient = useQueryClient();
@@ -174,7 +187,7 @@ export function useInvitarAUnidad() {
 
   const esHuesped = form.rol === "huesped_temporal";
   /** Un residente que no usará la app: se anota, no se invita (17/11/2026). */
-  const sinApp = form.rol === "residente" && !form.usaApp;
+  const sinApp = seAnotaSinApp(form);
   const documentosOfrecidos = useMemo(
     () => opcionesDeDocumento(documentos.reglas, form.esMenor ? "menores" : "adultos"),
     [documentos.reglas, form.esMenor],
@@ -214,6 +227,8 @@ export function useInvitarAUnidad() {
 
   const invitar = useMutation({
     mutationFn: async () => {
+      // Un menor nunca recibe invitación: se anota sin cuenta (17/11/2026).
+      if (form.esMenor) throw new Error("Un menor de edad no puede tener cuenta en la app");
       return invitarAUnidad({
         condominioId,
         unidadId,

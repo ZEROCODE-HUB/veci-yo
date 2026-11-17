@@ -82,6 +82,16 @@ export function AnunciosScreen() {
         votoMultiple: values.votacionMultiple,
         ocultarResultados: values.ocultarResultados,
         umbral: values.umbral ? Number(values.umbral) : undefined,
+        // Cómo vota y cuándo se aprueba (17/11/2026). Solo cuentan en encuestas.
+        ...(values.tipo === "Encuesta"
+          ? {
+              quienVota: values.quienVota,
+              comoSeCuenta: values.quienVota === "vivienda" ? values.comoSeCuenta : "igual",
+              reglaAprobacion: values.reglaAprobacion,
+              umbralAprobacion:
+                values.reglaAprobacion === "umbral" ? Number(values.umbralAprobacion) : null,
+            }
+          : {}),
         opciones: values.opcionesVotacion.map((o) => o.valor),
         // La casilla «Avisar a quien le toque» no viajaba: avisaba siempre.
         avisar: values.avisar,

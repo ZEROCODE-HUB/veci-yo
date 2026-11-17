@@ -8,6 +8,7 @@ import { CommsFab } from "../components/CommsFab";
 import { InvitacionesPendientes } from "../components/InvitacionesPendientes";
 import { InvitacionDeHuesped } from "../components/InvitacionDeHuesped";
 import { InvitacionesDelEdificio } from "../components/InvitacionesDelEdificio";
+import { InvitacionDeTrabajador } from "../components/InvitacionDeTrabajador";
 
 export function HomeScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -23,6 +24,8 @@ export function HomeScreen() {
       <InvitacionesDelEdificio />
       {/* Y la de huésped temporal, que al entrar sin rol se abre sola (224). */}
       <InvitacionDeHuesped />
+      {/* Y la de trabajador permanente de una vivienda (17/11/2026). */}
+      <InvitacionDeTrabajador />
       {rolActivo === "huesped-temporal" ? (
         <ViviendaResumen />
       ) : rolActivo ? (

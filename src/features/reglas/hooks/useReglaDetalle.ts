@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Linking } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { useUIStore } from "@/stores/ui-store";
@@ -16,6 +15,7 @@ import {
   subirReglamento,
   urlDelReglamento,
 } from "../services/reglamentos.repo";
+import { abrirArchivoDelReglamento } from "../services/abrirReglamento";
 import type { TipoRegla } from "../types/reglas";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
@@ -41,7 +41,6 @@ export function useReglaDetalle(tipo?: string) {
   const addToast = useUIStore((s) => s.addToast);
   const formatoDelReglamento = useFormatoDeArchivo("reglamento");
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [downloadOpen, setDownloadOpen] = useState(false);
   const [elegido, setElegido] = useState<ArchivoElegido | null>(null);
 
   const tipoRegla = (tipo as TipoRegla) || "residente-permanente";
@@ -78,8 +77,13 @@ export function useReglaDetalle(tipo?: string) {
       if (!elegido) throw new Error("Elige un archivo primero.");
       return subirReglamento(condominioId, tipoRegla, elegido);
     },
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ["reglamento", condominioId] });
+    /*
+      Se espera a releerlo antes de cerrar la ventana (17/11/2026): así, al
+      cerrarse, la pantalla ya enseña el archivo nuevo con su nombre y su
+      fecha, y no el anterior durante un momento.
+    */
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ["reglamento", condominioId] });
       addToast("Reglamento actualizado", "success");
       setElegido(null);
       setUploadOpen(false);
@@ -87,14 +91,16 @@ export function useReglaDetalle(tipo?: string) {
     onError: (error) => avisar(error, "No se pudo subir el reglamento"),
   });
 
-  /** Abre el PDF con una URL firmada: el bucket es privado. */
+  /**
+   * Abre el PDF o el Word con una URL firmada (el bucket es privado): se
+   * descarga y se ofrece a las aplicaciones del celular que saben abrirlo.
+   */
   const descargar = useMutation({
     mutationFn: async () => {
       if (!data?.file) throw new Error("Este reglamento no tiene archivo.");
       const url = await urlDelReglamento(data.file);
-      await Linking.openURL(url);
+      await abrirArchivoDelReglamento({ url, ruta: data.file, nombre: data.fileName });
     },
-    onSuccess: () => setDownloadOpen(false),
     onError: (error) => avisar(error, "No se pudo abrir el reglamento"),
   });
 
@@ -113,8 +119,6 @@ export function useReglaDetalle(tipo?: string) {
     uploadOpen,
     setUploadOpen,
     cerrarCarga,
-    downloadOpen,
-    setDownloadOpen,
     isTemporaryGuest: role === "huesped-temporal",
     // El reglamento del edificio lo pone la administración, igual que la
     // política de la tabla y la del bucket. El botón no se le ofrecía solo al

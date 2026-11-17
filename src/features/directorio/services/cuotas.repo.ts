@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import type { ReparticionDePago } from "../helpers/reparticionDePago";
 
 /**
  * El pago de la cuota de administración.
@@ -313,14 +314,30 @@ export async function cambiarImporteDeCuota(params: {
   if (error) throw error;
 }
 
-/** Un pago de la vivienda en el mes. La base no deja pasar de lo que falta. */
-export async function registrarAbono(params: { cuotaId: string; unidadId: string; monto: number }) {
-  const { error } = await supabase.rpc("registrar_abono_cuota", {
-    p_cuota_id: params.cuotaId,
+/**
+ * Un pago de la vivienda (17/11/2026). Ya no va al mes que se mira: la base
+ * lo aplica a la cuota más vieja que se deba, lo que sobra pasa a la
+ * siguiente, y si no se debe nada queda a favor (pedido del cliente). Devuelve
+ * a qué meses fue, para decírselo a la administración.
+ *
+ * `cuotaId` se queda en la firma porque la pantalla lo pasa, pero ya no decide
+ * a dónde va el dinero.
+ */
+export async function registrarAbono(params: {
+  cuotaId: string;
+  unidadId: string;
+  monto: number;
+}): Promise<ReparticionDePago[]> {
+  const { data, error } = await supabase.rpc("registrar_pago_de_vivienda", {
     p_unidad_id: params.unidadId,
     p_monto: params.monto,
   });
   if (error) throw error;
+  return (data ?? []).map((fila) => ({
+    periodo: fila.periodo,
+    aplicado: Number(fila.aplicado),
+    saldoAFavor: Number(fila.saldo_a_favor),
+  }));
 }
 
 /**

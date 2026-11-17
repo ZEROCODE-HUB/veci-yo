@@ -21,6 +21,7 @@ import {
   obtenerPeriodos,
   ponerEnComite,
 } from "../services/cuotas.repo";
+import { textoDeReparticion } from "../helpers/reparticionDePago";
 
 /**
  * El registro de pagos de la cuota de administración (KT flujo 4.6).
@@ -132,9 +133,14 @@ export function useCuotas() {
 
   const abonar = useMutation({
     mutationFn: (datos: { unidadId: string; monto: number }) => registrarAbono({ cuotaId, ...datos }),
-    onSuccess: () => {
+    /*
+      Se dice a qué meses fue (17/11/2026): un pago paga primero lo más viejo
+      que se debe, así que puede no ir al mes que se está mirando.
+    */
+    onSuccess: (reparticion) => {
       invalidar();
-      addToast("Pago registrado", "success");
+      const moneda = (periodos.data ?? []).find((p) => p.id === cuotaId)?.moneda ?? "";
+      addToast(textoDeReparticion(reparticion, moneda), "success");
     },
     onError: avisar("No se pudo registrar el pago"),
   });

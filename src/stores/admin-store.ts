@@ -68,6 +68,8 @@ export interface Unidad {
   piso: number;
   /** El uuid de su tipología (`unidad.tipologia_id`). */
   tipologiaId?: string;
+  /** Índice de votación (`unidad.indice_votacion`, 17/11/2026). */
+  indiceVotacion?: number;
   estacionamientos?: number;
   ubicacionParking?: string;
   /**

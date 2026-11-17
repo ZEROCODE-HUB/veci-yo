@@ -6,10 +6,10 @@ import { Button, Cargando, ErrorAlCargar } from "@/shared/components";
 import { PageHeader } from "@/shared/layouts";
 import { useReglaDetalle } from "../hooks/useReglaDetalle";
 import {
+  ReglaArchivoCard,
   ReglaCargaModal,
   ReglaContenidoCard,
   ReglaDepartamentoInfo,
-  ReglaDescargaModal,
 } from "../components/detalle";
 import { useNavegacion, useParametros } from "@/shared/hooks";
 
@@ -54,15 +54,6 @@ export function ReglaDetalleScreen() {
           <Ionicons name="share-outline" size={16} color={theme.colors.textStrong} />
         </Button>
       )}
-      {regla.content?.downloadable && (
-        <Button
-          size="sm"
-          variant="secondary"
-          onPress={() => regla.setDownloadOpen(true)}
-        >
-          <Ionicons name="download-outline" size={16} color={theme.colors.textStrong} />
-        </Button>
-      )}
     </View>
   );
   
@@ -70,7 +61,14 @@ export function ReglaDetalleScreen() {
     El reglamento sale ahora de la base, asi que puede no haber ninguno para
     ese condominio. Antes venia de un archivo y siempre existia.
   */
-  if (!regla.content) {
+  /*
+    Una fila sin archivo y sin texto (la de un edificio nuevo, o la que dejó
+    un texto borrado) es lo mismo que no tener reglamento: antes enseñaba la
+    palabra «Reglamento» subrayada y nada más (17/11/2026).
+  */
+  const hayArchivo = Boolean(regla.content?.downloadable);
+  const hayTexto = (regla.content?.sections.length ?? 0) > 0;
+  if (!regla.content || (!hayArchivo && !hayTexto)) {
     return (
       <View className="flex-1 bg-bg-app">
         <PageHeader title="Reglamento" />
@@ -102,7 +100,27 @@ export function ReglaDetalleScreen() {
     <View className="flex-1 bg-bg-app">
       <PageHeader title={regla.content.title} />
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-4">
-        <ReglaContenidoCard content={regla.content} acciones={acciones} />
+        {/*
+          Con un archivo subido, el reglamento es el archivo: el texto por
+          secciones que hubiera (el de ejemplo de cuando se creó el edificio)
+          no se enseña al lado, porque «Reemplaza al que esté vigente» dice la
+          ventana de subirlo, y dos reglamentos distintos a la vez confunden
+          (17/11/2026).
+        */}
+        {hayArchivo ? (
+          <ReglaArchivoCard
+            titulo={regla.content.title}
+            ruta={regla.content.file}
+            nombre={regla.content.fileName}
+            subidoEn={regla.content.subidoEn}
+            abriendo={regla.descargar.isPending}
+            onVer={() => regla.descargar.mutate()}
+            puedeReemplazar={regla.puedeSubir}
+            onReemplazar={() => regla.setUploadOpen(true)}
+          />
+        ) : (
+          <ReglaContenidoCard content={regla.content} acciones={acciones} />
+        )}
         <ReglaDepartamentoInfo />
         {!regla.isTemporaryGuest && (
           <Button
@@ -118,13 +136,6 @@ export function ReglaDetalleScreen() {
         )}
       </ScrollView>
       {cargaModal}
-      <ReglaDescargaModal
-        visible={regla.downloadOpen}
-        file={regla.content.file}
-        abriendo={regla.descargar.isPending}
-        onAbrir={() => regla.descargar.mutate()}
-        onClose={() => regla.setDownloadOpen(false)}
-      />
     </View>
   );
 }
