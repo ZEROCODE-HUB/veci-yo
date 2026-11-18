@@ -12,6 +12,16 @@ interface Props {
   onDarDeBaja: (r: ResidenteDeUnidad) => void;
   onDenunciar: (r: ResidenteDeUnidad) => void;
   onDarAcceso?: (r: ResidenteDeUnidad) => void;
+  /** «Editar privilegios» (18/11/2026): quien gestiona la vivienda. */
+  onPrivilegios?: (r: ResidenteDeUnidad) => void;
+  /**
+   * Darle o quitarle la renta corta al inquilino líder (18/11/2026): solo el
+   * propietario, y si el edificio permite la renta corta.
+   */
+  puedeDarRentaCorta?: boolean;
+  onRentaCorta?: (r: ResidenteDeUnidad) => void;
+  /** Quien mira, para no ofrecerle cambiarse sus propios privilegios. */
+  usuarioId?: string;
 }
 
 /** El menú de los tres puntos de una persona de la vivienda. */
@@ -24,6 +34,10 @@ export function MenuDeResidente({
   onDarDeBaja,
   onDenunciar,
   onDarAcceso,
+  onPrivilegios,
+  puedeDarRentaCorta = false,
+  onRentaCorta,
+  usuarioId,
 }: Props) {
   // Cierra el menú y después actúa sobre la persona que estaba abierta.
   const y = (accion: (r: ResidenteDeUnidad) => void) => () => {
@@ -37,6 +51,15 @@ export function MenuDeResidente({
   */
   const ofrecerAcceso =
     puedeDarAcceso && Boolean(onDarAcceso) && Boolean(residente) && !residente?.usuarioId && !residente?.esMenor;
+  const rol = residente?.rolBase;
+  const ofrecerPrivilegios =
+    puedeGestionar &&
+    Boolean(onPrivilegios) &&
+    Boolean(residente) &&
+    rol !== "propietario" &&
+    rol !== "huesped_temporal" &&
+    residente?.usuarioId !== usuarioId;
+  const ofrecerRentaCorta = puedeDarRentaCorta && Boolean(onRentaCorta) && rol === "inquilino_lider";
   return (
     <BottomSheet visible={!!residente} onClose={onClose}>
       {ofrecerAcceso && onDarAcceso ? (
@@ -48,6 +71,15 @@ export function MenuDeResidente({
         nadie: la base no le deja.
       */}
       {puedeGestionar && <BottomSheetOption label="Editar" onPress={y(onEditar)} />}
+      {ofrecerPrivilegios && onPrivilegios ? (
+        <BottomSheetOption label="Editar privilegios" onPress={y(onPrivilegios)} />
+      ) : null}
+      {ofrecerRentaCorta && onRentaCorta ? (
+        <BottomSheetOption
+          label={residente?.puedeRentaCorta ? "Quitarle la renta corta" : "Darle la renta corta"}
+          onPress={y(onRentaCorta)}
+        />
+      ) : null}
       {puedeGestionar && (
         <BottomSheetOption label="Dar de baja" variant="danger" onPress={y(onDarDeBaja)} />
       )}

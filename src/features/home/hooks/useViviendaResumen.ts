@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { obtenerSuscripcion } from "@/features/propietario/services/suscripcion.repo";
 import { suscripcionVigente } from "@/features/propietario/services/suscripcionVigente";
+import { hayInquilinoLiderActivo } from "@/features/propietario/services/residentes.repo";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useUnidadActiva, useNavegacion } from "@/shared/hooks";
@@ -15,6 +16,7 @@ import { opcionesDeAdministracion } from "../helpers/opcionesDeAdministracion";
 import {
   esNoResidente,
   MODULOS_VEDADOS_AL_NO_RESIDENTE,
+  modulosVedadosConInquilinoLider,
 } from "../helpers/noResidente";
 
 // El huesped ve lo de su estancia, no lo de la comunidad: el cuadro de honor es
@@ -103,6 +105,20 @@ export function useViviendaResumen() {
     enabled: Boolean(unidadDeLaSuscripcion),
   });
   const esAlojamiento = noResidente && suscripcionVigente(suscripcion);
+  /*
+    Con inquilino líder el propietario no ve el día a día de la vivienda
+    (18/11/2026, pedido del cliente).
+  */
+  const usuarioId = useAuthStore((state) => state.usuarioId ?? "");
+  const unidadDelPropietario = esPropietario ? (unidadActiva?.unidadId ?? "") : "";
+  const { data: conInquilinoLider = false } = useQuery({
+    queryKey: ["unidad", "inquilino-lider", unidadDelPropietario, usuarioId],
+    queryFn: () => hayInquilinoLiderActivo(unidadDelPropietario, usuarioId),
+    enabled: Boolean(unidadDelPropietario),
+  });
+  const vedadosPorInquilino = conInquilinoLider
+    ? modulosVedadosConInquilinoLider(suscripcionVigente(suscripcion))
+    : [];
   const sinPropiedades =
     rolActivo === "propietario-sin-propiedades" ||
     (esPropietario && ubicaciones.length === 0);
@@ -120,9 +136,10 @@ export function useViviendaResumen() {
       ]
     : noResidente
       ? MODULOS_CONFIG.filter(
-          (modulo) => !MODULOS_VEDADOS_AL_NO_RESIDENTE.includes(modulo.id),
+          (modulo) =>
+            !MODULOS_VEDADOS_AL_NO_RESIDENTE.includes(modulo.id) && !vedadosPorInquilino.includes(modulo.id),
         )
-      : MODULOS_CONFIG;
+      : MODULOS_CONFIG.filter((modulo) => !vedadosPorInquilino.includes(modulo.id));
 
   const handleConfiguracion = () => {
     if (esAdministrador) setConfigOpen((actual) => !actual);

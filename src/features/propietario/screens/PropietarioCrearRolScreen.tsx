@@ -6,6 +6,7 @@ import { Cargando, Modal } from "@/shared/components";
 import type { PropietarioStackParamList } from "@/shared/types";
 import { usePropietarioRol } from "../hooks/usePropietarioRol";
 import { PropietarioRolForm } from "../components/roles";
+import { useUnidadActiva } from "@/shared/hooks";
 
 type RouteType = RouteProp<PropietarioStackParamList, "CrearRol">;
 
@@ -14,6 +15,9 @@ export function PropietarioCrearRolScreen() {
   const route = useRoute<RouteType>();
   const editData = route.params?.editar;
   const form = usePropietarioRol(editData);
+  // El contacto de emergencia lo ponen el propietario o el inquilino líder (18/11/2026).
+  const rolEnLaVivienda = useUnidadActiva()?.rol;
+  const puedePonerContacto = rolEnLaVivienda === "propietario" || rolEnLaVivienda === "inquilino_lider";
   const cerrarExito = () => {
     form.setShowSuccess(false);
     navigation.goBack();
@@ -50,6 +54,7 @@ export function PropietarioCrearRolScreen() {
         onSubmit={form.guardar}
         editando={form.esEdicion}
         guardando={form.guardando}
+        puedePonerContacto={puedePonerContacto}
       />
       <Modal
         visible={form.showSuccess}

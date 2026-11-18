@@ -93,8 +93,11 @@ export function usePasosDelAdministrador(): PasosConCarga {
 
 export function usePasosDelPropietario(): PasosConCarga {
   const usuarioId = useAuthStore((s) => s.usuarioId ?? "");
-  const unidadId = useUnidadActiva()?.unidadId ?? "";
+  const unidadActiva = useUnidadActiva();
+  const unidadId = unidadActiva?.unidadId ?? "";
   const tieneVivienda = Boolean(unidadId);
+  // El propietario y el inquilino líder gestionan la vivienda (18/11/2026).
+  const gestiona = unidadActiva?.rol === "propietario" || unidadActiva?.rol === "inquilino_lider";
 
   // La misma clave que la configuración del propietario.
   const residentes = useQuery({
@@ -115,6 +118,10 @@ export function usePasosDelPropietario(): PasosConCarga {
     tieneVivienda,
     enAlquiler: enAlquiler.data ?? false,
     hayQuienViva: todos.some((r) => r.esResidente || r.usuarioId !== usuarioId),
+    gestiona,
+    tieneContacto: residentes.data
+      ? Boolean(todos.find((r) => r.usuarioId === usuarioId)?.contactoNombre.trim())
+      : undefined,
     cocheras: vehiculos.cocheras,
     vehiculos: vehiculos.vehiculos.length,
     avisos,

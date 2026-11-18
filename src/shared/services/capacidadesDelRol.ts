@@ -95,7 +95,8 @@ const NADA: Record<CapacidadFija, boolean> = {
  */
 export const CAPACIDADES_FIJAS: Record<RolQueSeCrea, Record<CapacidadFija, boolean>> = {
   propietario: { ...VECINO, configurar_renta_corta: true },
-  inquilino_lider: { ...VECINO, configurar_renta_corta: true },
+  // La renta corta, solo si el propietario se la da (18/11/2026): al invitarlo, no.
+  inquilino_lider: VECINO,
   residente: VECINO,
   coadministrador: { ...VECINO, configurar_renta_corta: true },
   // Desde el 18/11/2026 ve los anuncios que van para él (`para_trabajadores`).

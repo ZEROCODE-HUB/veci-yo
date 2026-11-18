@@ -37,6 +37,16 @@ import type { RolActivo } from "@/shared/types";
  */
 export const MODULOS_VEDADOS_AL_NO_RESIDENTE: readonly string[] = [];
 
+/**
+ * Lo que no se le ofrece al propietario cuando la vivienda tiene inquilino
+ * líder (18/11/2026, pedido del cliente): el día a día es de quien vive ahí.
+ * Las visitas se le dejan si la renta corta está en marcha, porque por ahí
+ * atiende a sus huéspedes. La base lo sujeta igual (`ve_el_dia_a_dia`).
+ */
+export function modulosVedadosConInquilinoLider(rentaCortaEnMarcha: boolean): readonly string[] {
+  return rentaCortaEnMarcha ? ["correspondencia", "zonas-comunes"] : ["correspondencia", "zonas-comunes", "visitas"];
+}
+
 export function esNoResidente(
   rolActivo: RolActivo,
   esResidenteDeLaUnidad: boolean,

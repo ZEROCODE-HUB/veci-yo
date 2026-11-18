@@ -53,6 +53,8 @@ const arquitectura = (pestana: string): DestinoDelPaso => ({
 });
 
 export function pasosDelAdministrador(d: DatosDelAdministrador): PasoParaEmpezar[] {
+  // En el orden que pidió el cliente (18/11/2026): Torres, Niveles, Garitas,
+  // Zonas comunes, Reglamento, Conserjes, Propietarios.
   return [
     {
       id: "torres",
@@ -73,16 +75,22 @@ export function pasosDelAdministrador(d: DatosDelAdministrador): PasoParaEmpezar
       destino: arquitectura("Porterías"),
     },
     {
-      id: "guardias",
-      texto: "Invita a los guardias",
-      hecho: d.guardias > 0,
-      destino: { ruta: "AdministradorSeguridad" },
-    },
-    {
       id: "zonas",
       texto: "Crea las zonas comunes",
       hecho: d.zonas > 0,
       destino: { ruta: "GestionZonas" },
+    },
+    {
+      id: "reglamento",
+      texto: "Sube el reglamento",
+      hecho: d.reglamentos > 0,
+      destino: { ruta: "AdministradorPermisos" },
+    },
+    {
+      id: "guardias",
+      texto: "Invita a los conserjes y guardias",
+      hecho: d.guardias > 0,
+      destino: { ruta: "AdministradorSeguridad" },
     },
     {
       /*
@@ -94,12 +102,6 @@ export function pasosDelAdministrador(d: DatosDelAdministrador): PasoParaEmpezar
       hecho: d.viviendas > 0 && d.viviendasConPropietario >= d.viviendas,
       nota: d.viviendas > 0 ? `${d.viviendasConPropietario} de ${d.viviendas} departamentos` : undefined,
       destino: arquitectura("Torres"),
-    },
-    {
-      id: "reglamento",
-      texto: "Sube el reglamento",
-      hecho: d.reglamentos > 0,
-      destino: { ruta: "AdministradorPermisos" },
     },
   ];
 }
@@ -152,15 +154,35 @@ export interface DatosDelPropietario {
   cocheras: number;
   vehiculos: number;
   avisos: AvisosDelCelular;
+  /**
+   * Desde el 18/11/2026 la tarjeta es de todos los de la vivienda (pedido del
+   * cliente): el propietario y el inquilino líder agregan el grupo familiar y
+   * el contacto de emergencia; el residente y el anfitrión, sus placas y los
+   * avisos. Sin decirlo, como el propietario.
+   */
+  gestiona?: boolean;
+  /** Si ya hay un contacto de emergencia en su ficha. */
+  tieneContacto?: boolean;
 }
 
 export function pasosDelPropietario(d: DatosDelPropietario): PasoParaEmpezar[] {
+  const gestiona = d.gestiona ?? true;
   const pasos: PasoParaEmpezar[] = [];
-  if (d.tieneVivienda && !d.enAlquiler) {
+  if (gestiona && d.tieneVivienda && !d.enAlquiler) {
     pasos.push({
       id: "residentes",
-      texto: "Cuéntanos quién vive en tu vivienda",
+      texto: "Agrega tu grupo familiar",
+      nota: "Quiénes viven contigo, con o sin app.",
       hecho: d.hayQuienViva,
+      destino: { ruta: "PropietarioConfiguracion" },
+    });
+  }
+  if (gestiona && d.tieneVivienda && d.tieneContacto !== undefined) {
+    pasos.push({
+      id: "contacto",
+      texto: "Agrega un contacto de emergencia",
+      nota: "A quién llamar si pasa algo y no se te puede ubicar.",
+      hecho: d.tieneContacto,
       destino: { ruta: "PropietarioConfiguracion" },
     });
   }
@@ -168,12 +190,23 @@ export function pasosDelPropietario(d: DatosDelPropietario): PasoParaEmpezar[] {
   if (d.tieneVivienda && d.cocheras > 0) {
     pasos.push({
       id: "vehiculos",
-      texto: "Registra tus vehículos",
+      texto: "Registra las placas de tus vehículos",
       hecho: d.vehiculos > 0,
       destino: { ruta: "PropietarioConfiguracion" },
     });
   }
   return [...pasos, ...pasoDeAvisos(d.avisos)];
+}
+
+/**
+ * Lo que cada uno quitó de la tarjeta (18/11/2026): esos pasos no salen, y con
+ * «tarjeta» no sale ninguno.
+ */
+export const TARJETA_ENTERA = "tarjeta";
+
+export function sinLosDescartados(pasos: PasoParaEmpezar[], descartados: readonly string[]): PasoParaEmpezar[] {
+  if (descartados.includes(TARJETA_ENTERA)) return [];
+  return pasos.filter((p) => !descartados.includes(p.id));
 }
 
 // ---------------------------------------------------------------------------

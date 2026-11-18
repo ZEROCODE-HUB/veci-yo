@@ -33,6 +33,10 @@ const persona = (
     contactableChat: true,
     contactableWhatsapp: true,
     puedeRegistrarVisitas: false,
+    rolBase: "huesped_temporal",
+    puedeRentaCorta: false,
+    registraVisitas: true,
+    reservaZonas: true,
   }) satisfies ResidenteDeUnidad;
 
 /**

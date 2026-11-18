@@ -2570,8 +2570,11 @@ export type Database = {
           id: string
           nombre: string
           permisos: Json
+          persona_registra_visitas: boolean
+          persona_reserva_zonas: boolean
           puede_acceder: boolean
           puede_registrar_visitas: boolean
+          puede_renta_corta: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono: string | null
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2601,8 +2604,11 @@ export type Database = {
           id?: string
           nombre: string
           permisos?: Json
+          persona_registra_visitas?: boolean
+          persona_reserva_zonas?: boolean
           puede_acceder?: boolean
           puede_registrar_visitas?: boolean
+          puede_renta_corta?: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2632,8 +2638,11 @@ export type Database = {
           id?: string
           nombre?: string
           permisos?: Json
+          persona_registra_visitas?: boolean
+          persona_reserva_zonas?: boolean
           puede_acceder?: boolean
           puede_registrar_visitas?: boolean
+          puede_renta_corta?: boolean
           rol?: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -3212,6 +3221,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      paso_descartado: {
+        Row: {
+          created_at: string
+          id: string
+          paso: string
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          paso: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          paso?: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
       }
       perfil: {
         Row: {
@@ -6077,6 +6110,14 @@ export type Database = {
         Args: { p_placa: string; p_vehiculo_id: string }
         Returns: undefined
       }
+      cambiar_privilegios_de_persona: {
+        Args: {
+          p_membresia_id: string
+          p_registra_visitas: boolean
+          p_reserva_zonas: boolean
+        }
+        Returns: undefined
+      }
       canales_del_condominio: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -6340,6 +6381,10 @@ export type Database = {
       }
       dar_de_baja_trabajador_de_la_vivienda: {
         Args: { p_id: string }
+        Returns: undefined
+      }
+      dar_renta_corta_al_inquilino: {
+        Args: { p_dar: boolean; p_membresia_id: string }
         Returns: undefined
       }
       datos_para_el_sire: {
@@ -8646,6 +8691,7 @@ export type Database = {
       usuario_actual: { Args: never; Returns: string }
       validar_codigo_descuento: { Args: { p_codigo: string }; Returns: number }
       valor_configuracion: { Args: { p_clave: string }; Returns: string }
+      ve_el_dia_a_dia: { Args: { p_unidad_id: string }; Returns: boolean }
       vehiculos_del_precheckin: {
         Args: { p_token: string }
         Returns: {
