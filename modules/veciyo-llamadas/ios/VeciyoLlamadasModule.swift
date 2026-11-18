@@ -14,7 +14,7 @@ public class VeciyoLlamadasModule: Module {
   public func definition() -> ModuleDefinition {
     Name("VeciyoLlamadas")
 
-    Events("tokenVoip", "contestar", "colgar")
+    Events("tokenVoip", "contestar", "colgar", "audioActivado", "audioDesactivado")
 
     Function("listo") { () -> [[String: String]] in
       CentralDeLlamadas.shared.alEvento = { [weak self] evento, datos in
@@ -25,6 +25,11 @@ public class VeciyoLlamadasModule: Module {
 
     Function("tokenVoip") { () -> String? in
       CentralDeLlamadas.shared.token
+    }
+
+    // «ninguna», «esperando» o «activo» (18/11/2026): ver `audioDeCallKit`.
+    Function("audioDeCallKit") { () -> String in
+      CentralDeLlamadas.shared.audioDeCallKit
     }
 
     Function("terminar") { (llamadaId: String) in
