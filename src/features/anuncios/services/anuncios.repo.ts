@@ -464,3 +464,33 @@ export async function dejarResultadosEnBorrador(
   });
   if (error) throw error;
 }
+
+export interface IndiceDelEdificio {
+  /** Lo que suman los índices de los departamentos, en %. */
+  suma: number;
+  viviendas: number;
+  /** Cuántos departamentos no tienen índice todavía. */
+  sinIndice: number;
+  /** Todos con índice y suman 100 %: se puede votar según el índice. */
+  completo: boolean;
+}
+
+/**
+ * Cuánto suman los índices de votación del edificio (18/11/2026). Una
+ * encuesta «según el índice» solo se puede crear con el 100 %; la base lo
+ * exige igual (`encuesta_por_indice_con_el_cien`).
+ */
+export async function indiceDelEdificio(condominioId: string): Promise<IndiceDelEdificio | null> {
+  const { data, error } = await supabase.rpc("indice_de_votacion_del_edificio", {
+    p_condominio_id: condominioId,
+  });
+  if (error) throw error;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+  const fila = data as Record<string, unknown>;
+  return {
+    suma: Number(fila.suma ?? 0),
+    viviendas: Number(fila.viviendas ?? 0),
+    sinIndice: Number(fila.sin_indice ?? 0),
+    completo: fila.completo === true,
+  };
+}

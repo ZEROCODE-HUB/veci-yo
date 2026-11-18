@@ -4,7 +4,9 @@
     "puntos": [
       "Mensajería con la portería: al elegir a una persona («Conserje · Federico Valverde») se abre un chat solo con ella, con su nombre arriba. Se le puede escribir aunque no esté de turno: la app avisa cuándo vuelve, el mensaje le espera y le llega el aviso. La administración también puede leer esos chats.",
       "Reglamento: «Ver documento» ahora abre el PDF o el Word dentro de la app para leerlo, en lugar de la ventana de compartir.",
-      "Llamadas en iPhone: al contestar con el teléfono bloqueado o la app cerrada, la app espera a que el iPhone entregue el audio antes de encender el micrófono, para que el otro te oiga (necesita la nueva versión de TestFlight)."
+      "Llamadas en iPhone: al contestar con el teléfono bloqueado o la app cerrada, la app espera a que el iPhone entregue el audio antes de encender el micrófono, para que el otro te oiga (necesita la nueva versión de TestFlight).",
+      "Índice de votación: ahora es un porcentaje del edificio. Empieza vacío, cada departamento va de más de 0 a 100 %, y entre todos no pueden pasar de 100 %. Al editar un departamento se ve cuánto suman los demás y cuánto le queda.",
+      "Encuestas: «Según el índice de votación» solo se puede elegir cuando todos los departamentos tienen su índice y suman 100 %; si no, sale en gris y dice cuánto suman y cuántos faltan. Mientras una encuesta por índice está abierta, los índices no se pueden cambiar."
     ]
   },
   {

@@ -4982,7 +4982,7 @@ export type Database = {
           deleted_at: string | null
           estado: Database["public"]["Enums"]["estado_unidad"]
           id: string
-          indice_votacion: number
+          indice_votacion: number | null
           piso: number
           tipologia_id: string | null
           torre_id: string
@@ -4996,7 +4996,7 @@ export type Database = {
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
-          indice_votacion?: number
+          indice_votacion?: number | null
           piso: number
           tipologia_id?: string | null
           torre_id: string
@@ -5010,7 +5010,7 @@ export type Database = {
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
-          indice_votacion?: number
+          indice_votacion?: number | null
           piso?: number
           tipologia_id?: string | null
           torre_id?: string
@@ -6764,6 +6764,10 @@ export type Database = {
           porcentaje: number
         }[]
       }
+      estado_del_indice_de_votacion: {
+        Args: { p_condominio_id: string }
+        Returns: Json
+      }
       estado_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -7068,6 +7072,10 @@ export type Database = {
         Args: { p_salvo?: string; p_unidad_id: string }
         Returns: boolean
       }
+      hay_votacion_abierta_por_indice: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       historial_de_la_estancia: {
         Args: { p_visita_id: string }
         Returns: {
@@ -7137,6 +7145,10 @@ export type Database = {
           invitado_id: string
           motivo: string
         }[]
+      }
+      indice_de_votacion_del_edificio: {
+        Args: { p_condominio_id: string }
+        Returns: Json
       }
       invitar_primer_administrador: {
         Args: { p_condominio_id: string; p_correo: string; p_nombre: string }
@@ -8023,6 +8035,7 @@ export type Database = {
         Args: { p_en_comite: boolean; p_unidad_id: string }
         Returns: undefined
       }
+      porcentaje_para_leer: { Args: { p: number }; Returns: string }
       porteria_puede_llamar: {
         Args: { p_condominio_id: string }
         Returns: boolean

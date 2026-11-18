@@ -11,6 +11,7 @@ import {
   TorresTab,
 } from "../components/arquitectura";
 import { useAdministradorArquitectura } from "../hooks";
+import { leerIndiceDeVotacion } from "../helpers/indiceDeVotacion";
 
 // «Estacionamientos»: los niveles del edificio (16/11/2026).
 const TABS = ["Condominio", "Torres", "Estacionamientos", "Porterías"];
@@ -83,7 +84,7 @@ export function AdministradorArquitecturaScreen() {
             codigo: form.codigo,
             piso: Number(form.piso) || 1,
             tipologiaId: form.tipologiaId || undefined,
-            indiceVotacion: Number(form.indiceVotacion.replace(",", ".")) || 1,
+            indiceVotacion: leerIndiceDeVotacion(form.indiceVotacion),
           })
         }
         onUpdateUnit={(unit, form) =>
@@ -92,7 +93,7 @@ export function AdministradorArquitecturaScreen() {
             piso: Number(form.piso) || 1,
             estado: form.estado,
             tipologiaId: form.tipologiaId || null,
-            indiceVotacion: Number(form.indiceVotacion.replace(",", ".")) || 1,
+            indiceVotacion: leerIndiceDeVotacion(form.indiceVotacion),
           })
         }
         onDeleteUnit={(uuid) => deleteUnit(uuid)}
