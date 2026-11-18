@@ -169,6 +169,8 @@ export function AnuncioFormModal({
                   una asamblea lo decide quien publica, no la app.
                 */
                 { key: "paraPorteria", label: "Portería" },
+                // Los profesionales permanentes con cuenta (18/11/2026). No votan.
+                { key: "paraTrabajadores", label: "Profesionales permanentes" },
               ] as const
             ).map((option) => (
               <Controller

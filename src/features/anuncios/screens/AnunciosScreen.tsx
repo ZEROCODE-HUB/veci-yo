@@ -79,6 +79,7 @@ export function AnunciosScreen() {
         paraResidentes: values.paraResidentes,
         paraHuespedes: values.paraHuespedes,
         paraPorteria: values.paraPorteria,
+        paraTrabajadores: values.paraTrabajadores,
         votoMultiple: values.votacionMultiple,
         ocultarResultados: values.ocultarResultados,
         umbral: values.umbral ? Number(values.umbral) : undefined,

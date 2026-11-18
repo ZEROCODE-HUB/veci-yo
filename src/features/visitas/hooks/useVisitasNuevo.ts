@@ -52,6 +52,8 @@ import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
 import { entraAlRegistrar } from "../helpers/entraAlRegistrar";
 import { useOficios } from "./useOficios";
 import { useDocumentoDeAmigos } from "./useDocumentoDeAmigos";
+import { agregarTrabajador } from "@/features/propietario/services/trabajadores.repo";
+import { paisPorDefecto } from "@/shared/constants";
 
 /**
  * Estado y reglas del alta de visitas.
@@ -134,6 +136,7 @@ export function useVisitasNuevo() {
     esGuardia,
     esAdmin,
     esHuesped,
+    esTrabajador: rolActivo === "trabajador",
     rentaCortaPermitida: Boolean(rentaCortaPermitida),
   });
 
@@ -244,6 +247,15 @@ export function useVisitasNuevo() {
   const [identificacion, setIdentificacion] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
+  /*
+    El profesional permanente, en un solo registro (18/11/2026, pedido del
+    cliente): «¿Tendrá cuenta en la app?». Con cuenta se le manda el acceso
+    al correo de arriba y se eligen sus permisos; sin cuenta sale en el
+    directorio de la vivienda. Antes era otro formulario, en Invitar.
+  */
+  const [conCuenta, setConCuenta] = useState(false);
+  const [puedeContestarCitofono, setPuedeContestarCitofono] = useState(true);
+  const [puedeCrearVisitas, setPuedeCrearVisitas] = useState(false);
   const [horaInicio, setHoraInicio] = useState(() => {
     if (!esGuardia) return "";
     const now = ahora();
@@ -420,6 +432,8 @@ export function useVisitasNuevo() {
     if (tipoSeleccionado === "permanente") {
       setPersonas("1");
       setCantidadMenores(0);
+      // Sin calendario (18/11/2026): empieza hoy.
+      setSelectedDate(ahora());
     }
   }, [tipoSeleccionado]);
 
@@ -767,12 +781,17 @@ export function useVisitasNuevo() {
 
     const unidadDestino = esGuardiaOAdmin
       ? resolverUnidad(torre, depto)
-      : unidadDeLaSesion
-        ? {
-            unidadId: unidadDeLaSesion.unidadId,
-            condominioId: unidadDeLaSesion.condominioId,
-          }
-        : undefined;
+      : rolActivo === "trabajador"
+        ? // El profesional permanente no tiene membresía: su vivienda es la ubicación (18/11/2026).
+          ubicacionActiva?.unidadId && ubicacionActiva.condominioId
+          ? { unidadId: ubicacionActiva.unidadId, condominioId: ubicacionActiva.condominioId }
+          : undefined
+        : unidadDeLaSesion
+          ? {
+              unidadId: unidadDeLaSesion.unidadId,
+              condominioId: unidadDeLaSesion.condominioId,
+            }
+          : undefined;
 
     // Hueco 36: de cada menor se dice con quién viene y qué es de él.
     if (
@@ -785,6 +804,15 @@ export function useVisitasNuevo() {
 
     if (tipoSeleccionado === "permanente" && !diasTrabajo.length) {
       addToast("Elige al menos un día en que viene.", "error");
+      return;
+    }
+
+    if (
+      tipoSeleccionado === "permanente" &&
+      conCuenta &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())
+    ) {
+      addToast("Para darle cuenta en la app, escribe su correo.", "error");
       return;
     }
 
@@ -988,6 +1016,33 @@ export function useVisitasNuevo() {
               ),
             );
         }
+        /*
+          Y su ficha de profesional permanente, unida a esta visita: con
+          cuenta le llega el acceso al correo; sin cuenta sale en el
+          directorio. Si falla, la visita ya quedó: se dice y se sigue.
+        */
+        if (tipoSeleccionado === "permanente" && !esGuardiaOAdmin && unidadDestino?.unidadId) {
+          agregarTrabajador({
+            unidadId: unidadDestino.unidadId,
+            nombre: nombre.trim(),
+            oficio: profesionEscrita || undefined,
+            codigoPais: telefono.trim() ? paisPorDefecto() : undefined,
+            telefono: telefono.trim() || undefined,
+            conApp: conCuenta,
+            correo: email.trim().toLowerCase(),
+            puedeContestarCitofono,
+            puedeCrearVisitas,
+            visitaId,
+          })
+            .then(() => {
+              if (conCuenta) addToast("Le enviamos el acceso a la app a su correo", "success");
+            })
+            .catch((e) => {
+              if (conCuenta) {
+                addToast(mensajeDeError(e, "La visita quedó, pero no se le pudo dar cuenta en la app"), "error");
+              }
+            });
+        }
         setVisitaCreadaId(visitaId);
         setShowSuccess(true);
       },
@@ -1057,6 +1112,9 @@ export function useVisitasNuevo() {
     porteriaPideDocumento,
     email, setEmail,
     telefono, setTelefono,
+    conCuenta, setConCuenta,
+    puedeContestarCitofono, setPuedeContestarCitofono,
+    puedeCrearVisitas, setPuedeCrearVisitas,
     horaInicio, setHoraInicio,
     profesion, setProfesion, oficios, pideOtraProfesion,
     profesionOtro, setProfesionOtro,

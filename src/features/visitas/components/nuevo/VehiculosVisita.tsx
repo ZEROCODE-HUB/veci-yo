@@ -71,7 +71,7 @@ export function VehiculosVisita({
       >
         <View className="flex-row items-center justify-between">
           <Text className="shrink text-sm text-gray-900">
-            {paraHuesped ? "¿Tu huésped trae vehículo?" : "¿Traes vehículos?"}
+            {paraHuesped ? "¿Tu huésped trae vehículo?" : "¿Trae vehículo?"}
           </Text>
           <Toggle
             value={tieneVehiculo}

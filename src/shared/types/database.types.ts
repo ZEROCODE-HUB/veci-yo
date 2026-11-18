@@ -3782,6 +3782,7 @@ export type Database = {
           para_porteria: boolean
           para_propietarios: boolean
           para_residentes: boolean
+          para_trabajadores: boolean
           publicada_desde: string
           publicada_hasta: string | null
           quien_vota: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -3814,6 +3815,7 @@ export type Database = {
           para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
+          para_trabajadores?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
           quien_vota?: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -3846,6 +3848,7 @@ export type Database = {
           para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
+          para_trabajadores?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
           quien_vota?: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -4845,10 +4848,13 @@ export type Database = {
           id: string
           nombre: string
           oficio: string | null
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
           telefono: string | null
           unidad_id: string
           updated_at: string
           usuario_id: string | null
+          visita_id: string | null
         }
         Insert: {
           aceptado_en?: string | null
@@ -4862,10 +4868,13 @@ export type Database = {
           id?: string
           nombre: string
           oficio?: string | null
+          puede_contestar_citofono?: boolean
+          puede_crear_visitas?: boolean
           telefono?: string | null
           unidad_id: string
           updated_at?: string
           usuario_id?: string | null
+          visita_id?: string | null
         }
         Update: {
           aceptado_en?: string | null
@@ -4879,10 +4888,13 @@ export type Database = {
           id?: string
           nombre?: string
           oficio?: string | null
+          puede_contestar_citofono?: boolean
+          puede_crear_visitas?: boolean
           telefono?: string | null
           unidad_id?: string
           updated_at?: string
           usuario_id?: string | null
+          visita_id?: string | null
         }
         Relationships: [
           {
@@ -4890,6 +4902,13 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trabajador_de_la_vivienda_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
             referencedColumns: ["id"]
           },
         ]
@@ -5838,8 +5857,11 @@ export type Database = {
           p_correo?: string
           p_nombre: string
           p_oficio?: string
+          p_puede_contestar_citofono?: boolean
+          p_puede_crear_visitas?: boolean
           p_telefono?: string
           p_unidad_id: string
+          p_visita_id?: string
         }
         Returns: string
       }
@@ -6249,6 +6271,10 @@ export type Database = {
         }[]
       }
       contestar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
+      correo_de_acceso_de_trabajador: {
+        Args: { p_trabajador_id: string }
+        Returns: undefined
+      }
       crear_cuota_del_mes: {
         Args: { p_condominio_id: string; p_periodo?: string }
         Returns: string
@@ -6724,6 +6750,10 @@ export type Database = {
         Returns: boolean
       }
       es_staff_plataforma: { Args: never; Returns: boolean }
+      es_trabajador_con_app_en: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_vecino_del_condominio: {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
@@ -7462,6 +7492,8 @@ export type Database = {
           codigo: string
           condominio: string
           condominio_id: string
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
           torre_numero: number
           trabajador_id: string
           unidad_id: string
@@ -8558,6 +8590,10 @@ export type Database = {
         Args: { p_cuota_id: string; p_unidad_id: string }
         Returns: number
       }
+      trabajador_registra_visitas: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
+      }
       trabajadores_de_la_vivienda: {
         Args: { p_unidad_id: string }
         Returns: {
@@ -8966,7 +9002,7 @@ export type Database = {
         | "guardia_seguridad"
       tipo_reporte: "visitantes" | "correspondencia" | "areas_comunes"
       tipo_reporte_legal: "tra" | "sire"
-      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
+      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van" | "nautico"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
       tipo_zona: "recreacion" | "servicios" | "eventos"
       visibilidad_cuotas: "porcentaje" | "quien_pago" | "quien_debe"
@@ -9395,7 +9431,7 @@ export const Constants = {
       ],
       tipo_reporte: ["visitantes", "correspondencia", "areas_comunes"],
       tipo_reporte_legal: ["tra", "sire"],
-      tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
+      tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van", "nautico"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
       tipo_zona: ["recreacion", "servicios", "eventos"],
       visibilidad_cuotas: ["porcentaje", "quien_pago", "quien_debe"],

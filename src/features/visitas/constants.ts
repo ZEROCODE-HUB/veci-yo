@@ -26,6 +26,17 @@ export const TIPO_LABELS: Record<string, string> = {
   "huesped-temporal": "Huésped Temporal",
 };
 
+/**
+ * Qué es cada profesional (18/11/2026, pedido del cliente: «hacer aclaración
+ * entre profesional permanente y temporal»).
+ */
+export const TIPO_EXPLICACION: Record<string, string> = {
+  permanente:
+    "Viene siempre los mismos días de la semana, sin fecha de fin: la empleada de la casa, el chofer, la niñera, el profesor.",
+  temporal:
+    "Viene un día concreto a hacer un trabajo: el electricista, el pintor, un domicilio. Se registra cada vez que viene.",
+};
+
 export const TIPO_ICONS: Record<string, string> = {
   amigos: "🏠",
   temporal: "👷",

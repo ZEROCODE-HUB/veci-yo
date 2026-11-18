@@ -24,7 +24,7 @@ type TipoDB = Database["public"]["Enums"]["tipo_publicacion"];
 const SELECT = `
   id, tipo, categoria, titulo, descripcion, url_video, avisar,
   publicada_desde, publicada_hasta,
-  para_propietarios, para_residentes, para_huespedes, para_porteria,
+  para_propietarios, para_residentes, para_huespedes, para_porteria, para_trabajadores,
   voto_multiple, ocultar_resultados, resultados_publicados_en, umbral,
   opciones:opcion_voto ( id, etiqueta, orden )
 ` as const;
@@ -48,6 +48,7 @@ type FilaDeAnuncio = Columnas<
   | "para_residentes"
   | "para_huespedes"
   | "para_porteria"
+  | "para_trabajadores"
   | "voto_multiple"
   | "ocultar_resultados"
   | "resultados_publicados_en"
@@ -123,6 +124,7 @@ function mapear(
     opcionesVotacion: opciones.map((o) => o.etiqueta),
     paraHuespedes: fila.para_huespedes ?? false,
     paraPorteria: fila.para_porteria ?? false,
+    paraTrabajadores: fila.para_trabajadores ?? false,
     paraPropietarios: fila.para_propietarios ?? true,
     paraResidentes: fila.para_residentes ?? true,
     avisar: fila.avisar ?? true,
@@ -194,6 +196,7 @@ export interface NuevoAnuncio {
   paraHuespedes?: boolean;
   /** Si la portería lo ve y le llega el aviso (15/10/2026). Por defecto no. */
   paraPorteria?: boolean;
+  paraTrabajadores?: boolean;
   votoMultiple?: boolean;
   ocultarResultados?: boolean;
   umbral?: number;
@@ -249,6 +252,7 @@ export async function crearAnuncio(datos: NuevoAnuncio) {
       para_residentes: datos.paraResidentes ?? true,
       para_huespedes: datos.paraHuespedes ?? false,
       para_porteria: datos.paraPorteria ?? false,
+      para_trabajadores: datos.paraTrabajadores ?? false,
       voto_multiple: datos.votoMultiple ?? false,
       ocultar_resultados: datos.ocultarResultados ?? false,
       umbral: datos.umbral ?? null,

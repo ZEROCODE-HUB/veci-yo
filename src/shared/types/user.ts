@@ -73,6 +73,13 @@ export interface Ubicacion {
    * (17/11/2026).
    */
   papel?: string;
+  /**
+   * Solo del profesional permanente con app (18/11/2026): si puede anunciar
+   * visitas para esta vivienda. Lo decide quien lo registró.
+   */
+  puedeCrearVisitas?: boolean;
+  /** El edificio de la vivienda. Lo trae el profesional permanente, que no tiene membresía. */
+  condominioId?: string;
   direccion: string;
   alias?: string;
   /**

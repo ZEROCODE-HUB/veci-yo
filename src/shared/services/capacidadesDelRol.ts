@@ -98,7 +98,9 @@ export const CAPACIDADES_FIJAS: Record<RolQueSeCrea, Record<CapacidadFija, boole
   inquilino_lider: { ...VECINO, configurar_renta_corta: true },
   residente: VECINO,
   coadministrador: { ...VECINO, configurar_renta_corta: true },
-  trabajador_con_app: { ...NADA, entrar_a_la_app: true, contestar_intercomunicador: true },
+  // Desde el 18/11/2026 ve los anuncios que van para él (`para_trabajadores`).
+  // El citófono y crear visitas los decide quien lo registra, uno por uno.
+  trabajador_con_app: { ...NADA, entrar_a_la_app: true, contestar_intercomunicador: true, ver_anuncios: true },
   trabajador_sin_app: NADA,
 };
 
@@ -178,10 +180,10 @@ export function rolQueSeCreaDe(rol: RolUnidad): RolQueSeCrea | null {
 }
 
 /**
- * Si un rol de la app tiene pantallas de vivienda (Inicio y Viviendas). El
- * trabajador permanente no: no ve visitas, correspondencia, zonas comunes,
- * anuncios ni cuadro de honor, así que solo le queda Perfil, y el
- * intercomunicador, que suena encima de todo.
+ * Si un rol de la app tiene pantallas de vivienda. El profesional
+ * permanente, desde el 18/11/2026, tiene su Inicio (anuncios y, si se lo
+ * permiten, visitas) pero no «Viviendas»; el intercomunicador suena encima de
+ * todo.
  */
 export function veLasPantallasDeLaVivienda(rol: RolActivo): boolean {
   if (rol !== "trabajador") return true;
