@@ -336,6 +336,23 @@ export async function abrirChatConLaOficina(params: {
 }
 
 /**
+ * Abre —o recupera— el chat de quien vive en una vivienda con UNA persona de
+ * la portería (18/11/2026), esté o no de turno. La base comprueba que vive
+ * ahí y que esa persona atiende el chat.
+ */
+export async function abrirChatConLaPorteria(params: {
+  unidadId: string;
+  membresiaId: string;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("abrir_chat_con_la_porteria", {
+    p_unidad_id: params.unidadId,
+    p_membresia_id: params.membresiaId,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
  * Abre —o recupera— la conversación de una vivienda con un área.
  *
  * `conversacion_area_unica` garantiza que no haya dos hilos con la portería
