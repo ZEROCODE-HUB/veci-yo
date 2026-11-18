@@ -956,6 +956,7 @@ export type Database = {
           created_at: string
           id: string
           nombre: string | null
+          porteria_membresia_id: string | null
           solo_quienes_viven: boolean
           tipo: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id: string | null
@@ -970,6 +971,7 @@ export type Database = {
           created_at?: string
           id?: string
           nombre?: string | null
+          porteria_membresia_id?: string | null
           solo_quienes_viven?: boolean
           tipo: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id?: string | null
@@ -984,6 +986,7 @@ export type Database = {
           created_at?: string
           id?: string
           nombre?: string | null
+          porteria_membresia_id?: string | null
           solo_quienes_viven?: boolean
           tipo?: Database["public"]["Enums"]["tipo_conversacion"]
           unidad_id?: string | null
@@ -995,6 +998,13 @@ export type Database = {
             columns: ["condominio_id"]
             isOneToOne: false
             referencedRelation: "condominio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversacion_porteria_membresia_id_fkey"
+            columns: ["porteria_membresia_id"]
+            isOneToOne: false
+            referencedRelation: "membresia_condominio"
             referencedColumns: ["id"]
           },
           {
@@ -5717,6 +5727,10 @@ export type Database = {
       }
       abrir_chat_con_la_oficina: {
         Args: { p_condominio_id: string; p_usuario_id: string }
+        Returns: string
+      }
+      abrir_chat_con_la_porteria: {
+        Args: { p_membresia_id: string; p_unidad_id: string }
         Returns: string
       }
       abrir_mes_de_cuota: {

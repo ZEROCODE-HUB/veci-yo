@@ -35,6 +35,11 @@ interface Props {
  *
  * Quién está de turno lo dice la base con el reloj del edificio. Sin horario
  * cargado cuenta como de turno, para no dejar a nadie sin poder escribir.
+ *
+ * Desde el 18/11/2026 cada persona tiene su propio chat, así que también se
+ * puede elegir a quien no está de turno (el cliente: «si uno termina el turno
+ * se perdería el mensaje.. no es mejor que sea separado?»). Sale en gris, y al
+ * elegirla se avisa de cuándo vuelve, por si es urgente.
  */
 export function ElegirAQuienEscribir({
   viviendas,
@@ -47,6 +52,9 @@ export function ElegirAQuienEscribir({
   onStartChat,
   abriendo,
 }: Props) {
+  const fueraDeTurno = personal.find(
+    (p) => !p.deTurno && elegido === `porteria:${p.membresiaId}`,
+  );
   return (
     <ScrollView className="flex-1 bg-gray-50" contentContainerClassName="p-4 gap-4">
       <Text className="text-base font-semibold text-gray-900">¿Con quién quieres hablar?</Text>
@@ -94,6 +102,14 @@ export function ElegirAQuienEscribir({
         )}
       </View>
 
+      {fueraDeTurno ? (
+        <View className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+          <Text className="text-sm text-amber-800">
+            {avisoFueraDeTurno(fueraDeTurno)}
+          </Text>
+        </View>
+      ) : null}
+
       <View className="gap-2">
         <Text className="text-sm font-semibold text-gray-700">Oficina</Text>
         <Opcion
@@ -104,8 +120,8 @@ export function ElegirAQuienEscribir({
       </View>
 
       <Text className="text-xs leading-4 text-gray-500">
-        La conversación queda con tu vivienda: si quien te atiende termina su turno, la sigue
-        quien entre.
+        Cada persona de la portería tiene su propio chat contigo. La administración también
+        puede leerlo, para que ningún mensaje se quede sin respuesta.
       </Text>
 
       <View className="mt-2">
@@ -143,7 +159,7 @@ function FilaDelPersonal({
       titulo={etiquetaDelPersonal(persona.cargoEtiqueta, persona.nombre)}
       detalle={detalle}
       elegida={elegida}
-      deshabilitada={!persona.deTurno}
+      atenuada={!persona.deTurno}
       onPress={onPress}
     />
   );
@@ -153,13 +169,14 @@ function Opcion({
   titulo,
   detalle,
   elegida,
-  deshabilitada = false,
+  atenuada = false,
   onPress,
 }: {
   titulo: string;
   detalle?: string;
   elegida: boolean;
-  deshabilitada?: boolean;
+  /** Fuera de turno: en gris, pero se puede elegir (18/11/2026). */
+  atenuada?: boolean;
   onPress: () => void;
 }) {
   return (
@@ -167,15 +184,13 @@ function Opcion({
       accessibilityRole="radio"
       accessibilityLabel={detalle ? `${titulo}. ${detalle}` : titulo}
       aria-checked={elegida}
-      aria-disabled={deshabilitada}
-      accessibilityState={{ checked: elegida, disabled: deshabilitada }}
-      disabled={deshabilitada}
+      accessibilityState={{ checked: elegida }}
       onPress={onPress}
       className={`flex-row items-center gap-3 rounded-xl border p-3 ${
-        deshabilitada
-          ? "border-gray-100 bg-gray-100"
-          : elegida
-            ? "border-primary bg-primary-light"
+        elegida
+          ? "border-primary bg-primary-light"
+          : atenuada
+            ? "border-gray-100 bg-gray-100"
             : "border-gray-200 bg-white"
       }`}
     >
@@ -188,16 +203,26 @@ function Opcion({
       </View>
       <View className="flex-1">
         <Text
-          className={`text-sm font-semibold ${deshabilitada ? "text-gray-400" : "text-gray-900"}`}
+          className={`text-sm font-semibold ${atenuada ? "text-gray-500" : "text-gray-900"}`}
         >
           {titulo}
         </Text>
         {detalle ? (
-          <Text className={`text-xs ${deshabilitada ? "text-gray-400" : "text-green-700"}`}>
+          <Text className={`text-xs ${atenuada ? "text-gray-500" : "text-green-700"}`}>
             {detalle}
           </Text>
         ) : null}
       </View>
     </Pressable>
   );
+}
+
+/** «Federico Valverde no está de turno: entra mañana 7:00. …» */
+function avisoFueraDeTurno(persona: PersonalDePorteria): string {
+  const entrada = textoDeProximaEntrada(
+    { turnos: persona.turnos, ajustes: persona.ajustes },
+    persona.ahoraLocal,
+  );
+  const cuando = entrada ? `: ${entrada.charAt(0).toLowerCase()}${entrada.slice(1)}` : "";
+  return `${persona.nombre} no está de turno${cuando}. Le llegará tu mensaje y te contestará cuando vuelva. Si es urgente, elige a quien está de turno ahora.`;
 }

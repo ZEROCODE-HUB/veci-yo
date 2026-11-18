@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore, useUIStore } from "@/stores";
 import { useCondominioActivo, useUnidadesDisponibles, useNavegacion } from "@/shared/hooks";
-import { abrirConversacionArea } from "../services/chat.repo";
+import { abrirChatConLaPorteria, abrirConversacionArea } from "../services/chat.repo";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { ChatNewForm, type DestinoChat } from "../components/chat/ChatNewForm";
 import { ElegirAQuienEscribir } from "../components/chat/ElegirAQuienEscribir";
@@ -36,11 +36,11 @@ export function ChatNuevoScreen() {
   const [destino, setDestino] = useState("");
 
   /*
-    Un vecino elige a una persona de la portería --con su cargo y solo si
-    está de turno-- o la administración (17/11/2026). La conversación sigue
-    siendo la de su vivienda con la portería: la leen todos los que tienen el
-    chat habilitado, así que si quien la atiende termina su turno, la sigue
-    quien entre.
+    Un vecino elige a una persona de la portería --con su cargo-- o la
+    administración (17/11/2026). Desde el 18/11/2026 cada persona de la
+    portería tiene su propio chat con la vivienda, con su nombre arriba, y se
+    le puede escribir aunque no esté de turno: el mensaje le espera y le llega
+    el aviso. Antes se abría el hilo de la vivienda con toda la portería.
   */
   const { personal, cargando: cargandoPersonal } = usePersonalDePorteria(
     condominioId,
@@ -62,16 +62,15 @@ export function ChatNuevoScreen() {
         });
       }
       if (elegido.startsWith("porteria:")) {
-        const persona = personal.find((p) => `porteria:${p.membresiaId}` === elegido);
-        // La lista se refresca cada minuto: quien terminó su turno ya no vale.
-        if (!persona?.deTurno) {
-          throw new Error("Esa persona ya no está de turno. Elige a quien esté ahora.");
-        }
+        return abrirChatConLaPorteria({
+          unidadId: viviendaId,
+          membresiaId: elegido.slice("porteria:".length),
+        });
       }
       return abrirConversacionArea({
         condominioId,
         unidadId: viviendaId,
-        area: elegido === "administracion" ? "administracion" : "seguridad",
+        area: "administracion",
         usuarioId,
       });
     },

@@ -2,6 +2,7 @@
   {
     "fecha": "2026-11-18",
     "puntos": [
+      "Mensajería con la portería: al elegir a una persona («Conserje · Federico Valverde») se abre un chat solo con ella, con su nombre arriba. Se le puede escribir aunque no esté de turno: la app avisa cuándo vuelve, el mensaje le espera y le llega el aviso. La administración también puede leer esos chats.",
       "Reglamento: «Ver documento» ahora abre el PDF o el Word dentro de la app para leerlo, en lugar de la ventana de compartir.",
       "Llamadas en iPhone: al contestar con el teléfono bloqueado o la app cerrada, la app espera a que el iPhone entregue el audio antes de encender el micrófono, para que el otro te oiga (necesita la nueva versión de TestFlight)."
     ]
