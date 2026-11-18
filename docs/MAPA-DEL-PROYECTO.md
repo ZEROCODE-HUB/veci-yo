@@ -250,3 +250,9 @@ Detalle en `docs/archivo/CORRECCIONES-16.10.md`. Pantallas y piezas nuevas:
 - **Propietario:** con inquilino líder activo no puede volver a ser residente (lo impide la base).
 - **Invitar › «Agregar trabajador permanente»:** tabla `trabajador_de_la_vivienda`; con app entra con el rol `trabajador` (solo Perfil e intercomunicador). El resumen «Podrá / No podrá» sale de `capacidadesDelRol.ts`.
 - **Llamadas:** «¿A quién de la vivienda?» (`llamar_a_quien`, `llamada_internet.a_usuario_id`); botón Altavoz (parámetro `llamada_empieza_en_altavoz`). Pendiente nativo para iPhone en segundo plano: ver el commit de este día.
+
+## 10. Lo que cambió el 18/11/2026
+
+- **Mensajería → Nuevo chat (vecino):** elegir a una persona de la portería abre un chat directo con ella (`abrir_chat_con_la_porteria`, `conversacion.porteria_membresia_id`), no el hilo de la vivienda con toda la portería. Se puede elegir a quien no está de turno: sale en gris y, al elegirla, un aviso dice cuándo vuelve. Lo leen sus dos participantes y quien contesta el chat en la administración. Título: el vecino ve «Cargo · Nombre», la portería «Nombre · Dpto X», la administración «Dpto X con Nombre» (`con_quien_hablo`). El hilo de la vivienda con la portería sigue existiendo para las versiones instaladas.
+- **Reglamento → Ver documento:** abre el archivo en una ventana de navegador dentro de la app (iPhone directo; Android con el visor de documentos de Google).
+- **Llamadas en iPhone:** contestando desde CallKit, el motor de audio espera al aviso `audioActivado` del módulo nativo (necesita la versión de TestFlight posterior al 18/11/2026).
