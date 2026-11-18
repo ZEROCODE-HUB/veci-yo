@@ -35,6 +35,15 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
   private var contestadas: Set<String> = []
   private var pendientes: [[String: String]] = []
   private(set) var token: String?
+  /**
+   * El audio de una llamada de CallKit (18/11/2026): «ninguna» si no hay
+   * llamada de CallKit en curso, «esperando» si se contestó y el iPhone
+   * todavía no entregó el audio, «activo» cuando lo entregó (`didActivate`).
+   * Contestando con la app en segundo plano, la app NO puede activar el audio
+   * por su cuenta: si WebRTC arranca el micrófono antes, falla y el otro no
+   * oye nada. JavaScript mira esto para esperar.
+   */
+  private(set) var audioDeCallKit: String = "ninguna"
   /** Quién escucha en JavaScript. Nulo hasta que la app dice que está lista. */
   var alEvento: ((String, [String: String]) -> Void)?
 
@@ -113,6 +122,7 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
   func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
     if let id = llamadaId(de: action.callUUID) {
       contestadas.insert(id)
+      if audioDeCallKit != "activo" { audioDeCallKit = "esperando" }
       emitir("contestar", ["llamadaId": id])
     }
     action.fulfill()
@@ -122,25 +132,40 @@ final class CentralDeLlamadas: NSObject, PKPushRegistryDelegate, CXProviderDeleg
     if let id = llamadaId(de: action.callUUID) {
       llamadas.removeValue(forKey: id)
       contestadas.remove(id)
+      if llamadas.isEmpty { audioDeCallKit = "ninguna" }
       emitir("colgar", ["llamadaId": id])
     }
     action.fulfill()
   }
 
+  /*
+    CallKit entrega aquí el audio ya activo (18/11/2026). Antes no se hacía
+    nada y WebRTC intentaba activarlo por su cuenta: con la app en segundo
+    plano iOS lo rechaza, y al contestar desde la pantalla bloqueada el otro
+    no oía nada. Ahora se avisa a JavaScript, que le dice a WebRTC que el
+    audio ya está y le deja encender el micrófono (`vozDeLlamada.native.ts`).
+  */
   func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
-    // La voz la lleva LiveKit, que configura su propia sesión de audio al
-    // conectar. CallKit la activa aquí; no hay nada más que hacer.
+    audioDeCallKit = "activo"
+    emitir("audioActivado", [:])
+  }
+
+  func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+    audioDeCallKit = "ninguna"
+    emitir("audioDesactivado", [:])
   }
 
   func providerDidReset(_ provider: CXProvider) {
     llamadas.removeAll()
     contestadas.removeAll()
+    audioDeCallKit = "ninguna"
   }
 
   /** La llamada dejó de sonar o terminó fuera de CallKit. */
   func terminar(_ llamadaId: String, motivo: CXCallEndedReason = .remoteEnded) {
     contestadas.remove(llamadaId)
     guard let uuid = llamadas.removeValue(forKey: llamadaId) else { return }
+    if llamadas.isEmpty { audioDeCallKit = "ninguna" }
     proveedor.reportCall(with: uuid, endedAt: Date(), reason: motivo)
   }
 
