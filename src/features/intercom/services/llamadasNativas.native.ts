@@ -15,6 +15,8 @@ interface ModuloLlamadas {
   listo(): Record<string, string>[];
   tokenVoip(): string | null;
   terminar(llamadaId: string): void;
+  // Solo en iPhone, desde la versión de TestFlight del 18/11/2026.
+  audioDeCallKit?: () => "ninguna" | "esperando" | "activo";
   // Solo en Android (APK 6 en adelante).
   puedePantallaCompleta?: () => boolean;
   abrirAjustePantallaCompleta?: () => void;
@@ -52,6 +54,29 @@ export function escucharLlamadasNativas(
 
 export function tokenVoip(): string | null {
   return modulo?.tokenVoip() ?? null;
+}
+
+/**
+ * Contestando desde CallKit, el audio lo entrega el iPhone cuando quiere
+ * (18/11/2026). Devuelve `null` si no hay llamada de CallKit esperando ni
+ * activa --o el módulo es anterior y no lo sabe--; si no, una promesa que se
+ * cumple cuando el audio ya está activo (o a los `ms`, por si no llega).
+ */
+export function esperarAudioDeCallKit(ms: number): Promise<boolean> | null {
+  const estado = modulo?.audioDeCallKit?.();
+  if (!modulo || !estado || estado === "ninguna") return null;
+  if (estado === "activo") return Promise.resolve(true);
+  return new Promise((resolver) => {
+    const reloj = setTimeout(() => {
+      suscripcion.remove();
+      resolver(false);
+    }, ms);
+    const suscripcion = modulo.addListener("audioActivado", () => {
+      clearTimeout(reloj);
+      suscripcion.remove();
+      resolver(true);
+    });
+  });
 }
 
 export function terminarLlamadaNativa(llamadaId: string): void {

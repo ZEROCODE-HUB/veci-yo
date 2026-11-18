@@ -49,6 +49,7 @@ import { AppState, PermissionsAndroid, Platform } from "react-native";
 import type { Room as RoomTipo } from "livekit-client";
 import { Camera } from "expo-camera";
 import { anotarEnLaBase, describirError } from "@/shared/services/erroresDeLaApp";
+import { esperarAudioDeCallKit } from "./llamadasNativas";
 
 export interface Conexion {
   silenciar: (silencio: boolean) => Promise<void>;
@@ -233,18 +234,37 @@ async function elegirSalida(si: boolean): Promise<void> {
 }
 
 /**
- * iPhone contestando desde CallKit en segundo plano: la app no puede activar
- * el audio (lo activa CallKit) y WebRTC no lo sabe. Se le dice aquí que ya
- * está activo, para que encienda el micrófono y la salida.
+ * iPhone contestando desde CallKit (18/11/2026). Con la app en segundo plano
+ * --la pantalla bloqueada-- la app no puede activar el audio: lo activa el
+ * iPhone, cuando quiere, y lo avisa (`audioActivado`, del módulo nativo).
+ * Antes WebRTC intentaba encender el micrófono por su cuenta antes de ese
+ * aviso, iOS se lo negaba y el otro no oía nada.
+ *
+ * Ahora: el motor de audio de WebRTC queda apagado hasta que llega el aviso;
+ * entonces se le dice a WebRTC que el audio ya está activo y se enciende el
+ * motor, que ya no necesita pedir nada. Devuelve `false` si no es una llamada
+ * de CallKit (o la versión instalada no lo sabe): entonces va el camino de
+ * siempre.
  */
-function avisarQueCallKitActivoElAudio(): void {
+async function audioPorCallKit(): Promise<boolean> {
+  const espera = esperarAudioDeCallKit(8000);
+  if (!espera) return false;
+  const webrtc = require("@livekit/react-native-webrtc") as typeof import("@livekit/react-native-webrtc");
+  const { AudioDeviceModule, AudioEngineAvailability, RTCAudioSession } = webrtc;
+  await AudioDeviceModule.setEngineAvailability(AudioEngineAvailability.none).catch((e: unknown) =>
+    anotarFallo("pausar el motor de audio", e),
+  );
+  const llego = await espera;
+  void anotarEnLaBase("rastro", DONDE, llego ? "CallKit entregó el audio" : "CallKit no avisó del audio a tiempo");
   try {
-    const webrtc = require("@livekit/react-native-webrtc") as typeof import("@livekit/react-native-webrtc");
-    webrtc.RTCAudioSession.audioSessionDidActivate();
-    void anotarEnLaBase("rastro", DONDE, "audio de CallKit avisado a WebRTC");
+    RTCAudioSession.audioSessionDidActivate();
   } catch (e) {
     anotarFallo("avisar el audio de CallKit", e);
   }
+  await AudioDeviceModule.setEngineAvailability(AudioEngineAvailability.default).catch((e: unknown) =>
+    anotarFallo("encender el motor de audio", e),
+  );
+  return true;
 }
 
 export async function conectarVoz(
@@ -267,6 +287,7 @@ export async function conectarVoz(
   */
   const abrirAudio = (async () => {
     await pedirMicrofono();
+    if (enIphone && (await audioPorCallKit())) return;
     const falloAudio = await conReintentos(
       () => AudioSession.startAudioSession(),
       enIphone ? 4 : 1,
@@ -275,7 +296,13 @@ export async function conectarVoz(
     if (falloAudio) {
       anotarFallo("abrir el audio", falloAudio);
       if (!enIphone) throw falloAudio;
-      avisarQueCallKitActivoElAudio();
+      // El de antes: por si el audio lo tiene otra llamada del sistema.
+      try {
+        const webrtc = require("@livekit/react-native-webrtc") as typeof import("@livekit/react-native-webrtc");
+        webrtc.RTCAudioSession.audioSessionDidActivate();
+      } catch (e) {
+        anotarFallo("avisar el audio a WebRTC", e);
+      }
     }
   })();
 

@@ -23,6 +23,11 @@ export function tokenVoip(): string | null {
 }
 
 /** Quita la llamada de la pantalla del sistema: terminó en otro sitio. */
+/** Solo existe en iPhone (CallKit). */
+export function esperarAudioDeCallKit(_ms: number): Promise<boolean> | null {
+  return null;
+}
+
 export function terminarLlamadaNativa(_llamadaId: string): void {}
 
 /**
