@@ -36,6 +36,25 @@ export function FechasDeLaVisita({ alta: v }: { alta: AltaDeVisita }) {
     );
   }
 
+  /*
+    El profesional permanente viene los días de la semana que se marcan
+    arriba (18/11/2026, pedido del cliente): un calendario de un solo día
+    confundía. Empieza hoy y no tiene fecha de fin.
+  */
+  if (v.tipoSeleccionado === "permanente") {
+    return (
+      <View
+        className="rounded-2xl p-4 gap-1"
+        style={{ backgroundColor: theme.colors.bgMuted, boxShadow: theme.shadows.card }}
+      >
+        <Text className="text-sm font-semibold text-gray-900">Desde hoy, sin fecha de fin</Text>
+        <Text className="text-xs leading-4 text-gray-500">
+          Viene cada semana los días que marcaste. Cuando ya no venga, cancélalo desde la lista de visitas.
+        </Text>
+      </View>
+    );
+  }
+
   if (v.tipoSeleccionado === "huesped-temporal") {
     /*
       Una estancia tiene dos extremos, y hasta el 09/10/2026 se pedian en dos

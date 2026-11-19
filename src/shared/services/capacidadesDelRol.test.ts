@@ -39,12 +39,14 @@ describe("resumenDelRol", () => {
     expect(r.podra).toContain("Ver la correspondencia");
   });
 
-  it("el trabajador con app solo contesta el intercomunicador", () => {
+  // Desde el 18/11/2026 ve también los anuncios que van para él.
+  it("el trabajador con app contesta el intercomunicador y ve sus anuncios", () => {
     const r = resumenDelRol("trabajador_con_app", configurables);
     expect(r.podra).toEqual([
       "Entrar a la app con su cuenta",
       "Contestar el intercomunicador y autorizar la visita que anuncia la portería",
       "Figurar en el directorio de la vivienda, para que la portería lo llame",
+      "Ver los anuncios de la administración",
     ]);
     for (const vedado of [
       "Ver las visitas de la vivienda",
@@ -52,7 +54,6 @@ describe("resumenDelRol", () => {
       "Ver las zonas comunes",
       "Reservar zonas comunes",
       "Participar en el Cuadro de Honor",
-      "Ver los anuncios de la administración",
     ]) {
       expect(r.noPodra).toContain(vedado);
     }
@@ -82,8 +83,9 @@ describe("rolQueSeCreaDe y la navegación", () => {
     expect(rolQueSeCreaDe("huesped_temporal")).toBeNull();
   });
 
-  it("el trabajador no ve las pantallas de la vivienda; los demás sí", () => {
-    expect(veLasPantallasDeLaVivienda("trabajador")).toBe(false);
+  // Desde el 18/11/2026 tiene su Inicio (anuncios y, con permiso, visitas).
+  it("el trabajador tiene su Inicio; los demás también", () => {
+    expect(veLasPantallasDeLaVivienda("trabajador")).toBe(true);
     expect(veLasPantallasDeLaVivienda("inquilino-lider")).toBe(true);
     expect(veLasPantallasDeLaVivienda("huesped-temporal")).toBe(true);
   });

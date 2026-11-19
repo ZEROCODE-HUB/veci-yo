@@ -61,12 +61,26 @@ export function puestosDisponibles(params: {
   nombreZona: string;
   puestos: number;
   ocupados: readonly number[];
+  /** El nombre que la administración le puso a cada una (18/11/2026). */
+  nombres?: readonly string[];
 }): string[] {
   const tomados = new Set(params.ocupados);
   return Array.from({ length: Math.max(0, params.puestos) }, (_, i) => i + 1)
     .filter((numero) => !tomados.has(numero))
-    .map((numero) => `${params.nombreZona} N°${numero}`);
+    .map((numero) => etiquetaDelPuesto(params.nombreZona, numero, params.nombres));
 }
+
+/**
+ * «Parrilla Terraza · N°2» si tiene nombre, «Parrilla N°2» si no. Termina
+ * siempre en el número: `numeroDelPuesto` lo lee de ahí.
+ */
+export function etiquetaDelPuesto(nombreZona: string, numero: number, nombres?: readonly string[]): string {
+  const propio = nombres?.[numero - 1]?.trim();
+  return propio ? `${propio} · N°${numero}` : `${nombreZona} N°${numero}`;
+}
+
+/** La opción de no elegir: la base le asigna una libre (18/11/2026). */
+export const CUALQUIERA = "Cualquiera libre";
 
 /**
  * Si una reserva ocupa su franja.

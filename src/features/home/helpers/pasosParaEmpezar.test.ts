@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   cuentaDePasos,
+  sinLosDescartados,
   pasosDelAdministrador,
   pasosDelGuardia,
   pasosDelPropietario,
@@ -39,13 +40,14 @@ describe("la administración", () => {
   it("un edificio recién creado tiene los siete pasos pendientes", () => {
     const pasos = pasosDelAdministrador(EDIFICIO_VACIO);
     expect(pasos.map((p) => p.id)).toEqual([
+      // En el orden que pidió el cliente (18/11/2026).
       "torres",
       "estacionamientos",
       "garitas",
-      "guardias",
       "zonas",
-      "propietarios",
       "reglamento",
+      "guardias",
+      "propietarios",
     ]);
     expect(hechos(pasos)).toEqual([]);
     expect(cuentaDePasos(pasos)).toEqual({ hechos: 0, total: 7, completa: false });
@@ -148,5 +150,37 @@ describe("el guardia", () => {
     const paso = pasosDelGuardia({ garita: "Garita principal", turnos: 2, avisos })[0];
     expect(paso.texto).toBe("Tu garita: Garita principal");
     expect(paso.hecho).toBe(true);
+  });
+});
+
+describe("la tarjeta de todos los de la vivienda (18/11/2026)", () => {
+  const activar = () => {};
+  const BASE = {
+    tieneVivienda: true,
+    enAlquiler: false,
+    hayQuienViva: false,
+    cocheras: 1,
+    vehiculos: 0,
+    avisos: { disponible: true, permiso: false, activar },
+    tieneContacto: false,
+  };
+
+  it("el propietario o el inquilino líder: grupo familiar, contacto, placas y avisos", () => {
+    expect(pasosDelPropietario({ ...BASE, gestiona: true }).map((p) => p.id)).toEqual([
+      "residentes",
+      "contacto",
+      "vehiculos",
+      "avisos",
+    ]);
+  });
+
+  it("el residente o el anfitrión: sus placas y los avisos", () => {
+    expect(pasosDelPropietario({ ...BASE, gestiona: false }).map((p) => p.id)).toEqual(["vehiculos", "avisos"]);
+  });
+
+  it("lo que se quitó no sale, y con «tarjeta» no sale nada", () => {
+    const pasos = pasosDelPropietario({ ...BASE, gestiona: true });
+    expect(sinLosDescartados(pasos, ["contacto"]).map((p) => p.id)).toEqual(["residentes", "vehiculos", "avisos"]);
+    expect(sinLosDescartados(pasos, ["tarjeta"])).toEqual([]);
   });
 });

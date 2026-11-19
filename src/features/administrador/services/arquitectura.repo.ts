@@ -201,7 +201,7 @@ export async function obtenerArquitectura(): Promise<Arquitectura> {
         torreId: f.torre?.id,
         piso: f.piso,
         tipologiaId: f.tipologia_id ?? undefined,
-        indiceVotacion: Number(f.indice_votacion),
+        indiceVotacion: f.indice_votacion == null ? null : Number(f.indice_votacion),
         estado: f.estado,
         estacionamientos: privados.length,
         codigosEstacionamiento: privados.map((p) => p.codigo),
@@ -522,7 +522,7 @@ export async function eliminarTorre(uuid: string) {
  */
 export async function crearUnidad(
   condominioId: string,
-  datos: { torreId: string; codigo: string; piso: number; tipologiaId?: string; indiceVotacion?: number },
+  datos: { torreId: string; codigo: string; piso: number; tipologiaId?: string; indiceVotacion?: number | null },
 ): Promise<string> {
   const codigo = datos.codigo.trim();
   const { data: existente, error: errorExistente } = await supabase
@@ -543,7 +543,7 @@ export async function crearUnidad(
         torre_id: datos.torreId,
         piso: datos.piso,
         tipologia_id: datos.tipologiaId ?? null,
-        indice_votacion: datos.indiceVotacion ?? 1,
+        indice_votacion: datos.indiceVotacion ?? null,
         estado: "disponible",
         deleted_at: null,
       })
@@ -560,7 +560,7 @@ export async function crearUnidad(
       codigo,
       piso: datos.piso,
       tipologia_id: datos.tipologiaId ?? null,
-      indice_votacion: datos.indiceVotacion ?? 1,
+      indice_votacion: datos.indiceVotacion ?? null,
     })
     .select("id")
     .single();
@@ -575,8 +575,8 @@ export async function actualizarUnidad(
     piso?: number;
     estado?: EstadoUnidadDB;
     tipologiaId?: string | null;
-    /** Índice de votación (17/11/2026). Sin él no se toca. */
-    indiceVotacion?: number;
+    /** Índice de votación, en % (18/11/2026). `undefined` no lo toca; `null` lo vacía. */
+    indiceVotacion?: number | null;
   },
 ) {
   const { error } = await supabase

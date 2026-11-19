@@ -44,6 +44,8 @@ vi.mock("@/shared/hooks", () => ({
   useUnidadesDisponibles: () => ({ resolverUnidad: () => ({ unidadId: "u1" }) }),
   // Para saber si el guardia aprueba reservas y si el edificio pide comprobantes.
   useCondominioActivo: () => "c1",
+  // La vivienda de quien reserva, para ofrecer a quienes viven con él (18/11/2026).
+  useUnidadActiva: () => ({ unidadId: "u1" }),
   useParametrosDeLaBase: () => ({
     listo: true,
     numero: (clave: string) => {
@@ -79,7 +81,7 @@ const { ZonaReservaForm } = await import("./ZonaReservaForm");
 type ZonaDePrueba = Partial<ZonaComunConfig> &
   Pick<ZonaComunConfig, "id" | "nombre"> &
   // Lo lee de la zona que recibe por prop, no de la configuración.
-  Pick<ZonaComun, "eligeNumero">;
+  Pick<ZonaComun, "eligeNumero" | "nombresDeZonas">;
 
 const lavanderia = {
   id: "z1",
@@ -199,41 +201,55 @@ describe("el formulario de reserva", () => {
     expect(screen.queryByText(/cuota de mantenimiento/)).toBeNull();
   });
 
+  /*
+    Desde el 18/11/2026 el reglamento no es una casilla: se abre al pulsar
+    «Aceptar», y ahí se acepta o se rechaza. Así que no «falta» antes.
+  */
   it("dice qué falta en vez de apagarse sin explicar", async () => {
     pintar(lavanderia);
-    expect(
-      screen.getByText(
-        textoCompleto("Falta elegir el número y aceptar el reglamento."),
-      ),
-    ).toBeDefined();
+    expect(screen.getByText(textoCompleto("Falta elegir el número."))).toBeDefined();
   });
 
-  it("y el número deja de faltar al elegirlo", async () => {
+  it("y el número deja de faltar al elegirlo, también «Cualquiera libre»", async () => {
     pintar(lavanderia);
     await userEvent.click(screen.getByText(textoCompleto("Elegir…")));
+    expect(screen.getByText(textoCompleto("Cualquiera libre"))).toBeDefined();
     await userEvent.click(screen.getByText(textoCompleto("Lavanderia N°2")));
+    expect(screen.queryByText(/^Falta/)).toBeNull();
+  });
 
-    expect(
-      screen.getByText(textoCompleto("Falta aceptar el reglamento.")),
-    ).toBeDefined();
+  it("cada puesto con el nombre que le puso la administración", async () => {
+    pintar({ ...lavanderia, nombresDeZonas: ["", "Lavadora grande"] });
+    await userEvent.click(screen.getByText(textoCompleto("Elegir…")));
+    expect(screen.getByText(textoCompleto("Lavadora grande · N°2"))).toBeDefined();
+    expect(screen.getByText(textoCompleto("Lavanderia N°1"))).toBeDefined();
   });
 
   it("con varios puestos y sin «elige número», no se pide: se asigna uno libre", () => {
     // 29/10/2026: en la piscina «10» es cuántas reservas caben, no diez piscinas.
     pintar({ ...lavanderia, eligeNumero: false });
     expect(screen.queryByText(/N° de Lavanderia/)).toBeNull();
-    expect(
-      screen.getByText(textoCompleto("Falta aceptar el reglamento.")),
-    ).toBeDefined();
+    expect(screen.queryByText(/^Falta/)).toBeNull();
   });
 
   it("en una zona de un solo puesto no se pide número", () => {
     // La piscina es una: no hay nada que elegir y no puede faltar.
     pintar(piscina, { initialHour: "08:00" });
     expect(screen.queryByText(/N° de Piscina/)).toBeNull();
-    expect(
-      screen.getByText(textoCompleto("Falta aceptar el reglamento.")),
-    ).toBeDefined();
+    expect(screen.queryByText(/^Falta/)).toBeNull();
+  });
+
+  it("al reservar se abre el reglamento con «Aceptar y reservar» y «Rechazar»", async () => {
+    pintar(piscina, { initialHour: "08:00" });
+    await userEvent.click(screen.getByText(textoCompleto("Aceptar")));
+    expect(screen.getByText(textoCompleto("Aceptar y reservar"))).toBeDefined();
+    await userEvent.click(screen.getByText(textoCompleto("Rechazar")));
+    expect(screen.queryByText(textoCompleto("Aceptar y reservar"))).toBeNull();
+  });
+
+  it("el comprobante va al final y es opcional", () => {
+    pintar(piscina, { initialHour: "08:00" });
+    expect(screen.queryByText(/Comprobante de pago \*/)).toBeNull();
   });
 
   it("los importes se llaman igual que en la pantalla donde se escriben", () => {

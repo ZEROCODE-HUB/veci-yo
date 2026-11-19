@@ -125,9 +125,11 @@ beforeAll(async () => {
   expect(opcion.estado).toBe(201);
 
   const guillermo = await entrar(CUENTA.propietario);
+  // En la 101: en la 205 vive Laura como inquilina líder y, desde el
+  // 18/11/2026, el dueño no ve el día a día de esa vivienda.
   const visita = await insertar(guillermo, "visita?select=id", {
     condominio_id: CONDOMINIO,
-    unidad_id: UNIDAD.u205,
+    unidad_id: UNIDAD.u101,
     tipo: "amigos",
     fecha_desde: await hoyEnElCondominio(guillermo),
     estado: "programada",
@@ -138,9 +140,10 @@ beforeAll(async () => {
   visitaId = visita.datos[0].id;
 
   zonaPropia = await crearZonaDePrueba(marcela, { requiere_aprobacion: false });
+  // En la 101, como la visita: la 205 tiene inquilina líder (18/11/2026).
   const reserva = await insertar(guillermo, "reserva_zona?select=id", {
     zona_id: zonaPropia.id,
-    unidad_id: UNIDAD.u205,
+    unidad_id: UNIDAD.u101,
     solicitada_por: guillermo.usuarioId,
     fecha: fechaEnDias(12),
     hora_inicio: "10:00",
@@ -457,7 +460,7 @@ describe("el permiso no le quita lo suyo", () => {
   it("sigue viendo las visitas de sus viviendas", async () => {
     const suyas = await leer(
       guillermo,
-      `visita?unidad_id=eq.${UNIDAD.u205}&select=id`,
+      `visita?unidad_id=eq.${UNIDAD.u101}&select=id`,
     );
     expect(suyas.datos.length).toBeGreaterThan(0);
   });

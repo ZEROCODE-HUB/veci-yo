@@ -166,7 +166,8 @@ describe("la administración se entera de lo que tiene que aprobar", () => {
     const avisos = await avisosDeMarcela();
     expect(avisos[0]).toBe("Reserva por aprobar");
     expect(avisos.filter((t) => t === "Reserva por aprobar")).toHaveLength(1);
-    expect(avisos.slice(1).every((t) => t === "Llegó un comprobante de pago")).toBe(true);
+    // Desde el 18/11/2026: «… con documento adjunto» (no siempre es un comprobante).
+    expect(avisos.slice(1).every((t) => t === "Reserva por aprobar · con documento adjunto")).toBe(true);
     expect(avisos.length).toBeGreaterThan(1);
   });
 

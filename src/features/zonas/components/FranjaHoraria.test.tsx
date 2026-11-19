@@ -88,7 +88,7 @@ describe("una franja de la grilla", () => {
         onSeleccionar={onSeleccionar}
       />,
     );
-    const boton = screen.getByRole("button", { name: /Reserva N° 368803.*Ver opciones/ });
+    const boton = screen.getByRole("button", { name: /Tu reserva.*Ver opciones/ });
     await userEvent.click(boton);
     expect(onSeleccionar).toHaveBeenCalledWith(propia);
     expect(screen.queryByRole("button", { name: /Ocupado/ })).toBeNull();
@@ -160,12 +160,12 @@ describe("una franja de la grilla", () => {
     */
     render(<FranjaHoraria {...props} ajenas={120} libres={0} cupos={1} />);
     expect(screen.getByText("Ocupado")).toBeDefined();
-    expect(screen.getByText("120 reservas")).toBeDefined();
+    expect(screen.getByText("120 reservados")).toBeDefined();
   });
 
   it("una sola ajena se dice en singular", () => {
     render(<FranjaHoraria {...props} ajenas={1} libres={0} cupos={1} />);
-    expect(screen.getByText("Otra vivienda")).toBeDefined();
+    expect(screen.getByText("Reservado")).toBeDefined();
   });
 
   it("la reserva de un huésped de la misma vivienda también ocupa", () => {
@@ -199,7 +199,7 @@ describe("una franja de la grilla", () => {
     render(
       <FranjaHoraria {...props} reservas={[mia]} onSeleccionar={elegida} />,
     );
-    await userEvent.click(screen.getByText(textoCompleto("Reserva N° 368803")));
+    await userEvent.click(screen.getByText(textoCompleto("Tu reserva · 1 persona")));
     expect(elegida).toHaveBeenCalledWith(mia);
   });
 });

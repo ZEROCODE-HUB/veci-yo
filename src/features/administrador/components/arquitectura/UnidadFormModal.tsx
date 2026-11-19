@@ -20,6 +20,7 @@ import {
   type NivelesParaCrear,
 } from "./RecursosDeLaVivienda";
 import { AsignarPropietario } from "./AsignarPropietario";
+import { cuentaDelEdificio } from "../../helpers/indiceDeVotacion";
 
 /*
   Los estados salen del enum de la base --con sus etiquetas-- y no de una lista
@@ -76,6 +77,8 @@ export function UnidadFormModal({
 }: Props) {
   // Las del edificio: se crean en Arquitectura › Condominio.
   const tipologias = useAdminStore((s) => s.tipologias);
+  // Todos los departamentos del edificio, para decir cuánto suma el índice.
+  const unidadesDelEdificio = useAdminStore((s) => s.unidades);
   // Al crear: lo que se asigna se guarda junto con el departamento (29/10/2026).
   const [borrador, setBorrador] = React.useState<BorradorDeRecursos>(BORRADOR_VACIO);
   const [duenoNombre, setDuenoNombre] = React.useState("");
@@ -168,26 +171,38 @@ export function UnidadFormModal({
           )}
         />
         {/*
-          El índice de votación (coeficiente) de la vivienda (17/11/2026):
-          pesa su voto en las encuestas que se cuentan «según el índice».
+          El índice de votación de la vivienda, en % del edificio (18/11/2026):
+          pesa su voto en las encuestas que se cuentan «según el índice». Entre
+          todos los departamentos no pasan de 100, y para votar así tienen que
+          sumar 100 exactos. Empieza vacío.
         */}
         <Controller
           control={control}
           name="indiceVotacion"
-          render={({ field, fieldState }) => (
-            <View className="gap-1">
-              <Input
-                label="Índice de votación"
-                value={field.value}
-                onChangeText={(texto) => field.onChange(texto.replace(/[^0-9.,]/g, ""))}
-                placeholder="1"
-                error={fieldState.error?.message}
-              />
-              <Text className="text-xs text-gray-500">
-                Cuánto vale su voto en las encuestas que se cuentan según el índice. 1 = igual que los demás.
-              </Text>
-            </View>
-          )}
+          render={({ field, fieldState }) => {
+            const sumaDeLosDemas = unidadesDelEdificio
+              .filter((u) => u.uuid !== editing?.uuid)
+              .reduce((suma, u) => suma + (u.indiceVotacion ?? 0), 0);
+            const cuenta = cuentaDelEdificio(sumaDeLosDemas, field.value);
+            return (
+              <View className="gap-1">
+                <Input
+                  label="Índice de votación, en %"
+                  value={field.value}
+                  onChangeText={(texto) => field.onChange(texto.replace(/[^0-9.,]/g, ""))}
+                  placeholder="Ej. 2,5"
+                  error={fieldState.error?.message}
+                />
+                <Text className="text-xs leading-4 text-gray-500">
+                  Qué parte del edificio vale su voto en las encuestas que se cuentan según el índice. Entre todos los
+                  departamentos tienen que sumar 100 %. Déjalo vacío si todavía no lo sabes.
+                </Text>
+                <Text className={cuenta.pasa ? "text-xs leading-4 text-danger" : "text-xs leading-4 text-gray-700"}>
+                  {cuenta.texto}
+                </Text>
+              </View>
+            );
+          }}
         />
         {/*
           Estacionamientos, depósitos y propietario desde la ficha del

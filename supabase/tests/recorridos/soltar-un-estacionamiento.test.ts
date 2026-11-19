@@ -29,7 +29,9 @@ const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
   alquila por noches, y con fecha fija de octubre, que ya no se puede anunciar.
 */
 const U205 = "44444444-4444-4444-4444-444444444442";
-const VIVIENDA = "propietario@veciyo.test";
+// Laura, inquilina líder de la 205 (18/11/2026: el dueño ya no ve el día a día
+// de una vivienda con inquilino líder).
+const VIVIENDA = "laura.invitada@veciyo.test";
 const GUARDIA = "guardia@veciyo.test";
 const MARCA = "[prueba] cupo que se queda tomado";
 

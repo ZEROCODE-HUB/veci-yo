@@ -93,25 +93,18 @@ afterAll(async () => {
 });
 
 describe("un paquete para la 205", () => {
-  it("con el dueño como residente, les llega a los dos", async () => {
-    // El control: sin él, el caso de abajo pasaría igual si no avisara a nadie.
-    await ponerResidente(true);
-    const id = await registrarPaquete();
-    expect(await avisos(lauraId, id, "correspondencia_recibida")).toBe(1);
-    expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(1);
-  });
-
   /*
-    Hasta el 09/11/2026 al dueño que no vive ahí no le llegaba («no puede abrir
-    el módulo»). Ese día el cliente pidió lo contrario (Correcciones, fila 10):
-    el propietario no residente ve las secciones y recibe los avisos de
-    paquetes y reservas. El caso se dio la vuelta.
+    Hasta el 09/11/2026 al dueño que no vive ahí no le llegaba; ese día el
+    cliente pidió que sí (Correcciones, fila 10). Y el 18/11/2026, que con
+    inquilino líder no: el día a día es de quien vive ahí. En la 205 vive
+    Laura como inquilina líder, así que a Guillermo no le llega. El control
+    es Laura: sin él, el caso pasaría igual si no avisara a nadie.
   */
-  it("con el dueño como no residente, también le llega (09/11/2026)", async () => {
+  it("con inquilino líder, le llega a quien vive allí y no al dueño (18/11/2026)", async () => {
     await ponerResidente(false);
     const id = await registrarPaquete();
     expect(await avisos(lauraId, id, "correspondencia_recibida")).toBe(1);
-    expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(1);
+    expect(await avisos(guillermoId, id, "correspondencia_recibida")).toBe(0);
   });
 
   it("una novedad que anota la portería le llega a quien vive allí, y no a la portería", async () => {
@@ -122,8 +115,8 @@ describe("un paquete para la 205", () => {
 
     expect(await avisos(lauraId, id, "correspondencia_incidencia")).toBe(1);
     expect(await avisos(guardiaId, id, "correspondencia_incidencia")).toBe(0);
-    // Guillermo sigue como no residente, y desde el 09/11/2026 también se entera.
-    expect(await avisos(guillermoId, id, "correspondencia_incidencia")).toBe(1);
+    // Guillermo, con inquilino líder en la 205, no (18/11/2026).
+    expect(await avisos(guillermoId, id, "correspondencia_incidencia")).toBe(0);
 
     const { data } = await servicio
       .from("notificacion")

@@ -65,6 +65,7 @@ type Tipo =
   | "invitacion-administracion"
   | "administracion-asignada"
   | "propietario-asignado"
+  | "trabajador-asignado"
   | "precheckin"
   | "acceso-huesped"
   | "acceso-acompanante"
@@ -283,6 +284,32 @@ function plantilla(
               : `e inicia sesión con tu correo: ${p.correo}.`) +
             ` En Inicio verás la invitación: pulsa «Ver», revisa los datos y acepta los términos.`,
           `Importante: tiene que ser con el correo ${p.correo}; con otro correo no verás la vivienda.`,
+        ],
+        ...(p.enlace ? { boton: { texto: "Abrir Veciyo", url: p.enlace } } : {}),
+      };
+    }
+
+    // El profesional permanente con cuenta (18/11/2026): antes no le llegaba
+    // nada. Como al propietario: descarga la app, entra con este correo y
+    // acepta en Inicio.
+    case "trabajador-asignado": {
+      const vivienda = p.unidad ? `la vivienda ${p.unidad}` : "una vivienda";
+      const tiendasConEnlace = [
+        tiendas?.android ? `Android: ${tiendas.android}` : null,
+        tiendas?.ios ? `iPhone: ${tiendas.ios}` : null,
+      ].filter(Boolean);
+      return {
+        asunto: `Tienes acceso a una vivienda en ${p.condominio ?? "tu edificio"}`,
+        titulo: "Tienes acceso a una vivienda",
+        saludo,
+        parrafos: [
+          `${p.deParte ?? "Alguien de la vivienda"} te registró como profesional permanente de ` +
+            `${vivienda}${enDonde} en Veciyo, la aplicación con la que el edificio se organiza.`,
+          `Descarga la app Veciyo desde la tienda de tu celular (Google Play o App Store)` +
+            (tiendasConEnlace.length ? ` — ${tiendasConEnlace.join(" · ")} — ` : " ") +
+            `y entra o crea tu cuenta con este mismo correo: ${p.correo}. En Inicio verás la ` +
+            `invitación: pulsa «Aceptar».`,
+          `Importante: tiene que ser con el correo ${p.correo}; con otro correo no verás la invitación.`,
         ],
         ...(p.enlace ? { boton: { texto: "Abrir Veciyo", url: p.enlace } } : {}),
       };
@@ -642,6 +669,7 @@ Deno.serve(async (req: Request) => {
     "invitacion-administracion",
     "administracion-asignada",
     "propietario-asignado",
+    "trabajador-asignado",
     "precheckin",
     "acceso-huesped",
     "acceso-acompanante",
@@ -660,6 +688,7 @@ Deno.serve(async (req: Request) => {
     cuerpo.tipo === "cuenta-suspendida" ||
     cuerpo.tipo === "cuenta-reactivada" ||
     cuerpo.tipo === "propietario-asignado" ||
+    cuerpo.tipo === "trabajador-asignado" ||
     cuerpo.tipo === "pqrs-registrada" ||
     cuerpo.tipo === "pqrs-constructora";
   if (!cuerpo.correo || (!cuerpo.enlace && !sinEnlace)) {
@@ -750,7 +779,7 @@ Deno.serve(async (req: Request) => {
   }
 
   let tiendas: { android: string; ios: string } | undefined;
-  if (cuerpo.tipo === "propietario-asignado") {
+  if (cuerpo.tipo === "propietario-asignado" || cuerpo.tipo === "trabajador-asignado") {
     const leer = (clave: string) =>
       parametro(clienteRpcPorFetch(url, claveServicio), clave).then((v) => v.trim(), () => "");
     tiendas = { android: await leer("url_app_android"), ios: await leer("url_app_ios") };

@@ -6,6 +6,8 @@ export interface Audiencia {
   residentes?: boolean | null;
   huespedes?: boolean | null;
   porteria?: boolean | null;
+  /** El profesional permanente con cuenta (18/11/2026). */
+  trabajadores?: boolean | null;
 }
 
 /**
@@ -27,6 +29,9 @@ export function esParaElRol(audiencia: Audiencia, rol: RolActivo | null | undefi
       return Boolean(audiencia.huespedes);
     case "propietario":
       return Boolean(audiencia.propietarios || audiencia.residentes);
+    // Solo lo que va para él (18/11/2026): no es residente de nada.
+    case "trabajador":
+      return Boolean(audiencia.trabajadores);
     case "propietario-no-residente":
     case "propietario-sin-propiedades":
       return Boolean(audiencia.propietarios);

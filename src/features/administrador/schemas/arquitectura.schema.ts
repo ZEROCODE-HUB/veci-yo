@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "@/shared/types/database.types";
+import { problemaDelIndice } from "../helpers/indiceDeVotacion";
 
 const contactSchema = z.object({
   nombre: z.string(),
@@ -60,13 +61,11 @@ export const unitSchema = z.object({
   piso: z.string().min(1, "El piso es requerido"),
   estado: z.enum(Constants.public.Enums.estado_unidad),
   tipologiaId: z.string(),
-  // Índice de votación (17/11/2026): mayor que cero; 1 = como todas.
-  indiceVotacion: z
-    .string()
-    .refine((v) => {
-      const n = Number(v.replace(",", "."));
-      return v.trim() !== "" && Number.isFinite(n) && n > 0;
-    }, "El índice de votación tiene que ser un número mayor que 0"),
+  // Índice de votación en % del edificio (18/11/2026): vacío, o de más de 0 a 100.
+  indiceVotacion: z.string().superRefine((v, ctx) => {
+    const problema = problemaDelIndice(v);
+    if (problema) ctx.addIssue({ code: z.ZodIssueCode.custom, message: problema });
+  }),
 });
 
 export const depositSchema = z.object({

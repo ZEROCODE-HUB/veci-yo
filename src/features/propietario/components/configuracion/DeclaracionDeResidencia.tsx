@@ -10,6 +10,7 @@ const SI = [
 ];
 const NO = [
   "Al configurarte como NO residente, como propietario sigues teniendo acceso a la información de tu propiedad: visitas, correspondencia y zonas comunes, con sus avisos, y también notificaciones y encuestas, cuadro de honor, reglamentos, chats de propietarios y encuestas para propietarios.",
+  "Si la vivienda tiene inquilino líder, la correspondencia, las visitas y las zonas comunes son de quien vive ahí: no las verás mientras esté.",
   "Quienes configures como residentes sabrán si te has configurado o no como residente.",
 ];
 

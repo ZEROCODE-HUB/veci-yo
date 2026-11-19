@@ -40,6 +40,7 @@ export const SEMILLA: Partial<Record<NombreDeLista, OpcionDeLista[]>> = {
     op("moto", "Moto"),
     op("bus", "Bus"),
     op("van", "Van"),
+    op("nautico", "Vehículo náutico"),
   ],
   categorias_de_anuncio: [
     op("servicios", "Servicios"),

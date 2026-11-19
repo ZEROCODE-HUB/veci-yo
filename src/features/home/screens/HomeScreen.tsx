@@ -9,6 +9,7 @@ import { InvitacionesPendientes } from "../components/InvitacionesPendientes";
 import { InvitacionDeHuesped } from "../components/InvitacionDeHuesped";
 import { InvitacionesDelEdificio } from "../components/InvitacionesDelEdificio";
 import { InvitacionDeTrabajador } from "../components/InvitacionDeTrabajador";
+import { TrabajadorHome } from "../components/TrabajadorHome";
 
 export function HomeScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -17,7 +18,8 @@ export function HomeScreen() {
   const usuario = useAuthStore((state) => state.usuario);
 
   return (
-    <ScreenLayout padding={false} floatingChild={<CommsFab />}>
+    // El profesional permanente no chatea: no lleva el botón de mensajes.
+    <ScreenLayout padding={false} floatingChild={rolActivo === "trabajador" ? undefined : <CommsFab />}>
       {/* Arriba de todo, la invitación a una vivienda que falta aceptar (183). */}
       <InvitacionesPendientes />
       {/* Y las del edificio: guardia, coadministración (13/11/2026). */}
@@ -26,7 +28,9 @@ export function HomeScreen() {
       <InvitacionDeHuesped />
       {/* Y la de trabajador permanente de una vivienda (17/11/2026). */}
       <InvitacionDeTrabajador />
-      {rolActivo === "huesped-temporal" ? (
+      {rolActivo === "trabajador" ? (
+        <TrabajadorHome />
+      ) : rolActivo === "huesped-temporal" ? (
         <ViviendaResumen />
       ) : rolActivo ? (
         <InquilinoLiderHome />

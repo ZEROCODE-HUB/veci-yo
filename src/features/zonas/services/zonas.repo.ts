@@ -37,7 +37,10 @@ const SELECT_ZONA = `
   permite_estancia_corta, permite_estancia_larga,
   monto_garantia, costo_limpieza, costo_reserva, moneda,
   reglamento, reglamento_archivo_path, reglamento_archivo_nombre, activa, condominio_id,
-  fechas:zona_fecha_especial ( fecha, tipo, motivo, hora_apertura, hora_cierre )
+  personas_por_reserva, reservas_activas_maximas, limite_reservas_por,
+  anticipacion_minima_horas, plazo_adjunto_horas,
+  fechas:zona_fecha_especial ( fecha, tipo, motivo, hora_apertura, hora_cierre ),
+  recursos:zona_recurso ( numero, nombre )
 ` as const;
 
 const SELECT_RESERVA = `
@@ -128,6 +131,11 @@ const hhmm = (v: string | null) => (v ? v.slice(0, 5) : "");
 // Zonas
 // ---------------------------------------------------------------------------
 
+/** Los nombres de las zonas iguales en orden de número; vacío el que no lo tiene. */
+export function nombresPorNumero(recursos: { numero: number; nombre: string }[], cuantas: number): string[] {
+  return Array.from({ length: Math.max(cuantas, 0) }, (_, i) => recursos.find((r) => r.numero === i + 1)?.nombre ?? "");
+}
+
 function mapearGestionZona(fila: FilaDeZona): GestionZona {
   return {
     id: fila.id,
@@ -162,6 +170,12 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     activa: fila.activa ?? true,
     usaSlots: fila.usa_slots ?? false,
     eligeNumero: fila.elige_numero ?? false,
+    personasPorReserva: fila.personas_por_reserva ?? 0,
+    reservasActivasMaximas: fila.reservas_activas_maximas ?? 0,
+    limiteReservasPor: fila.limite_reservas_por ?? "vivienda",
+    anticipacionMinimaHoras: fila.anticipacion_minima_horas ?? 0,
+    plazoAdjuntoHoras: fila.plazo_adjunto_horas ?? 0,
+    nombresDeZonas: nombresPorNumero(fila.recursos ?? [], fila.cupos_simultaneos),
     /*
       Faltaba: el formulario arrancaba siempre con la aprobación apagada, así
       que guardar una zona de pago por cualquier otro motivo le quitaba la
@@ -267,6 +281,9 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     total: fila.cupos_simultaneos,
     usaSlots: fila.usa_slots ?? false,
     eligeNumero: fila.elige_numero ?? false,
+    nombresDeZonas: nombresPorNumero(fila.recursos ?? [], fila.cupos_simultaneos),
+    personasPorReserva: fila.personas_por_reserva ?? 0,
+    plazoAdjuntoHoras: fila.plazo_adjunto_horas ?? 0,
     // `restringida_huesped` era la negacion de esta misma columna y se
     // elimino: una idea, una columna.
     permiteCorta: fila.permite_estancia_corta ?? true,
@@ -379,10 +396,25 @@ export async function guardarZonaEntera(datos: {
    * que había; sin la clave no se toca (Para Claude 201).
    */
   reglamentoArchivo?: ArchivoElegido | null;
+  /** El nombre de cada una de las zonas iguales, por número (18/11/2026). */
+  nombresDeZonas?: string[];
 }): Promise<string> {
   const zonaId = datos.zonaId
     ? (await actualizarZona(datos.zonaId, datos.zona), datos.zonaId)
     : await crearZona(datos.zona);
+
+  if (datos.nombresDeZonas) {
+    // Se reemplazan todos: son pocos y así un número que ya no existe se va.
+    const { error: errorBorrar } = await supabase.from("zona_recurso").delete().eq("zona_id", zonaId);
+    if (errorBorrar) throw errorBorrar;
+    const filas = datos.nombresDeZonas
+      .map((nombre, i) => ({ zona_id: zonaId, numero: i + 1, nombre: nombre.trim() }))
+      .filter((f) => f.nombre);
+    if (filas.length) {
+      const { error: errorNombres } = await supabase.from("zona_recurso").insert(filas);
+      if (errorNombres) throw errorNombres;
+    }
+  }
 
   const { error } = await supabase.rpc("guardar_fechas_de_zona", {
     p_zona_id: zonaId,
@@ -518,6 +550,12 @@ export interface DatosZona {
   moneda?: string;
   reglamento?: string;
   activa?: boolean;
+  /** 18/11/2026: los límites que parametriza la administración. */
+  personasPorReserva?: number | null;
+  reservasActivasMaximas?: number | null;
+  limiteReservasPor?: "vivienda" | "persona";
+  anticipacionMinimaHoras?: number;
+  plazoAdjuntoHoras?: number | null;
 }
 
 /**
@@ -554,6 +592,11 @@ const COLUMNA_DE: Record<string, keyof DatosZona> = {
   moneda: "moneda",
   reglamento: "reglamento",
   activa: "activa",
+  personas_por_reserva: "personasPorReserva",
+  reservas_activas_maximas: "reservasActivasMaximas",
+  limite_reservas_por: "limiteReservasPor",
+  anticipacion_minima_horas: "anticipacionMinimaHoras",
+  plazo_adjunto_horas: "plazoAdjuntoHoras",
 };
 
 function haciaFila(datos: Partial<DatosZona>) {
@@ -591,6 +634,12 @@ function haciaFila(datos: Partial<DatosZona>) {
     moneda: datos.moneda || null,
     reglamento: datos.reglamento ?? null,
     activa: datos.activa,
+    // 0 o vacío: sin límite.
+    personas_por_reserva: datos.personasPorReserva || null,
+    reservas_activas_maximas: datos.reservasActivasMaximas || null,
+    limite_reservas_por: datos.limiteReservasPor,
+    anticipacion_minima_horas: datos.anticipacionMinimaHoras,
+    plazo_adjunto_horas: datos.plazoAdjuntoHoras || null,
   };
 }
 
@@ -915,6 +964,8 @@ export async function actualizarReserva(
     horaInicio?: string;
     horaFin?: string;
     comentarios?: string;
+    /** Cuántos van con quien reserva (18/11/2026: el vecino edita la suya). */
+    acompanantes?: number;
   },
 ) {
   /*
@@ -942,6 +993,7 @@ export async function actualizarReserva(
       hora_inicio: datos.horaInicio,
       hora_fin: datos.horaFin,
       comentarios: datos.comentarios,
+      acompanantes: datos.acompanantes,
     })
     .eq("id", reservaUuid)
     .select("id");

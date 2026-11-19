@@ -71,6 +71,24 @@ export function FormularioInvitacion({
       ) : null}
       {/* Qué podrá y qué no con ese rol (17/11/2026): lo pone la pantalla. */}
       {resumenDelRol ? resumenDelRol(form.rol) : null}
+      {/*
+        Al propietario, antes de invitar a un inquilino líder (18/11/2026,
+        pedido del cliente): desde entonces el día a día es de quien vive ahí.
+        La base lo sujeta (`ve_el_dia_a_dia`).
+      */}
+      {form.rol === "inquilino_lider" ? (
+        <View
+          className="rounded-xl p-3"
+          style={{ backgroundColor: theme.colors.warningSoft }}
+          accessibilityRole="alert"
+        >
+          <Text className="text-xs leading-4" style={{ color: theme.colors.badgeAmberText }}>
+            Mientras haya inquilino líder, tú como propietario no verás la correspondencia, las visitas ni las
+            reservas de zonas comunes de esta vivienda, ni te llegarán sus avisos. Sigues viendo anuncios, cuadro
+            de honor, la gestión de la vivienda y los chats.
+          </Text>
+        </View>
+      ) : null}
 
       {/*
         Un residente puede no usar la app --un niño, un abuelo-- (17/11/2026,

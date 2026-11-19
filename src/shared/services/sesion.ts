@@ -418,6 +418,9 @@ export async function cargarContextoUsuario(): Promise<ContextoUsuario | null> {
       imagen: null,
       rol: "trabajador",
       papel: "trabajador",
+      // Las versiones de la base de antes del 18/11/2026 no lo traen: no.
+      puedeCrearVisitas: t.puede_crear_visitas === true,
+      condominioId: t.condominio_id,
     });
   });
 

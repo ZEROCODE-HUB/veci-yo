@@ -18,6 +18,7 @@ import { useLista } from "@/shared/hooks/useLista";
 import { ahora, formatDateInput, parseFechaIso } from "@/shared/utils";
 import { crearEsquemaAnuncio } from "../../schemas/anuncios.schema";
 import { SeccionesDeEncuesta } from "./SeccionesDeEncuesta";
+import { useIndiceDelEdificio } from "../../hooks/useIndiceDelEdificio";
 import {
   anuncioFormVacio,
   tiposAnuncio,
@@ -103,6 +104,7 @@ export function AnuncioFormModal({
       defaultValues: anuncioFormVacio(),
     });
   const tipo = watch("tipo");
+  const indiceDelEdificio = useIndiceDelEdificio(visible);
   const fechaPublicada = watch("fechaPublicada");
   useEffect(() => {
     if (!visible || opcionesMin === null) return;
@@ -167,6 +169,8 @@ export function AnuncioFormModal({
                   una asamblea lo decide quien publica, no la app.
                 */
                 { key: "paraPorteria", label: "Portería" },
+                // Los profesionales permanentes con cuenta (18/11/2026). No votan.
+                { key: "paraTrabajadores", label: "Profesionales permanentes" },
               ] as const
             ).map((option) => (
               <Controller
@@ -267,6 +271,7 @@ export function AnuncioFormModal({
             control={control}
             setValue={setValue}
             opcionesMin={opcionesMin}
+            indiceDelEdificio={indiceDelEdificio}
           />
         )}
         {/*

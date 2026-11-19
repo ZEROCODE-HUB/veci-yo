@@ -95,5 +95,16 @@ export interface GestionZona {
   cuposSimultaneos?: number;
   /** Si quien reserva elige el número de puesto (29/10/2026). */
   eligeNumero?: boolean;
+  /** Personas en una reserva, contando a quien reserva (18/11/2026). 0 = lo que deje la capacidad. */
+  personasPorReserva?: number;
+  /** Reservas por delante por vivienda o persona (18/11/2026). 0 = sin límite. */
+  reservasActivasMaximas?: number;
+  limiteReservasPor?: "vivienda" | "persona";
+  /** Horas de anticipación para reservar (18/11/2026). */
+  anticipacionMinimaHoras?: number;
+  /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
+  plazoAdjuntoHoras?: number;
+  /** El nombre de cada una de las zonas iguales, por número (18/11/2026). */
+  nombresDeZonas?: string[];
 }
 

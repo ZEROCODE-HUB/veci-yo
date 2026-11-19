@@ -45,6 +45,7 @@ export function crearEsquemaAnuncio({
       paraResidentes: z.boolean(),
       paraHuespedes: z.boolean(),
       paraPorteria: z.boolean(),
+      paraTrabajadores: z.boolean(),
       urlVideo: z
         .string()
         .trim()
@@ -73,7 +74,7 @@ export function crearEsquemaAnuncio({
       avisar: z.boolean(),
     })
     .superRefine((value, ctx) => {
-      if (!value.paraPropietarios && !value.paraResidentes && !value.paraHuespedes && !value.paraPorteria) {
+      if (!value.paraPropietarios && !value.paraResidentes && !value.paraHuespedes && !value.paraPorteria && !value.paraTrabajadores) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["paraPropietarios"],
