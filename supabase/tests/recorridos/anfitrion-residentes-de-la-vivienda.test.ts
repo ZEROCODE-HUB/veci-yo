@@ -25,7 +25,9 @@ import {
  */
 
 const U102 = "44444444-4444-4444-4444-444444444443";
-const U205 = "44444444-4444-4444-4444-444444444442";
+// La 101: en la 205 Laura es inquilina líder y el dueño no puede volver a
+// residir mientras esté (17/11/2026).
+const U101 = "44444444-4444-4444-4444-444444444441";
 const ANFITRIONA = "vecino@veciyo.test"; // Sofía, propietaria de la 102
 const GUARDIA = "guardia@veciyo.test";
 const AJENO = "propietario@veciyo.test";
@@ -96,7 +98,7 @@ describe("los residentes de la vivienda", () => {
       diferencia dependen los módulos que ve: quien no reside no tiene visitas
       ni zonas comunes.
 
-      En la 205, con Guillermo (11/11/2026): la 102 se alquila por noches y
+      En la 101, con Guillermo (18/11/2026; antes la 205, donde ahora vive Laura como inquilina líder): la 102 se alquila por noches y
       desde el 29/10 (D-70) su dueña no puede declararse residente. Eso lo
       comprueba el caso de abajo.
     */
@@ -104,18 +106,24 @@ describe("los residentes de la vivienda", () => {
     await entrarComo(AJENO);
     const { data: sesion } = await supabase.auth.getUser();
     try {
-      await declararseResidente(U205, false);
-      let residentes = await obtenerResidentes(U205);
+      await declararseResidente(U101, false);
+      let residentes = await obtenerResidentes(U101);
       expect(
         residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
       ).toBe(false);
 
-      await declararseResidente(U205, true);
-      residentes = await obtenerResidentes(U205);
+      await declararseResidente(U101, true);
+      residentes = await obtenerResidentes(U101);
       expect(
         residentes.find((r) => r.usuarioId === sesion.user!.id)?.esResidente,
       ).toBe(true);
     } finally {
+      /*
+        Se deja como no residente, que es como está la 101: otras pruebas
+        activan ahí la renta corta, y con alguien viviendo no se puede
+        (18/11/2026: un residente que se quedaba puso cuatro en rojo).
+      */
+      await declararseResidente(U101, false).catch(() => {});
       await salir();
       await entrarComo(ANFITRIONA);
     }

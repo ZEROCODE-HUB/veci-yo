@@ -27,7 +27,9 @@ import {
 const CONDOMINIO = "11111111-1111-1111-1111-111111111111";
 const U205 = "44444444-4444-4444-4444-444444444442";
 const GUARDIA = "guardia@veciyo.test";
-const DUENO_205 = "propietario@veciyo.test";
+// Laura, inquilina líder de la 205: desde el 18/11/2026 el dueño (Guillermo) no
+// ve el día a día de una vivienda con inquilino líder.
+const DUENO_205 = "laura.invitada@veciyo.test";
 
 const MARCA = "[prueba] visitas dicen lo que paso";
 
@@ -184,7 +186,12 @@ describe("una vecina anuncia a quien va a venir", () => {
     11/11/2026: desde el 02/11 (Para Claude 200) el guardia no da de alta
     visitas, de ningún día. Las ve, marca entrada y salida y las anota.
   */
-  it("la portería ya no da de alta visitas (02/11/2026)", async () => {
+  /*
+    Desde el 16/11/2026 (pedido del cliente) la portería vuelve a registrar
+    amigos y profesionales temporales; un profesional permanente, no. El caso
+    pedía «amigos» y por eso pasaba la fila: se pide lo que sigue vedado.
+  */
+  it("la portería no da de alta un profesional permanente", async () => {
     await salir();
     await entrarComo(GUARDIA);
 
@@ -193,7 +200,7 @@ describe("una vecina anuncia a quien va a venir", () => {
       .insert({
         condominio_id: CONDOMINIO,
         unidad_id: U205,
-        tipo: "amigos",
+        tipo: "permanente",
         fecha_desde: (() => {
           const d = new Date();
           d.setDate(d.getDate() - 3);

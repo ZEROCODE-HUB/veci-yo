@@ -67,6 +67,11 @@ beforeAll(async () => {
     .select("id")
     .eq("activa", true)
     .eq("permite_estancia_larga", true)
+    // La que pide aprobación: «la primera que haya» podía ser una zona de
+    // usar y tirar de otra prueba, que aprueba sola (18/11/2026).
+    .eq("requiere_aprobacion", true)
+    .not("nombre", "like", "[prueba]%")
+    .order("nombre")
     .limit(1)
     .single();
   zonaConAprobacion = data!.id;
