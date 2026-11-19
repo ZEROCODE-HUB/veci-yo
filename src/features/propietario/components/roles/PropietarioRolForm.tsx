@@ -15,6 +15,12 @@ interface Props {
   editando: boolean;
   /** Mientras se guarda: el botón gira y no manda dos veces. */
   guardando?: boolean;
+  /**
+   * El contacto de emergencia lo ponen el propietario o el inquilino líder
+   * (18/11/2026, pedido del cliente; la base lo sujeta). A los demás se les
+   * enseña, sin poder cambiarlo.
+   */
+  puedePonerContacto?: boolean;
 }
 
 export function PropietarioRolForm({
@@ -23,6 +29,7 @@ export function PropietarioRolForm({
   onSubmit,
   editando,
   guardando = false,
+  puedePonerContacto = true,
 }: Props) {
   return (
     <>
@@ -79,7 +86,8 @@ export function PropietarioRolForm({
           )}
         />
       )}
-      {(rol === "Coadministrador" || rol === "Propietario") && (
+      {/* El anfitrión se llamaba «Coadministrador» y la casilla no salía (18/11/2026). */}
+      {(rol === "Anfitrión" || rol === "Coadministrador" || rol === "Propietario") && (
         <Controller
           control={control}
           name="esAdministradorPrimario"
@@ -92,17 +100,21 @@ export function PropietarioRolForm({
           )}
         />
       )}
-      <Text className="text-base font-bold text-center text-gray-900 underline mt-2">
-        Contacto de emergencia
-      </Text>
-      <Text
-        className="text-xs text-center"
-        style={{ color: theme.colors.textSecondary, lineHeight: 18 }}
-      >
-        Registrar un contacto alternativo es importante: permite ubicar a un
-        familiar o allegado de confianza ante cualquier emergencia cuando no sea
-        posible comunicarse con el residente.
-      </Text>
+      {/*
+        Más simple (18/11/2026, pedido del cliente): a quién llamar si no
+        se le encuentra, con nombre y teléfono. Solo lo ponen el propietario
+        o el inquilino líder.
+      */}
+      <View className="gap-1 mt-2">
+        <Text className="text-base font-bold text-gray-900">Contacto de emergencia (opcional)</Text>
+        <Text className="text-xs" style={{ color: theme.colors.textSecondary, lineHeight: 18 }}>
+          {puedePonerContacto
+            ? "A quién llamar si pasa algo y no se puede ubicar a esta persona: un familiar o alguien de confianza."
+            : "Lo ponen el propietario o el inquilino líder de la vivienda."}
+        </Text>
+      </View>
+      {puedePonerContacto ? (
+      <>
       <Controller
         control={control}
         name="contactoNombre"
@@ -111,7 +123,8 @@ export function PropietarioRolForm({
             soloLetras
             value={field.value || ""}
             onChangeText={field.onChange}
-            placeholder="Nombre y Apellido"
+            label="Nombre"
+            placeholder="Ej. Ana Pérez (su hermana)"
           error={fieldState.error?.message}
           />
         )}
@@ -125,7 +138,8 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                placeholder="Código de país (+57)"
+                label="Prefijo"
+                placeholder="+57"
               error={fieldState.error?.message}
               />
             )}
@@ -139,13 +153,16 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                placeholder="Número de teléfono"
+                label="Teléfono"
+                placeholder="300 123 4567"
               error={fieldState.error?.message}
               />
             )}
           />
         </View>
       </View>
+      </>
+      ) : null}
       <View
         className="rounded-2xl p-3.5"
         style={{
@@ -157,15 +174,21 @@ export function PropietarioRolForm({
           elevation: 3,
         }}
       >
-        <Text className="text-sm font-bold text-gray-900 mb-2.5">
-          Visibilidad y contacto
+        <Text className="text-sm font-bold text-gray-900">
+          Qué ven los vecinos
+        </Text>
+        <Text className="text-xs mb-2.5" style={{ color: theme.colors.textMuted }}>
+          Lo decide cada persona sobre sí misma.
         </Text>
         <Controller
           control={control}
           name="datosVisibles"
           render={({ field }) => (
             <View className="flex-row items-center justify-between mb-2.5">
-              <Text className="shrink text-sm text-gray-900">Datos visibles</Text>
+              <View className="shrink gap-0.5">
+                <Text className="text-sm text-gray-900">Datos visibles</Text>
+                <Text className="text-xs text-gray-500">Su nombre y su vivienda salen en el directorio del edificio.</Text>
+              </View>
               <Toggle value={!!field.value} onChange={field.onChange} />
             </View>
           )}
@@ -175,9 +198,10 @@ export function PropietarioRolForm({
           name="contactableChat"
           render={({ field }) => (
             <View className="flex-row items-center justify-between mb-2.5">
-              <Text className="shrink text-sm text-gray-900">
-                Contactable por chat app
-              </Text>
+              <View className="shrink gap-0.5">
+                <Text className="text-sm text-gray-900">Se le puede escribir por el chat</Text>
+                <Text className="text-xs text-gray-500">Los vecinos le pueden mandar mensajes en Veciyo.</Text>
+              </View>
               <Toggle value={!!field.value} onChange={field.onChange} />
             </View>
           )}
@@ -187,9 +211,10 @@ export function PropietarioRolForm({
           name="contactableWhatsapp"
           render={({ field }) => (
             <View className="flex-row items-center justify-between">
-              <Text className="shrink text-sm text-gray-900">
-                Contactable por WhatsApp
-              </Text>
+              <View className="shrink gap-0.5">
+                <Text className="text-sm text-gray-900">Se le puede escribir por WhatsApp</Text>
+                <Text className="text-xs text-gray-500">Su número aparece para escribirle por WhatsApp.</Text>
+              </View>
               <Toggle value={!!field.value} onChange={field.onChange} />
             </View>
           )}
@@ -198,8 +223,7 @@ export function PropietarioRolForm({
           className="text-xs mt-2"
           style={{ color: theme.colors.textMuted }}
         >
-          Si desactivas visibilidad, el contacto aparecerá como (oculto) y no
-          será contactable.
+          Si apaga «Datos visibles», sale como «(oculto)» y nadie le puede escribir.
         </Text>
       </View>
       {/*

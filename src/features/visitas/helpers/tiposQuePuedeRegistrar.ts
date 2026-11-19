@@ -11,11 +11,14 @@ export function tiposQuePuedeRegistrar({
   esGuardia,
   esAdmin,
   esHuesped,
+  esTrabajador = false,
   rentaCortaPermitida,
 }: {
   esGuardia: boolean;
   esAdmin: boolean;
   esHuesped: boolean;
+  /** El profesional permanente con permiso de crear visitas (18/11/2026). */
+  esTrabajador?: boolean;
   rentaCortaPermitida: boolean;
 }): (typeof TIPOS_VISITA)[number][] {
   return TIPOS_VISITA.filter((t) => {
@@ -28,6 +31,8 @@ export function tiposQuePuedeRegistrar({
     // Sin renta corta en el edificio, no se ofrece el huésped (13/11/2026).
     if (t === "huesped-temporal" && !rentaCortaPermitida) return false;
     if (esHuesped) return t === "amigos" || t === "temporal";
+    // Lo mismo el profesional permanente (`visita_alta_del_trabajador`).
+    if (esTrabajador) return t === "amigos" || t === "temporal";
     // La administración registra solo personal permanente y profesionales
     // temporales, en Inicio y en Viviendas › Visitas (Para Claude 199, 30/10/2026).
     if (esAdmin) return t === "permanente" || t === "temporal";

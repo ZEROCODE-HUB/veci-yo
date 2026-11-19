@@ -28,6 +28,11 @@ export function permisosDeVisitas(
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   const esInquilinoLider = rolActivo === "inquilino-lider";
   const esHuesped = rolActivo === "huesped-temporal";
+  /*
+    El profesional permanente con permiso de crear visitas (18/11/2026): solo
+    llega aquí desde su Inicio si se lo dieron, y la base lo comprueba igual.
+  */
+  const esTrabajador = rolActivo === "trabajador";
   // La portería vuelve a registrar, solo amigos o familia y profesionales
   // temporales (16/11/2026; se le había quitado el 01/11, Para Claude 200).
   const puedeCrear =
@@ -35,6 +40,7 @@ export function permisosDeVisitas(
     esInquilinoLider ||
     esGuardia ||
     esAdmin ||
+    esTrabajador ||
     (esHuesped && huespedPuedeRegistrar);
   const puedeEliminar =
     esPropietario || esInquilinoLider || esGuardia || esAdmin;
@@ -59,14 +65,14 @@ export function permisosDeVisitas(
   // (Para Claude 199, 30/10/2026).
   const tiposDisponibles: VisitaItem["tipo"][] = esAdmin
     ? ["permanente", "temporal"]
-    : esGuardia || esHuesped
+    : esGuardia || esHuesped || esTrabajador
       ? ["amigos", "temporal"]
       : ["amigos", "temporal", "permanente", "huesped-temporal"];
 
   const tipoTabs = (() => {
     // Sin reservas de huésped habría dos pestañas con el mismo contenido, así
     // que entonces no se ofrece "Todos": no hay nada que reunir.
-    if (esHuesped || !huespedDisponible) {
+    if (esHuesped || esTrabajador || !huespedDisponible) {
       return [{ value: "visitas", label: "Visitas" }];
     }
     return [

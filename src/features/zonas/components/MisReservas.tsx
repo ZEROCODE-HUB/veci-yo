@@ -8,6 +8,7 @@ import { useZonas } from "../hooks";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import type { ReservaZona } from "@/shared/types";
+import { EditarMiReserva } from "./EditarMiReserva";
 
 const icons = zonaIcons2 as Record<string, ImageSourcePropType>;
 
@@ -47,6 +48,8 @@ export function MisReservas({
     reservas». No se pudo cancelar y no supo por qué.
   */
   const [aCancelar, setACancelar] = useState<ReservaZona | null>(null);
+  /** Editar la suya (18/11/2026): con el límite de una, se cambia la que hay. */
+  const [aEditar, setAEditar] = useState<ReservaZona | null>(null);
 
   /*
     El `return null` de la porteria y la administracion estaba **antes** del
@@ -222,6 +225,18 @@ export function MisReservas({
                   <Text className="text-xs text-gray-500">
                     {reserva.fecha || "Sin fecha"}
                   </Text>
+                  {reserva.uuid && rol !== "huesped-temporal" ? (
+                    <Pressable
+                      onPress={() => setAEditar(reserva)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Editar la reserva de ${zona?.nombre ?? "la zona"}`}
+                      hitSlop={8}
+                    >
+                      <Text className="text-xs font-semibold" style={{ color: theme.colors.primary }}>
+                        Editar
+                      </Text>
+                    </Pressable>
+                  ) : null}
                   {reserva.uuid ? (
                     <Pressable
                       onPress={() => setACancelar(reserva)}
@@ -242,6 +257,19 @@ export function MisReservas({
             );
           })
         ))}
+      {/* Solo montada al abrirla: así la lista no necesita nada más para pintarse. */}
+      {aEditar ? (
+      <EditarMiReserva
+        reserva={aEditar}
+        tope={
+          aEditar
+            ? (zonasComunesConfig[aEditar.zonaId ?? ""] as { personasPorReserva?: number } | undefined)
+                ?.personasPorReserva ?? 0
+            : 0
+        }
+        onClose={() => setAEditar(null)}
+      />
+      ) : null}
       <Modal
         visible={!!aCancelar}
         onClose={() => setACancelar(null)}

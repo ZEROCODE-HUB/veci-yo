@@ -214,17 +214,18 @@ describe("quién puede invitar a qué", () => {
     expect(fueRechazada(intento)).toBe(true);
   });
 
-  it("y no nombra propietario a nadie", async () => {
+  it("y no nombra propietario de una vivienda que no es suya", async () => {
     /*
-      KT flujo 4.3: "No puede crear Huésped Temporal (va por otro flujo) ni
-      Propietario (lo crea el Administrador del edificio)" [DECIDIDO].
+      KT flujo 4.3 decía que el propietario lo crea solo la administración.
+      Desde el 18/11/2026 (pedido del cliente) el propietario invita a un
+      copropietario de SU vivienda; de otra, no.
     */
     const intento = await rpc(guillermo, "crear_invitacion", {
       p_condominio_id: CONDOMINIO,
       p_ambito: "unidad",
       p_correo: CUENTA.invitadoNuevo,
       p_nombre: "[prueba] propietario",
-      p_unidad_id: UNIDAD.u101,
+      p_unidad_id: UNIDAD.u102,
       p_rol_unidad: "propietario",
     });
     expect(fueRechazada(intento)).toBe(true);

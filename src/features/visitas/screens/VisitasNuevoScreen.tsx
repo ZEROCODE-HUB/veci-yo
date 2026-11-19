@@ -18,11 +18,13 @@ import { VisitaParaAdministracion } from "../components/nuevo/VisitaParaAdminist
 import { FechasDeLaVisita } from "../components/nuevo/FechasDeLaVisita";
 import { AcompanantesDeLaVisita } from "../components/nuevo/AcompanantesDeLaVisita";
 import { TipoDeNotificacion } from "../components/nuevo/TipoDeNotificacion";
+import { CuentaDelProfesional } from "../components/nuevo/CuentaDelProfesional";
 import { AvisoLegalDeMenores } from "../components/nuevo/AvisoLegalDeMenores";
 import { AmigosEnLaEstancia } from "../components/nuevo/AmigosEnLaEstancia";
 import { AvisoSinRentaCorta } from "../components/historial/AvisoSinRentaCorta";
 import { useParametrosDeLaBase, useUnidadActiva } from "@/shared/hooks";
 import { useDatosDelMensaje } from "../hooks/useDatosDelMensaje";
+import { TIPO_EXPLICACION } from "../constants";
 
 /**
  * Alta de visitas. Solo composicion: el estado y las reglas viven en
@@ -143,17 +145,19 @@ export function VisitasNuevoScreen() {
             <DiasDeTrabajo dias={alta.diasTrabajo} onCambiar={alta.setDiasTrabajo} />
           )}
 
-          {tipoSeleccionado === "permanente" && (
+          {tipoSeleccionado && TIPO_EXPLICACION[tipoSeleccionado] ? (
             <View
               className="rounded-xl p-3"
               style={{ backgroundColor: theme.colors.bgMuted }}
             >
               <Text className="text-xs text-gray-500 leading-5">
-                El profesional permanente se registra de uno en uno. Para registrar
-                otro, crea una visita nueva.
+                {TIPO_EXPLICACION[tipoSeleccionado]}
+                {tipoSeleccionado === "permanente"
+                  ? " Se registra de uno en uno: para otro, crea una visita nueva."
+                  : ""}
               </Text>
             </View>
-          )}
+          ) : null}
 
           {esAdmin && (
             <VisitaParaAdministracion
@@ -189,6 +193,7 @@ export function VisitasNuevoScreen() {
             setVerificaDocumento={alta.setAmigoVerifica}
             porteriaPideDocumento={alta.porteriaPideDocumento}
           />
+          <CuentaDelProfesional alta={alta} />
           <AcompanantesDeLaVisita alta={alta} />
 
           <HorariosVisita

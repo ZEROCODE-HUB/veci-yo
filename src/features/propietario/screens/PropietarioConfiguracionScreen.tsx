@@ -26,6 +26,8 @@ import { useRentaCortaPermitida } from "../hooks/useRentaCortaPermitida";
 import { DarAccesoALaApp } from "../components/invitar/DarAccesoALaApp";
 import { loQueVeEnLaVivienda } from "../helpers/loQueVeEnLaVivienda";
 import { porQueNoPuedeSerResidente } from "../helpers/porQueNoPuedeSerResidente";
+import { PrivilegiosDePersona } from "../components/configuracion/PrivilegiosDePersona";
+import { usePrivilegiosDePersonas } from "../hooks/usePrivilegiosDePersonas";
 
 type Nav = NativeStackNavigationProp<
   PropietarioStackParamList & SharedStackParamList,
@@ -49,15 +51,12 @@ export function PropietarioConfiguracionScreen() {
     Qué se le ofrece según su rol en la vivienda: lo decide
     `loQueVeEnLaVivienda` (17/11/2026: el residente ve solo lo de vivir ahí).
   */
-  const {
-    esSoloResidente,
-    puedeGestionarLaVivienda,
-    puedeConfigurarElAlojamiento,
-    puedeInvitar,
-  } = loQueVeEnLaVivienda(unidadActiva?.rol, permisos.puede("invitar_a_la_vivienda"));
   /** Darle la app a quien vive aquí sin ella (17/11/2026). */
   const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
   const { addToast } = useUIStore();
+  /** Privilegios por persona y renta corta del inquilino líder (18/11/2026). */
+  const privilegios = usePrivilegiosDePersonas();
+  const usuarioIdActual = useAuthStore((s) => s.usuarioId ?? "");
   const {
     cargaDelPropietario,
     cargaDeLaLista,
@@ -80,6 +79,15 @@ export function PropietarioConfiguracionScreen() {
     viviendaEnAlquiler,
     hayInquilinoLider,
   } = usePropietarioConfiguracion();
+  const {
+    esSoloResidente,
+    puedeGestionarLaVivienda,
+    puedeConfigurarElAlojamiento,
+    puedeInvitar,
+  } = loQueVeEnLaVivienda(unidadActiva?.rol, permisos.puede("invitar_a_la_vivienda"), {
+    delInquilino: Boolean(yo?.puedeRentaCorta),
+    enMarcha: rentaCortaEnMarcha,
+  });
 
   /*
     «Actuales» mira la fecha. De los cuatro huespedes que la 102 tiene dados de
@@ -258,6 +266,12 @@ export function PropietarioConfiguracionScreen() {
         />
       </ScrollView>
 
+      <PrivilegiosDePersona
+        persona={privilegios.privilegiosDe}
+        guardando={privilegios.guardandoPrivilegios}
+        onClose={privilegios.cerrarPrivilegios}
+        onGuardar={privilegios.guardarPrivilegios}
+      />
       <MenuDeResidente
         residente={menuResidente}
         puedeGestionar={puedeGestionarLaVivienda}
@@ -265,6 +279,10 @@ export function PropietarioConfiguracionScreen() {
         onDarAcceso={(r) => setDarAccesoA({ id: r.id, nombre: r.nombre })}
         onClose={() => setMenuResidente(null)}
         onEditar={(r) => navigation.navigate("CrearRol", { editar: r })}
+        onPrivilegios={privilegios.abrirPrivilegios}
+        usuarioId={usuarioIdActual}
+        puedeDarRentaCorta={unidadActiva?.rol === "propietario" && Boolean(rentaCortaPermitida)}
+        onRentaCorta={privilegios.cambiarRentaCorta}
         onDarDeBaja={setDeleteResidente}
         onDenunciar={(r) =>
           navigation.navigate("ReclamoNuevo", {

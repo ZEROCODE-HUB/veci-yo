@@ -64,6 +64,13 @@ export interface ResidenteDeUnidad {
    * cuando la vivienda esta en «aprobar huesped por huesped» (15/10/2026).
    */
   puedeRegistrarVisitas: boolean;
+  /** El rol tal como está en la base (`inquilino_lider`…), para decidir qué se ofrece. */
+  rolBase: RolUnidadDB;
+  /** Solo del inquilino líder: el propietario le dio la renta corta (18/11/2026). */
+  puedeRentaCorta: boolean;
+  /** Privilegios de esta persona sobre lo que su rol permite (18/11/2026). */
+  registraVisitas: boolean;
+  reservaZonas: boolean;
 }
 
 /*
@@ -82,7 +89,7 @@ const SELECT_RESIDENTE = `
   id, usuario_id, nombre, rol, telefono, created_at,
   es_anfitrion_primario, es_admin_primario, es_residente, es_menor,
   datos_visibles, contactable_chat, contactable_whatsapp,
-  puede_registrar_visitas,
+  puede_registrar_visitas, puede_renta_corta, persona_registra_visitas, persona_reserva_zonas,
   vigente_desde, vigente_hasta,
   contacto_emergencia_nombre, contacto_emergencia_codigo,
   contacto_emergencia_telefono, documento
@@ -152,6 +159,10 @@ export async function obtenerResidentes(
       contactableChat: Boolean(fila.contactable_chat),
       contactableWhatsapp: Boolean(fila.contactable_whatsapp),
       puedeRegistrarVisitas: Boolean(fila.puede_registrar_visitas),
+      rolBase: fila.rol as RolUnidadDB,
+      puedeRentaCorta: Boolean(fila.puede_renta_corta),
+      registraVisitas: fila.persona_registra_visitas !== false,
+      reservaZonas: fila.persona_reserva_zonas !== false,
       contactoNombre: fila.contacto_emergencia_nombre ?? "",
       contactoCodigo: fila.contacto_emergencia_codigo ?? "",
       contactoTelefono: fila.contacto_emergencia_telefono ?? "",
@@ -343,4 +354,34 @@ export async function guardarContactoDeEmergencia(
   if (!data?.length) {
     throw new Error("No tienes permiso para cambiar el contacto de esa persona.");
   }
+}
+
+/**
+ * Lo que una persona puede hacer, sobre lo que su rol permite (18/11/2026):
+ * registrar visitas y reservar zonas. Lo cambia quien gestiona la vivienda;
+ * la base comprueba quién pide.
+ */
+export async function cambiarPrivilegios(
+  membresiaId: string,
+  privilegios: { registraVisitas: boolean; reservaZonas: boolean },
+): Promise<void> {
+  const { error } = await supabase.rpc("cambiar_privilegios_de_persona", {
+    p_membresia_id: membresiaId,
+    p_registra_visitas: privilegios.registraVisitas,
+    p_reserva_zonas: privilegios.reservaZonas,
+  });
+  if (error) throw error;
+}
+
+/**
+ * El propietario le da (o le quita) la renta corta al inquilino líder
+ * (18/11/2026). Al dársela queda como no residente: no se vive donde se
+ * alquila por noches.
+ */
+export async function darRentaCortaAlInquilino(membresiaId: string, dar: boolean): Promise<void> {
+  const { error } = await supabase.rpc("dar_renta_corta_al_inquilino", {
+    p_membresia_id: membresiaId,
+    p_dar: dar,
+  });
+  if (error) throw error;
 }

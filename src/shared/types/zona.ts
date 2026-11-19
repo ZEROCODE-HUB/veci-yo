@@ -7,6 +7,12 @@ export interface ZonaComun {
   usaSlots: boolean;
   /** Si quien reserva elige el número de puesto; si no, se asigna uno libre (29/10/2026). */
   eligeNumero?: boolean;
+  /** El nombre de cada una de las zonas iguales, por número (18/11/2026). */
+  nombresDeZonas?: string[];
+  /** Personas en una reserva, contando a quien reserva (18/11/2026). 0 = lo que deje la capacidad. */
+  personasPorReserva?: number;
+  /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
+  plazoAdjuntoHoras?: number;
   duracionMaximaMin: number;
   /**
    * La zona se puede usar en una estancia corta, es decir por un huesped

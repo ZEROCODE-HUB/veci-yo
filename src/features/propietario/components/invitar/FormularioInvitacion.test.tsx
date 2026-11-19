@@ -54,17 +54,19 @@ function Montado() {
 }
 
 describe("el desplegable de invitar", () => {
-  it("al dueño le ofrece inquilino líder, residente y anfitrión", () => {
+  // Desde el 18/11/2026 el dueño invita también al copropietario.
+  it("al dueño le ofrece inquilino líder, residente, anfitrión y copropietario", () => {
     expect(rolesQuePuedeInvitar({ esDueno: true, esAdministracion: false }).map((r) => r.label)).toEqual([
       "Inquilino líder",
       "Residente",
       "Anfitrión",
+      "Copropietario",
     ]);
   });
 
-  it("al inquilino líder no le ofrece anfitrión: atiende la renta corta del dueño", () => {
+  // Y el inquilino líder solo invita residentes (18/11/2026).
+  it("al inquilino líder solo le ofrece residente", () => {
     expect(rolesQuePuedeInvitar({ esDueno: false, esAdministracion: false }).map((r) => r.label)).toEqual([
-      "Inquilino líder",
       "Residente",
     ]);
   });

@@ -40,6 +40,8 @@ export function participaEnLaEncuesta(
 ) {
   if (!anuncio.votacion) return false;
   if (rol === "huesped-temporal") return false;
+  // El profesional permanente lee, no vota: no es de la vivienda (18/11/2026).
+  if (rol === "trabajador") return false;
   if (rol === "guardia") return Boolean(anuncio.paraPorteria);
   if (rol === "administrador") return true;
   // Solo si es para el rol con el que se entra (Para Claude 157, 29/10/2026).
@@ -48,13 +50,14 @@ export function participaEnLaEncuesta(
 
 /** Las casillas de la publicación, con los nombres de `esParaElRol`. */
 export function audienciaDe(
-  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria">>,
+  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria" | "paraTrabajadores">>,
 ): Audiencia {
   return {
     propietarios: anuncio.paraPropietarios ?? true,
     residentes: anuncio.paraResidentes ?? true,
     huespedes: anuncio.paraHuespedes ?? false,
     porteria: anuncio.paraPorteria ?? false,
+    trabajadores: anuncio.paraTrabajadores ?? false,
   };
 }
 
@@ -65,7 +68,7 @@ export function audienciaDe(
  * (`audienciaDe`), en el orden del formulario. Vacío si no marca ninguna.
  */
 export function dirigidoA(
-  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria">>,
+  anuncio: Partial<Pick<Anuncio, "paraPropietarios" | "paraResidentes" | "paraHuespedes" | "paraPorteria" | "paraTrabajadores">>,
 ): string {
   const audiencia = audienciaDe(anuncio);
   return [
@@ -73,6 +76,7 @@ export function dirigidoA(
     audiencia.residentes && "Residentes",
     audiencia.huespedes && "Huéspedes temporales",
     audiencia.porteria && "Portería",
+    audiencia.trabajadores && "Profesionales permanentes",
   ]
     .filter(Boolean)
     .join(", ");

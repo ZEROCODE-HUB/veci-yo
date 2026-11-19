@@ -6,6 +6,8 @@ export interface OpcionEnTarjeta<T extends string> {
   titulo: string;
   /** Una línea que explica qué pasa si se elige. */
   detalle: string;
+  /** En gris y sin poder elegirse; el detalle dice por qué (18/11/2026). */
+  deshabilitada?: boolean;
 }
 
 /**
@@ -30,19 +32,25 @@ export function EleccionEnTarjetas<T extends string>({
     <View className="gap-2" accessibilityRole="radiogroup">
       {opciones.map((opcion) => {
         const elegida = opcion.valor === valor;
+        const deshabilitada = opcion.deshabilitada === true;
         return (
           <Pressable
             key={opcion.valor}
             accessibilityRole="radio"
             accessibilityLabel={opcion.titulo}
-            accessibilityState={{ checked: elegida }}
+            accessibilityState={{ checked: elegida, disabled: deshabilitada }}
             aria-checked={elegida}
-            onPress={() => onCambiar(opcion.valor)}
+            aria-disabled={deshabilitada}
+            disabled={deshabilitada}
+            onPress={() => {
+              if (!deshabilitada) onCambiar(opcion.valor);
+            }}
             className="flex-row items-start gap-3 rounded-xl p-3"
             style={{
               borderWidth: 1.5,
               borderColor: elegida ? theme.colors.primary : theme.colors.border,
               backgroundColor: elegida ? theme.colors.primaryLight : theme.colors.bgCard,
+              opacity: deshabilitada ? 0.6 : 1,
             }}
           >
             <View

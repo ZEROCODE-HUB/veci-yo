@@ -7,15 +7,22 @@ import { useAuthStore } from "@/stores";
 import { useZonas } from "../hooks";
 import { ZonaReservaForm } from "@/features/zonas/components";
 import { useNavegacion, useParametros, usePermisosEnLaVivienda } from "@/shared/hooks";
+import { Ionicons } from "@expo/vector-icons";
+import type { ReservaHecha } from "../hooks/useZonaReservaForm";
 
-interface SuccessReservation {
-  depto: string;
-  hora: string;
-  reservaNum: string;
-  /** Que puesto toco: la lavadora N°2. Nulo si la zona tiene uno solo. */
-  puesto: number | null;
-  zona: string;
-  pendiente: boolean;
+type SuccessReservation = ReservaHecha;
+
+/** Una línea de la tarjeta de la reserva: icono, qué es y el dato. */
+function Dato({ icono, etiqueta, valor }: { icono: keyof typeof Ionicons.glyphMap; etiqueta: string; valor: string }) {
+  return (
+    <View className="flex-row items-center gap-3">
+      <Ionicons name={icono} size={18} color={theme.colors.primaryDark} />
+      <View className="flex-1">
+        <Text className="text-xs text-gray-500">{etiqueta}</Text>
+        <Text className="text-sm font-semibold text-gray-900">{valor}</Text>
+      </View>
+    </View>
+  );
 }
 
 export function ZonaReservarScreen() {
@@ -102,45 +109,63 @@ export function ZonaReservarScreen() {
           onSuccess={setSuccessReservation}
         />
       </ScrollView>
+      {/*
+        La tarjeta de la reserva (18/11/2026, pedido del cliente: «se ve
+        horrible, dice 101 pero 101 qué»). Cada dato con su nombre; el número
+        de reserva, pequeño y rotulado; y lo que falta, si falta algo.
+      */}
       <Modal
         visible={!!successReservation}
         onClose={closeSuccess}
-        title={`Reserva ${zona.nombre} N°${successReservation?.reservaNum || ""}`}
+        title={successReservation?.pendiente ? "Reserva pendiente" : "Reserva confirmada"}
       >
-        <View className="items-center gap-4">
-          {/* Para Claude 142 (29/10/2026): si espera aprobación, se dice. */}
-          <Text className="text-lg font-semibold text-center">
-            {successReservation?.pendiente
-              ? "Tu reserva está pendiente de aprobación"
-              : "La reserva quedó registrada"}
-          </Text>
-          {successReservation?.pendiente ? (
-            <Text className="text-sm text-center text-gray-500">
-              La administración la revisará y te avisaremos cuando la apruebe o la rechace.
+        <View className="gap-4">
+          <View className="items-center gap-1">
+            <Ionicons
+              name={successReservation?.pendiente ? "time-outline" : "checkmark-circle"}
+              size={44}
+              color={successReservation?.pendiente ? theme.colors.badgeAmberText : theme.colors.success}
+            />
+            <Text className="text-base font-semibold text-center text-gray-900">
+              {successReservation?.pendiente
+                ? "La administración tiene que aprobarla"
+                : "Tu reserva quedó confirmada"}
+            </Text>
+          </View>
+          <View
+            className="rounded-2xl p-4 gap-3"
+            style={{ backgroundColor: theme.colors.bgMuted, borderWidth: 1, borderColor: theme.colors.border }}
+          >
+            <Dato
+              icono="location-outline"
+              etiqueta="Zona"
+              valor={successReservation?.puestoNombre || successReservation?.zona || zona.nombre}
+            />
+            <Dato icono="calendar-outline" etiqueta="Fecha" valor={successReservation?.fecha ?? ""} />
+            <Dato icono="time-outline" etiqueta="Hora" valor={successReservation?.hora ?? ""} />
+            <Dato icono="home-outline" etiqueta="Vivienda" valor={`Dpto ${successReservation?.depto ?? ""}`} />
+            <Dato
+              icono="people-outline"
+              etiqueta="Personas"
+              valor={
+                successReservation?.personas === 1 ? "Solo tú" : `${successReservation?.personas ?? 1} personas, contigo`
+              }
+            />
+            <Text className="text-xs text-gray-400">N° de reserva: {successReservation?.reservaNum}</Text>
+          </View>
+          {successReservation?.faltaComprobante ? (
+            <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.warningLight }}>
+              <Text className="text-xs leading-4 text-gray-800">
+                {successReservation.plazoAdjuntoHoras > 0
+                  ? `Falta el comprobante de pago. Adjúntalo desde «Mis reservas» en las próximas ${successReservation.plazoAdjuntoHoras} horas; si no, la reserva se cancela sola.`
+                  : "Falta el comprobante de pago. Adjúntalo desde «Mis reservas»."}
+              </Text>
+            </View>
+          ) : successReservation?.pendiente ? (
+            <Text className="text-xs text-center text-gray-500">
+              Te avisaremos cuando la apruebe o la rechace.
             </Text>
           ) : null}
-          <View
-            className="w-full rounded-2xl p-4 gap-2"
-            style={{ borderWidth: 1.5, borderColor: theme.colors.primary }}
-          >
-            <Text className="font-bold">{successReservation?.depto}</Text>
-            <Text className="text-sm text-gray-500">
-              Reserva N°: {successReservation?.reservaNum}
-            </Text>
-            <Text className="text-sm text-gray-500">
-              {successReservation?.hora}
-            </Text>
-            {/*
-              Cual toco. Se elegia la lavadora y luego no habia forma de saber
-              a cual ir: el puesto se guardaba y no se releia en ninguna
-              pantalla.
-            */}
-            {!!successReservation?.puesto && (
-              <Text className="text-sm font-semibold text-gray-900">
-                {successReservation.zona} N°{successReservation.puesto}
-              </Text>
-            )}
-          </View>
           <Button fullWidth onPress={closeSuccess}>
             Entendido
           </Button>

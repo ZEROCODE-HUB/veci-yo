@@ -2570,8 +2570,11 @@ export type Database = {
           id: string
           nombre: string
           permisos: Json
+          persona_registra_visitas: boolean
+          persona_reserva_zonas: boolean
           puede_acceder: boolean
           puede_registrar_visitas: boolean
+          puede_renta_corta: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono: string | null
           tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2601,8 +2604,11 @@ export type Database = {
           id?: string
           nombre: string
           permisos?: Json
+          persona_registra_visitas?: boolean
+          persona_reserva_zonas?: boolean
           puede_acceder?: boolean
           puede_registrar_visitas?: boolean
+          puede_renta_corta?: boolean
           rol: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -2632,8 +2638,11 @@ export type Database = {
           id?: string
           nombre?: string
           permisos?: Json
+          persona_registra_visitas?: boolean
+          persona_reserva_zonas?: boolean
           puede_acceder?: boolean
           puede_registrar_visitas?: boolean
+          puede_renta_corta?: boolean
           rol?: Database["public"]["Enums"]["rol_unidad"]
           telefono?: string | null
           tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
@@ -3213,6 +3222,30 @@ export type Database = {
           },
         ]
       }
+      paso_descartado: {
+        Row: {
+          created_at: string
+          id: string
+          paso: string
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          paso: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          paso?: string
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       perfil: {
         Row: {
           alias: string | null
@@ -3782,6 +3815,7 @@ export type Database = {
           para_porteria: boolean
           para_propietarios: boolean
           para_residentes: boolean
+          para_trabajadores: boolean
           publicada_desde: string
           publicada_hasta: string | null
           quien_vota: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -3814,6 +3848,7 @@ export type Database = {
           para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
+          para_trabajadores?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
           quien_vota?: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -3846,6 +3881,7 @@ export type Database = {
           para_porteria?: boolean
           para_propietarios?: boolean
           para_residentes?: boolean
+          para_trabajadores?: boolean
           publicada_desde?: string
           publicada_hasta?: string | null
           quien_vota?: Database["public"]["Enums"]["quien_vota_encuesta"]
@@ -4380,6 +4416,47 @@ export type Database = {
           },
         ]
       }
+      reserva_zona_accion: {
+        Row: {
+          accion: Database["public"]["Enums"]["accion_sobre_reserva"]
+          antes: Json | null
+          created_at: string
+          despues: Json | null
+          hecha_por: string | null
+          id: string
+          reserva_id: string
+          updated_at: string
+        }
+        Insert: {
+          accion: Database["public"]["Enums"]["accion_sobre_reserva"]
+          antes?: Json | null
+          created_at?: string
+          despues?: Json | null
+          hecha_por?: string | null
+          id?: string
+          reserva_id: string
+          updated_at?: string
+        }
+        Update: {
+          accion?: Database["public"]["Enums"]["accion_sobre_reserva"]
+          antes?: Json | null
+          created_at?: string
+          despues?: Json | null
+          hecha_por?: string | null
+          id?: string
+          reserva_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserva_zona_accion_reserva_id_fkey"
+            columns: ["reserva_id"]
+            isOneToOne: false
+            referencedRelation: "reserva_zona"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       servicio_de_vivienda: {
         Row: {
           codigo_pais: string | null
@@ -4845,10 +4922,13 @@ export type Database = {
           id: string
           nombre: string
           oficio: string | null
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
           telefono: string | null
           unidad_id: string
           updated_at: string
           usuario_id: string | null
+          visita_id: string | null
         }
         Insert: {
           aceptado_en?: string | null
@@ -4862,10 +4942,13 @@ export type Database = {
           id?: string
           nombre: string
           oficio?: string | null
+          puede_contestar_citofono?: boolean
+          puede_crear_visitas?: boolean
           telefono?: string | null
           unidad_id: string
           updated_at?: string
           usuario_id?: string | null
+          visita_id?: string | null
         }
         Update: {
           aceptado_en?: string | null
@@ -4879,10 +4962,13 @@ export type Database = {
           id?: string
           nombre?: string
           oficio?: string | null
+          puede_contestar_citofono?: boolean
+          puede_crear_visitas?: boolean
           telefono?: string | null
           unidad_id?: string
           updated_at?: string
           usuario_id?: string | null
+          visita_id?: string | null
         }
         Relationships: [
           {
@@ -4890,6 +4976,13 @@ export type Database = {
             columns: ["unidad_id"]
             isOneToOne: false
             referencedRelation: "unidad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trabajador_de_la_vivienda_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "visita"
             referencedColumns: ["id"]
           },
         ]
@@ -4982,7 +5075,7 @@ export type Database = {
           deleted_at: string | null
           estado: Database["public"]["Enums"]["estado_unidad"]
           id: string
-          indice_votacion: number
+          indice_votacion: number | null
           piso: number
           tipologia_id: string | null
           torre_id: string
@@ -4996,7 +5089,7 @@ export type Database = {
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
-          indice_votacion?: number
+          indice_votacion?: number | null
           piso: number
           tipologia_id?: string | null
           torre_id: string
@@ -5010,7 +5103,7 @@ export type Database = {
           deleted_at?: string | null
           estado?: Database["public"]["Enums"]["estado_unidad"]
           id?: string
-          indice_votacion?: number
+          indice_votacion?: number | null
           piso?: number
           tipologia_id?: string | null
           torre_id?: string
@@ -5562,6 +5655,7 @@ export type Database = {
       zona_comun: {
         Row: {
           activa: boolean
+          anticipacion_minima_horas: number
           capacidad_maxima: number | null
           condiciones_aprobacion: string | null
           condominio_id: string
@@ -5580,15 +5674,19 @@ export type Database = {
           horario_cierre: string | null
           id: string
           imagen_path: string | null
+          limite_reservas_por: Database["public"]["Enums"]["limite_reservas_por"]
           moneda: string | null
           monto_garantia: number
           nombre: string
           permite_estancia_corta: boolean
           permite_estancia_larga: boolean
+          personas_por_reserva: number | null
+          plazo_adjunto_horas: number | null
           reglamento: string | null
           reglamento_archivo_nombre: string | null
           reglamento_archivo_path: string | null
           requiere_aprobacion: boolean
+          reservas_activas_maximas: number | null
           tiempo_min_entre_reservas: number
           tipo: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at: string
@@ -5596,6 +5694,7 @@ export type Database = {
         }
         Insert: {
           activa?: boolean
+          anticipacion_minima_horas?: number
           capacidad_maxima?: number | null
           condiciones_aprobacion?: string | null
           condominio_id: string
@@ -5614,15 +5713,19 @@ export type Database = {
           horario_cierre?: string | null
           id?: string
           imagen_path?: string | null
+          limite_reservas_por?: Database["public"]["Enums"]["limite_reservas_por"]
           moneda?: string | null
           monto_garantia?: number
           nombre: string
           permite_estancia_corta?: boolean
           permite_estancia_larga?: boolean
+          personas_por_reserva?: number | null
+          plazo_adjunto_horas?: number | null
           reglamento?: string | null
           reglamento_archivo_nombre?: string | null
           reglamento_archivo_path?: string | null
           requiere_aprobacion?: boolean
+          reservas_activas_maximas?: number | null
           tiempo_min_entre_reservas?: number
           tipo?: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at?: string
@@ -5630,6 +5733,7 @@ export type Database = {
         }
         Update: {
           activa?: boolean
+          anticipacion_minima_horas?: number
           capacidad_maxima?: number | null
           condiciones_aprobacion?: string | null
           condominio_id?: string
@@ -5648,15 +5752,19 @@ export type Database = {
           horario_cierre?: string | null
           id?: string
           imagen_path?: string | null
+          limite_reservas_por?: Database["public"]["Enums"]["limite_reservas_por"]
           moneda?: string | null
           monto_garantia?: number
           nombre?: string
           permite_estancia_corta?: boolean
           permite_estancia_larga?: boolean
+          personas_por_reserva?: number | null
+          plazo_adjunto_horas?: number | null
           reglamento?: string | null
           reglamento_archivo_nombre?: string | null
           reglamento_archivo_path?: string | null
           requiere_aprobacion?: boolean
+          reservas_activas_maximas?: number | null
           tiempo_min_entre_reservas?: number
           tipo?: Database["public"]["Enums"]["tipo_zona"] | null
           updated_at?: string
@@ -5709,6 +5817,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "zona_fecha_especial_zona_id_fkey"
+            columns: ["zona_id"]
+            isOneToOne: false
+            referencedRelation: "zona_comun"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zona_recurso: {
+        Row: {
+          created_at: string
+          id: string
+          nombre: string
+          numero: number
+          updated_at: string
+          zona_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre: string
+          numero: number
+          updated_at?: string
+          zona_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre?: string
+          numero?: number
+          updated_at?: string
+          zona_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zona_recurso_zona_id_fkey"
             columns: ["zona_id"]
             isOneToOne: false
             referencedRelation: "zona_comun"
@@ -5838,8 +5981,11 @@ export type Database = {
           p_correo?: string
           p_nombre: string
           p_oficio?: string
+          p_puede_contestar_citofono?: boolean
+          p_puede_crear_visitas?: boolean
           p_telefono?: string
           p_unidad_id: string
+          p_visita_id?: string
         }
         Returns: string
       }
@@ -6055,6 +6201,14 @@ export type Database = {
         Args: { p_placa: string; p_vehiculo_id: string }
         Returns: undefined
       }
+      cambiar_privilegios_de_persona: {
+        Args: {
+          p_membresia_id: string
+          p_registra_visitas: boolean
+          p_reserva_zonas: boolean
+        }
+        Returns: undefined
+      }
       canales_del_condominio: {
         Args: { p_condominio_id: string }
         Returns: {
@@ -6066,6 +6220,7 @@ export type Database = {
           roles_unidad: Database["public"]["Enums"]["rol_unidad"][]
         }[]
       }
+      cancelar_reservas_vencidas: { Args: never; Returns: number }
       cancelar_suscripcion_renta_corta: {
         Args: { p_unidad_id: string }
         Returns: {
@@ -6249,6 +6404,10 @@ export type Database = {
         }[]
       }
       contestar_llamada: { Args: { p_llamada_id: string }; Returns: undefined }
+      correo_de_acceso_de_trabajador: {
+        Args: { p_trabajador_id: string }
+        Returns: undefined
+      }
       crear_cuota_del_mes: {
         Args: { p_condominio_id: string; p_periodo?: string }
         Returns: string
@@ -6314,6 +6473,10 @@ export type Database = {
       }
       dar_de_baja_trabajador_de_la_vivienda: {
         Args: { p_id: string }
+        Returns: undefined
+      }
+      dar_renta_corta_al_inquilino: {
+        Args: { p_dar: boolean; p_membresia_id: string }
         Returns: undefined
       }
       datos_para_el_sire: {
@@ -6724,6 +6887,10 @@ export type Database = {
         Returns: boolean
       }
       es_staff_plataforma: { Args: never; Returns: boolean }
+      es_trabajador_con_app_en: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       es_vecino_del_condominio: {
         Args: { p_condominio_id: string; p_usuario_id: string }
         Returns: boolean
@@ -6763,6 +6930,10 @@ export type Database = {
           motivo: string
           porcentaje: number
         }[]
+      }
+      estado_del_indice_de_votacion: {
+        Args: { p_condominio_id: string }
+        Returns: Json
       }
       estado_del_precheckin: {
         Args: { p_token: string }
@@ -7068,6 +7239,10 @@ export type Database = {
         Args: { p_salvo?: string; p_unidad_id: string }
         Returns: boolean
       }
+      hay_votacion_abierta_por_indice: {
+        Args: { p_condominio_id: string }
+        Returns: boolean
+      }
       historial_de_la_estancia: {
         Args: { p_visita_id: string }
         Returns: {
@@ -7137,6 +7312,10 @@ export type Database = {
           invitado_id: string
           motivo: string
         }[]
+      }
+      indice_de_votacion_del_edificio: {
+        Args: { p_condominio_id: string }
+        Returns: Json
       }
       invitar_primer_administrador: {
         Args: { p_condominio_id: string; p_correo: string; p_nombre: string }
@@ -7450,6 +7629,8 @@ export type Database = {
           codigo: string
           condominio: string
           condominio_id: string
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
           torre_numero: number
           trabajador_id: string
           unidad_id: string
@@ -8023,6 +8204,7 @@ export type Database = {
         Args: { p_en_comite: boolean; p_unidad_id: string }
         Returns: undefined
       }
+      porcentaje_para_leer: { Args: { p: number }; Returns: string }
       porteria_puede_llamar: {
         Args: { p_condominio_id: string }
         Returns: boolean
@@ -8380,6 +8562,21 @@ export type Database = {
         Args: { p_invitado_id: string }
         Returns: boolean
       }
+      reserva_por_delante: {
+        Args: {
+          p_condominio: string
+          p_estado: Database["public"]["Enums"]["estado_reserva"]
+          p_fecha: string
+        }
+        Returns: boolean
+      }
+      reservas_por_cancelar: {
+        Args: never
+        Returns: {
+          motivo: string
+          reserva_id: string
+        }[]
+      }
       resolver_prorroga: {
         Args: { p_acepta: boolean; p_id: string }
         Returns: undefined
@@ -8545,6 +8742,10 @@ export type Database = {
         Args: { p_cuota_id: string; p_unidad_id: string }
         Returns: number
       }
+      trabajador_registra_visitas: {
+        Args: { p_unidad_id: string }
+        Returns: boolean
+      }
       trabajadores_de_la_vivienda: {
         Args: { p_unidad_id: string }
         Returns: {
@@ -8597,6 +8798,7 @@ export type Database = {
       usuario_actual: { Args: never; Returns: string }
       validar_codigo_descuento: { Args: { p_codigo: string }; Returns: number }
       valor_configuracion: { Args: { p_clave: string }; Returns: string }
+      ve_el_dia_a_dia: { Args: { p_unidad_id: string }; Returns: boolean }
       vehiculos_del_precheckin: {
         Args: { p_token: string }
         Returns: {
@@ -8691,6 +8893,14 @@ export type Database = {
         | "invitar_a_la_vivienda"
         | "crear_zonas"
         | "crear_anuncios"
+      accion_sobre_reserva:
+        | "creada"
+        | "editada"
+        | "aprobada"
+        | "rechazada"
+        | "cancelada"
+        | "adjunto"
+        | "terminada"
       ambito_grupo: "residentes" | "propietarios"
       ambito_invitacion: "condominio" | "unidad"
       ambito_parametro: "plataforma" | "edificio" | "pais"
@@ -8791,6 +9001,7 @@ export type Database = {
         | "tecleado"
         | "a_mano"
       instruccion_documento: "verificar" | "no_verificar"
+      limite_reservas_por: "vivienda" | "persona"
       medio_contacto: "correo" | "telefono" | "cualquiera"
       momento_reporte: "entrada" | "salida"
       motivo_estancia:
@@ -8953,7 +9164,7 @@ export type Database = {
         | "guardia_seguridad"
       tipo_reporte: "visitantes" | "correspondencia" | "areas_comunes"
       tipo_reporte_legal: "tra" | "sire"
-      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van"
+      tipo_vehiculo: "auto" | "camioneta" | "moto" | "bus" | "van" | "nautico"
       tipo_visita: "amigos" | "temporal" | "permanente" | "huesped_temporal"
       tipo_zona: "recreacion" | "servicios" | "eventos"
       visibilidad_cuotas: "porcentaje" | "quien_pago" | "quien_debe"
@@ -9095,6 +9306,15 @@ export const Constants = {
         "crear_zonas",
         "crear_anuncios",
       ],
+      accion_sobre_reserva: [
+        "creada",
+        "editada",
+        "aprobada",
+        "rechazada",
+        "cancelada",
+        "adjunto",
+        "terminada",
+      ],
       ambito_grupo: ["residentes", "propietarios"],
       ambito_invitacion: ["condominio", "unidad"],
       ambito_parametro: ["plataforma", "edificio", "pais"],
@@ -9206,6 +9426,7 @@ export const Constants = {
         "a_mano",
       ],
       instruccion_documento: ["verificar", "no_verificar"],
+      limite_reservas_por: ["vivienda", "persona"],
       medio_contacto: ["correo", "telefono", "cualquiera"],
       momento_reporte: ["entrada", "salida"],
       motivo_estancia: [
@@ -9382,7 +9603,7 @@ export const Constants = {
       ],
       tipo_reporte: ["visitantes", "correspondencia", "areas_comunes"],
       tipo_reporte_legal: ["tra", "sire"],
-      tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van"],
+      tipo_vehiculo: ["auto", "camioneta", "moto", "bus", "van", "nautico"],
       tipo_visita: ["amigos", "temporal", "permanente", "huesped_temporal"],
       tipo_zona: ["recreacion", "servicios", "eventos"],
       visibilidad_cuotas: ["porcentaje", "quien_pago", "quien_debe"],

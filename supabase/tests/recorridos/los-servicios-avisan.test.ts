@@ -102,11 +102,12 @@ afterAll(async () => {
 });
 
 describe("el aviso de pago de un servicio", () => {
-  it("sale el día elegido, al propietario que vive ahí, una sola vez aunque la tarea corra dos", async () => {
+  it("sale el día elegido, a quien vive ahí, una sola vez aunque la tarea corra dos", async () => {
     await servicio.rpc("avisar_servicios_de_vivienda");
     await servicio.rpc("avisar_servicios_de_vivienda");
     const avisos = await avisosDe(paraHoy);
-    expect(avisos.filter((a) => a.usuario_id === quien["205:propietario"])).toHaveLength(1);
+    // Laura, la inquilina líder: Guillermo no reside en la 205 desde que ella vive ahí.
+    expect(avisos.filter((a) => a.usuario_id === quien["205:inquilino_lider"])).toHaveLength(1);
     expect(avisos[0].titulo).toMatch(/Recuerda pagar/);
     expect(avisos[0].mensaje).toMatch(/Empresa de prueba/);
   });

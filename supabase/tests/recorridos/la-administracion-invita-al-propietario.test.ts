@@ -42,17 +42,21 @@ describe("invitar al dueño de una vivienda", () => {
     expect(data).toEqual({ rol_unidad: "propietario", unidad_id: U102 });
   });
 
-  it("una vecina no, ni en su propia vivienda", async () => {
+  /*
+    Desde el 18/11/2026 la propietaria invita a un copropietario de su
+    vivienda (pedido del cliente); de una vivienda ajena, no.
+  */
+  it("una vecina no, en una vivienda que no es suya", async () => {
     await entrarComo(VECINA);
     await expect(
       invitarAUnidad({
         condominioId: CONDOMINIO,
-        unidadId: U102,
+        unidadId: "44444444-4444-4444-4444-444444444441",
         rol: "propietario",
         nombre: `${MARCA} vecina`,
         correo: "otro.dueno.prueba@veciyo.test",
       }),
-    ).rejects.toThrow(/Solo la administracion puede registrar al propietario/);
+    ).rejects.toThrow(/permiso/);
     await salir();
   });
 });

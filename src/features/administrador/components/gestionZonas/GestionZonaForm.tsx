@@ -10,6 +10,7 @@ import {
   Input,
   Modal,
   Select,
+  Tabs,
   Toggle,
 } from "@/shared/components";
 import { AdminSectionCard } from "../AdminSectionCard";
@@ -173,6 +174,10 @@ export function GestionZonaForm({
   const [showSuccess, setShowSuccess] = useState(false);
   const days = watch("diasHabilitados");
   const usaSlots = watch("usaSlots");
+  const cuantas = Math.min(Math.max(Number(watch("cuposSimultaneos")) || 0, 0), 50);
+  const nombresDeZonas = watch("nombresDeZonas") ?? [];
+  const hayCosto =
+    Number(watch("costoReserva")) > 0 || Number(watch("montoGarantia")) > 0 || Number(watch("costoLimpieza")) > 0;
   // Las de la base, con el código solo: el campo va a media columna.
   const monedasDeLaZona = useMonedas(watch("moneda")).monedas.map((m) => m.codigo);
   const fechasEspeciales = watch("fechasEspeciales");
@@ -233,6 +238,25 @@ export function GestionZonaForm({
   return (
     <>
       <ScrollView className="flex-1" contentContainerClassName="gap-3.5 p-4">
+        {/* Lo primero (18/11/2026, pedido del cliente): si está activa o no. */}
+        <AdminSectionCard title="Estado">
+          <Controller
+            control={control}
+            name="activa"
+            render={({ field }) => (
+              <Toggle
+                value={field.value}
+                onChange={field.onChange}
+                labelRight={field.value ? "Activa" : "Inactiva"}
+              />
+            )}
+          />
+          <Text className="text-xs text-gray-400">
+            {watch("activa")
+              ? "La zona estará disponible para reservas de los residentes."
+              : "Al estar inactiva, no aparecerá para reservas de los residentes."}
+          </Text>
+        </AdminSectionCard>
         <AdminSectionCard title="Información General">
           <Controller
             control={control}
@@ -268,7 +292,7 @@ export function GestionZonaForm({
                 label="Descripción (opcional)"
                 value={field.value}
                 onChangeText={field.onChange}
-                placeholder="Describe la zona común"
+                placeholder="Dónde está, su tamaño y qué incluye. Ej: terraza del piso 12, 4 parrillas, mesas para 10 personas y baño."
                 multiline
                 rows={3}
               error={fieldState.error?.message}
@@ -317,6 +341,62 @@ export function GestionZonaForm({
               />
             )}
           />
+        </AdminSectionCard>
+
+        {/*
+          Cuántas hay, cómo se llaman y cuántos caben (18/11/2026, pedido del
+          cliente). «Reservas a la misma hora» no se entendía: son cuántas
+          zonas iguales hay (tres parrillas), y cada una con su nombre. Quien
+          reserva elige siempre cuál: ya no hay interruptor.
+        */}
+        <AdminSectionCard title="Cuántas hay y cuántos caben">
+          <NumberField
+            control={control}
+            name="cuposSimultaneos"
+            label="¿Cuántas de estas zonas hay?"
+            placeholder="1"
+          />
+          <Text className="text-xs leading-4 text-gray-500">
+            Por ejemplo, 3 parrillas iguales. Cada una se reserva por separado.
+          </Text>
+          {cuantas > 1 ? (
+            <View className="gap-2">
+              <Text className="text-sm font-medium text-gray-500">Nombre de cada una (opcional)</Text>
+              {Array.from({ length: cuantas }, (_, i) => (
+                <Input
+                  key={i}
+                  value={nombresDeZonas[i] ?? ""}
+                  onChangeText={(texto) => {
+                    const lista = Array.from({ length: cuantas }, (_, k) => nombresDeZonas[k] ?? "");
+                    lista[i] = texto;
+                    setValue("nombresDeZonas", lista);
+                  }}
+                  placeholder={`${watch("nombre") || "Zona"} ${i + 1}`}
+                  showEditIcon={false}
+                />
+              ))}
+            </View>
+          ) : null}
+          <View className="flex-row gap-2.5">
+            <View className="flex-1">
+              <NumberField
+                control={control}
+                name="personasPorReserva"
+                label="Personas por reserva"
+              />
+            </View>
+            <View className="flex-1">
+              <NumberField
+                control={control}
+                name="capacidadMaxima"
+                label="Capacidad total a la vez"
+              />
+            </View>
+          </View>
+          <Text className="text-xs leading-4 text-gray-500">
+            «Personas por reserva» cuenta a quien reserva y sus invitados. La capacidad total es la del espacio
+            entero, sumando todas las reservas de esa hora. En 0, sin límite.
+          </Text>
         </AdminSectionCard>
 
         <AdminSectionCard title="Configuración de horarios">
@@ -373,48 +453,6 @@ export function GestionZonaForm({
             name="tiempoMinimoEntreReservas"
             label="Tiempo mínimo entre reservas (min)"
           />
-          <View className="flex-row gap-2.5">
-            <View className="flex-1">
-              <NumberField
-                control={control}
-                name="capacidadMaxima"
-                label="Capacidad máxima (personas)"
-              />
-            </View>
-            <View className="flex-1">
-              <NumberField
-                control={control}
-                name="cuposSimultaneos"
-                label="Reservas a la misma hora"
-                placeholder="1"
-              />
-            </View>
-          </View>
-          <Text className="text-xs text-gray-400">
-            La capacidad cuenta a quien reserva y sus acompañantes. En 0, sin
-            límite.
-          </Text>
-          {/*
-            Pedido del cliente (29/10/2026): en la piscina «10» es cuántas
-            reservas caben a la vez y nadie elige «Piscina N°7»; en la
-            lavandería cada número es una máquina y sí se elige.
-          */}
-          <Controller
-            control={control}
-            name="eligeNumero"
-            render={({ field }) => (
-              <Toggle
-                value={field.value}
-                onChange={field.onChange}
-                label="Quien reserva elige el número"
-              />
-            )}
-          />
-          <Text className="text-xs text-gray-400">
-            {watch("eligeNumero")
-              ? "Al reservar se elige el número (lavadora, cancha…)."
-              : "Al reservar se asigna solo un número libre (piscina, gimnasio…)."}
-          </Text>
           <Text className="text-sm font-medium text-gray-500">
             Días habilitados
           </Text>
@@ -438,6 +476,46 @@ export function GestionZonaForm({
               );
             })}
           </View>
+        </AdminSectionCard>
+
+        {/* Cuántas reservas y con cuánto tiempo (18/11/2026, pedido del cliente). */}
+        <AdminSectionCard title="Límites para reservar">
+          <NumberField
+            control={control}
+            name="reservasActivasMaximas"
+            label="Reservas por delante que puede tener cada uno"
+            placeholder="1"
+          />
+          <Controller
+            control={control}
+            name="limiteReservasPor"
+            render={({ field }) => (
+              <Tabs
+                tabs={[
+                  { value: "vivienda", label: "Por vivienda" },
+                  { value: "persona", label: "Por persona" },
+                ]}
+                active={field.value}
+                allowDeselect={false}
+                onChange={(v) => field.onChange(v === "persona" ? "persona" : "vivienda")}
+              />
+            )}
+          />
+          <Text className="text-xs leading-4 text-gray-500">
+            {watch("reservasActivasMaximas") > 0
+              ? `Con ${watch("reservasActivasMaximas")} reserva(s) por delante ${watch("limiteReservasPor") === "persona" ? "cada persona" : "cada vivienda"} ya no puede hacer otra: puede editar la que tiene. En 0, sin límite.`
+              : "Sin límite de reservas por delante."}
+          </Text>
+          <NumberField
+            control={control}
+            name="anticipacionMinimaHoras"
+            label="Anticipación mínima (horas)"
+          />
+          <Text className="text-xs leading-4 text-gray-500">
+            {watch("anticipacionMinimaHoras") > 0
+              ? `Hay que reservar con al menos ${watch("anticipacionMinimaHoras")} horas de anticipación.`
+              : "Se puede reservar al momento."}
+          </Text>
         </AdminSectionCard>
 
         <AdminSectionCard title="Configuración de reserva">
@@ -563,26 +641,22 @@ export function GestionZonaForm({
               />
             </View>
           </View>
+          {hayCosto ? (
+            <>
+              <NumberField
+                control={control}
+                name="plazoAdjuntoHoras"
+                label="Horas para adjuntar el comprobante"
+              />
+              <Text className="text-xs leading-4 text-gray-500">
+                {watch("plazoAdjuntoHoras") > 0
+                  ? `Quien reserva tiene ${watch("plazoAdjuntoHoras")} horas para adjuntar el comprobante; si no, la reserva se cancela sola y se le avisa.`
+                  : "Sin plazo para adjuntar el comprobante."}
+              </Text>
+            </>
+          ) : null}
         </AdminSectionCard>
 
-        <AdminSectionCard title="Estado">
-          <Controller
-            control={control}
-            name="activa"
-            render={({ field }) => (
-              <Toggle
-                value={field.value}
-                onChange={field.onChange}
-                labelRight={field.value ? "Activa" : "Inactiva"}
-              />
-            )}
-          />
-          <Text className="text-xs text-gray-400">
-            {watch("activa")
-              ? "La zona estará disponible para reservas de los residentes."
-              : "Al estar inactiva, no aparecerá para reservas de los residentes."}
-          </Text>
-        </AdminSectionCard>
         <AdminSectionCard title="Aprobación del administrador">
           <Controller
             control={control}
@@ -653,8 +727,9 @@ export function GestionZonaForm({
             )}
           />
           <Text className="text-xs leading-4 text-gray-400">
-            Define si esta zona puede ser usada por residentes de estancia corta
-            y/o larga. Ambos pueden estar activos simultáneamente.
+            Quién vive en el edificio cuenta como estancia larga. Un huésped es de estancia corta o larga según
+            las noches que el edificio define en Permisos › Renta corta; si el edificio no las distingue, todo
+            huésped cuenta como corta. Pueden estar activas las dos.
           </Text>
         </AdminSectionCard>
 

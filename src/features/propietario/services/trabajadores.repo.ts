@@ -29,6 +29,12 @@ export interface NuevoTrabajador {
   telefono?: string;
   conApp: boolean;
   correo?: string;
+  /** Con app (18/11/2026): le suena el citófono de la vivienda. Por defecto sí. */
+  puedeContestarCitofono?: boolean;
+  /** Con app (18/11/2026): anuncia visitas para la vivienda. Por defecto no. */
+  puedeCrearVisitas?: boolean;
+  /** La visita permanente con que se registró. */
+  visitaId?: string;
 }
 
 export async function agregarTrabajador(datos: NuevoTrabajador): Promise<string> {
@@ -40,6 +46,9 @@ export async function agregarTrabajador(datos: NuevoTrabajador): Promise<string>
     p_telefono: datos.telefono ?? undefined,
     p_con_app: datos.conApp,
     p_correo: datos.conApp ? datos.correo : undefined,
+    p_puede_contestar_citofono: datos.puedeContestarCitofono ?? true,
+    p_puede_crear_visitas: datos.puedeCrearVisitas ?? false,
+    p_visita_id: datos.visitaId ?? undefined,
   });
   if (error) throw error;
   return data;

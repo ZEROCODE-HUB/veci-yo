@@ -4,7 +4,19 @@
     "puntos": [
       "Mensajería con la portería: al elegir a una persona («Conserje · Federico Valverde») se abre un chat solo con ella, con su nombre arriba. Se le puede escribir aunque no esté de turno: la app avisa cuándo vuelve, el mensaje le espera y le llega el aviso. La administración también puede leer esos chats.",
       "Reglamento: «Ver documento» ahora abre el PDF o el Word dentro de la app para leerlo, en lugar de la ventana de compartir.",
-      "Llamadas en iPhone: al contestar con el teléfono bloqueado o la app cerrada, la app espera a que el iPhone entregue el audio antes de encender el micrófono, para que el otro te oiga (necesita la nueva versión de TestFlight)."
+      "Llamadas en iPhone: al contestar con el teléfono bloqueado o la app cerrada, la app espera a que el iPhone entregue el audio antes de encender el micrófono, para que el otro te oiga (necesita la nueva versión de TestFlight).",
+      "Índice de votación: ahora es un porcentaje del edificio. Empieza vacío, cada departamento va de más de 0 a 100 %, y entre todos no pueden pasar de 100 %. Al editar un departamento se ve cuánto suman los demás y cuánto le queda.",
+      "Encuestas: «Según el índice de votación» solo se puede elegir cuando todos los departamentos tienen su índice y suman 100 %; si no, sale en gris y dice cuánto suman y cuántos faltan. Mientras una encuesta por índice está abierta, los índices no se pueden cambiar.",
+      "Profesional permanente: se registra en Visitas con los días de la semana (sin calendario) y «¿Tendrá cuenta en la app?». Con cuenta le llega el acceso por correo y eliges si puede contestar el citófono y crear visitas. Ve los anuncios dirigidos a «Profesionales permanentes».",
+      "Visitas: ya no se pregunta cómo anunciar la visita; «¿Trae vehículo?»; se explica la diferencia entre profesional permanente y temporal. Nuevas opciones: Profesor, Cuidador y Vehículo náutico.",
+      "Con inquilino líder, el propietario ya no ve la correspondencia, las visitas ni las reservas de esa vivienda (se le avisa al invitarlo). Sigue con anuncios, gestión, renta corta, cuadro de honor y chats.",
+      "El propietario puede invitar a un copropietario. El inquilino líder solo invita residentes. El propietario puede darle la renta corta al inquilino líder si este no vive ahí, y con la renta corta activa todos en la vivienda hacen de anfitrión.",
+      "Personas de la vivienda: «Editar privilegios» (registrar visitas, reservar zonas) en el menú de cada una. El residente ya puede registrar visitas. Editar persona con textos más claros; el contacto de emergencia lo ponen el propietario o el inquilino líder.",
+      "Inicio: tarjeta de pendientes para todos los de la vivienda (grupo familiar, contacto de emergencia, placas, avisos), con «No aplica» y «Ocultar». La de la administración, en el orden Torres, Niveles, Garitas, Zonas, Reglamento, Conserjes, Propietarios.",
+      "Zonas comunes (administración): el estado va primero; «¿Cuántas de estas zonas hay?» con un nombre para cada una; personas por reserva; reservas por delante por vivienda o por persona; anticipación mínima; plazo para adjuntar el comprobante.",
+      "Reservar: el reglamento se abre al reservar con «Aceptar y reservar» o «Rechazar»; eliges la parrilla por su nombre o «Cualquiera libre»; sumas con un toque a quien vive contigo; el comprobante va al final y es opcional. Puedes editar tu reserva. La tarjeta de la reserva se ve clara.",
+      "Reservas (administración): menos botones, primero las pendientes más cercanas, «Ver documento adjunto» y el historial de cada reserva. Aviso «Reserva por aprobar» con cuánto falta. La portería ve quién está ahora en las zonas y puede ampliar o cancelar.",
+      "Menú: un globito con el número de anuncios, reservas, visitas o paquetes que no viste."
     ]
   },
   {

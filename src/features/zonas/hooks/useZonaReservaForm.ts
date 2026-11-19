@@ -22,6 +22,8 @@ import {
 import { useMiAlojamiento } from "@/features/huesped/hooks/useMiAlojamiento";
 import { frasede, loQueFalta } from "../services/loQueFalta";
 import {
+  CUALQUIERA,
+  etiquetaDelPuesto,
   numeroDelPuesto,
   puestosDisponibles,
   puestosOcupados,
@@ -39,6 +41,29 @@ import type { ArchivoElegido } from "@/shared/services/archivos";
 import { OCUPACION_QUERY_KEY } from "./useZonas";
 import { ahora, formatDate, formatDateInput } from "@/shared/utils";
 import { estadoDe } from "@/shared/components";
+import { useUnidadActiva } from "@/shared/hooks";
+import { obtenerPersonasDeUnidad } from "@/features/propietario/services/invitacionesUnidad.repo";
+
+/** Lo que se enseña al terminar de reservar (18/11/2026: la tarjeta de la reserva). */
+export interface ReservaHecha {
+  depto: string;
+  hora: string;
+  reservaNum: string;
+  /** Que puesto toco. Nulo en las zonas de un solo puesto. */
+  puesto: number | null;
+  /** «Parrilla Terraza · N°2», o vacío si la zona tiene uno solo. */
+  puestoNombre: string;
+  zona: string;
+  pendiente: boolean;
+  /** «25/09/2026». */
+  fecha: string;
+  /** Contando a quien reserva. */
+  personas: number;
+  /** Zona de pago sin el comprobante todavía: hay que adjuntarlo. */
+  faltaComprobante: boolean;
+  /** Horas para adjuntarlo. 0 = sin plazo. */
+  plazoAdjuntoHoras: number;
+}
 
 interface UseZonaReservaFormParams {
   zona: ZonaComun;
@@ -48,15 +73,7 @@ interface UseZonaReservaFormParams {
   initialDepartment?: string;
   /** Lo anotado por la portería en el modal del departamento (fila 12). */
   initialComments?: string;
-  onSuccess?: (result: {
-    depto: string;
-    hora: string;
-    reservaNum: string;
-    /** Que puesto toco. Nulo en las zonas de un solo puesto. */
-    puesto: number | null;
-    zona: string;
-    pendiente: boolean;
-  }) => void;
+  onSuccess?: (result: ReservaHecha) => void;
 }
 
 export function useZonaReservaForm({
@@ -173,15 +190,29 @@ export function useZonaReservaForm({
     enabled: esHuesped && Boolean(alojadoEn?.uuid),
   });
 
+  /*
+    Quienes viven conmigo, para sumarlos con un toque (18/11/2026, pedido del
+    cliente). Solo a quien vive aquí: el huésped elige de su estancia y la
+    portería reserva por otra vivienda.
+  */
+  const miVivienda = useUnidadActiva()?.unidadId ?? "";
+  const ofreceMiVivienda = !esHuesped && rol !== "guardia" && rol !== "administrador";
+  const { data: personasDeMiVivienda = [] } = useQuery({
+    queryKey: ["unidad", "personas", miVivienda],
+    queryFn: () => obtenerPersonasDeUnidad(miVivienda),
+    enabled: ofreceMiVivienda && Boolean(miVivienda),
+  });
+
   const cantidadPersonas = useMemo(
     () =>
       opcionesDeAsistentes(
-        zonaConfig?.capacidadMaxima ?? 0,
+        // Las personas por reserva, si la zona las pone (18/11/2026); si no, la capacidad.
+        zona.personasPorReserva || (zonaConfig?.capacidadMaxima ?? 0),
         maxHuespedes,
         // Mientras no llega la lista no se recorta: se recortaría a cero.
         esHuesped && genteCargada ? genteDeMiEstancia.length : null,
       ),
-    [zonaConfig?.capacidadMaxima, maxHuespedes, esHuesped, genteCargada, genteDeMiEstancia.length],
+    [zona.personasPorReserva, zonaConfig?.capacidadMaxima, maxHuespedes, esHuesped, genteCargada, genteDeMiEstancia.length],
   );
 
   /*
@@ -210,14 +241,20 @@ export function useZonaReservaForm({
     const tope =
       cierre !== null && inicio !== null ? Math.min(maxDuracionMin, cierre - inicio) : maxDuracionMin;
     const opciones: { value: number; label: string }[] = [];
-    for (let d = duracionMinima; d <= tope; d += pasoDuracion) {
+    /*
+      «Por bloques» y «Horario libre» por fin hacen cosas distintas
+      (18/11/2026, pedido del cliente): con bloques la franja es fija --dura
+      lo que dice la zona--; con horario libre se elige cuánto tiempo.
+    */
+    const desdeDuracion = zona.usaSlots ? tope : duracionMinima;
+    for (let d = desdeDuracion; d <= tope; d += pasoDuracion) {
       const h = Math.floor(d / 60);
       const m = d % 60;
       const label = h && m ? `${h} h ${m} min` : h ? `${h} ${h === 1 ? "hora" : "horas"}` : `${m} min`;
       opciones.push({ value: d, label });
     }
     return opciones;
-  }, [inicioElegido, maxDuracionMin, duracionMinima, pasoDuracion, zonaConfig?.horarioCierre]);
+  }, [inicioElegido, maxDuracionMin, duracionMinima, pasoDuracion, zonaConfig?.horarioCierre, zona.usaSlots]);
   const [duracionElegida, setDuracionElegida] = useState<number | null>(null);
   const duracion =
     duracionElegida && opcionesDuracion.some((o) => o.value === duracionElegida)
@@ -302,19 +339,21 @@ export function useZonaReservaForm({
   }, [hora, horaConDuracion]);
 
   const numbers = useMemo(() => {
-    const todos = Array.from(
-      { length: puestos },
-      (_, index) => `${zona.nombre} N°${index + 1}`,
+    const todos = Array.from({ length: puestos }, (_, index) =>
+      etiquetaDelPuesto(zona.nombre, index + 1, zona.nombresDeZonas),
     );
     // Sin tramo elegido todavia no hay nada que descartar.
-    if (!tramo) return todos;
+    if (!tramo) return [CUALQUIERA, ...todos];
     // Y sin la ocupación no se ofrece ninguno: no se sabe cuáles quedan.
     if (puestosSinSaber) return [];
-    return puestosDisponibles({
+    const libres = puestosDisponibles({
       nombreZona: zona.nombre,
       puestos,
       ocupados: puestosOcupados(ocupacion ?? [], fechaISO, tramo),
+      nombres: zona.nombresDeZonas,
     });
+    // «Cualquiera libre» primero (18/11/2026): la base le asigna una.
+    return libres.length > 0 ? [CUALQUIERA, ...libres] : [];
   }, [zona, puestos, ocupacion, fechaISO, tramo, puestosSinSaber]);
 
   /*
@@ -358,10 +397,11 @@ export function useZonaReservaForm({
       addToast("Esta zona es de pago: la reserva la hace la vivienda o la administración.", "error");
       return;
     }
-    if (pideComprobante && !comprobante) {
-      addToast("Es una zona de pago: adjunta el comprobante antes de reservar.", "error");
-      return;
-    }
+    /*
+      El comprobante ya no se pide antes de reservar (18/11/2026, pedido del
+      cliente): primero se reserva, queda pendiente, y se adjunta después
+      dentro del plazo de la zona.
+    */
     if (tramo && puestosSinSaber) {
       addToast("Todavía no sabemos qué puestos quedan libres. Espera un momento o reintenta.", "error");
       return;
@@ -388,7 +428,11 @@ export function useZonaReservaForm({
       acompanantes: cuentaDeAcompanantes(data.asistentes),
       // El desplegable lo pedia como obligatorio y su valor no se mandaba:
       // dos vecinos podian reservar la misma lavadora a la misma hora.
-      numeroRecurso: numeroDelPuesto(asignaNumeroSolo ? (numbers[0] ?? "") : data.numero),
+      // «Cualquiera libre» va sin número: la base asigna uno libre (18/11/2026).
+      numeroRecurso:
+        data.numero === CUALQUIERA
+          ? null
+          : numeroDelPuesto(asignaNumeroSolo ? (numbers.find((n) => n !== CUALQUIERA) ?? "") : data.numero),
       // Se escribia y se tiraba: el formulario lo pedia y el payload no lo
       // llevaba, asi que «Comentarios u observaciones» no llegaba a ninguna
       // parte.
@@ -432,13 +476,21 @@ export function useZonaReservaForm({
         }
         onSuccess?.({
           depto: data.depto,
-          hora: data.hora,
+          hora: horaConDuracion || data.hora,
           reservaNum: creada.numero,
           // El que toco, no el que se pidio: si la reserva llega sin numero
           // lo asigna la base.
           puesto: creada.numeroRecurso,
+          puestoNombre:
+            puestos > 1 && creada.numeroRecurso
+              ? etiquetaDelPuesto(zona.nombre, creada.numeroRecurso, zona.nombresDeZonas)
+              : "",
           zona: zona.nombre,
           pendiente,
+          fecha: formatDate(data.fecha ?? ahora()),
+          personas: 1 + cuentaDeAcompanantes(data.asistentes),
+          faltaComprobante: pideComprobante && !comprobante,
+          plazoAdjuntoHoras: zona.plazoAdjuntoHoras ?? 0,
         });
       },
     });
@@ -477,7 +529,9 @@ export function useZonaReservaForm({
         hora: hora ?? "",
         pideNumero,
         numero: numeroElegido ?? "",
-        aceptaReglamento: Boolean(acceptTerms),
+        // A quien vive aquí el reglamento se le abre al pulsar «Reservar»
+        // (18/11/2026); la portería sigue marcando la casilla por el vecino.
+        aceptaReglamento: esGuardia ? Boolean(acceptTerms) : true,
       }),
     ),
     numbers,
@@ -503,5 +557,26 @@ export function useZonaReservaForm({
     asistentes,
     /** Solo para un huésped: los nombres que puede elegir. `null` si escribe libre. */
     genteDeMiEstancia: esHuesped ? genteDeMiEstancia : null,
+    /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
+    plazoAdjuntoHoras: zona.plazoAdjuntoHoras ?? 0,
+    /** Los nombres de quienes viven conmigo, para sumarlos (18/11/2026). */
+    nombresDeMiVivienda: ofreceMiVivienda
+      ? personasDeMiVivienda.map((p) => p.nombre.trim()).filter(Boolean)
+      : [],
+    /** Suma a esa persona: sube la cuenta si hace falta y la pone en el primer hueco. */
+    sumarAsistente: (nombre: string) => {
+      const actuales = form.getValues("asistentes");
+      if (actuales.some((a) => a.nombre === nombre)) return;
+      const hueco = actuales.findIndex((a) => !a.nombre.trim());
+      if (hueco >= 0) {
+        form.setValue(`asistentes.${hueco}.nombre`, nombre, { shouldValidate: true });
+        return;
+      }
+      const siguiente = cantidadPersonas[actuales.length + 1];
+      if (!siguiente) return;
+      form.setValue("peopleCount", siguiente);
+      // El efecto de arriba agrega la fila; el nombre entra en el siguiente tick.
+      setTimeout(() => form.setValue(`asistentes.${actuales.length}.nombre`, nombre, { shouldValidate: true }), 0);
+    },
   };
 }

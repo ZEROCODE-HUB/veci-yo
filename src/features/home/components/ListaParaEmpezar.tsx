@@ -11,6 +11,10 @@ interface Props {
   titulo: string;
   pasos: PasoParaEmpezar[];
   carga: EstadoDeLaCarga;
+  /** «No aplica»: quita ese paso de la tarjeta (18/11/2026). */
+  onQuitarPaso?: (id: string) => void;
+  /** «Ocultar»: quita la tarjeta entera (18/11/2026). */
+  onOcultar?: () => void;
 }
 
 /**
@@ -23,7 +27,7 @@ interface Props {
  * Si algo no se pudo cargar tampoco sale: es una ayuda, y una lista con pasos
  * «pendientes» que quizá ya están hechos confunde más que no verla.
  */
-export function ListaParaEmpezar({ titulo, pasos, carga }: Props) {
+export function ListaParaEmpezar({ titulo, pasos, carga, onQuitarPaso, onOcultar }: Props) {
   const navigation = useNavegacion();
   const { hechos, total, completa } = cuentaDePasos(pasos);
 
@@ -34,7 +38,16 @@ export function ListaParaEmpezar({ titulo, pasos, carga }: Props) {
 
   return (
     <View className="bg-white rounded-xl p-5 gap-1" style={{ boxShadow: theme.shadows.card }}>
-      <Text className="text-xl font-bold text-gray-900">{titulo}</Text>
+      <View className="flex-row items-center justify-between gap-2">
+        <Text className="shrink text-xl font-bold text-gray-900">{titulo}</Text>
+        {onOcultar && !carga.cargando ? (
+          <Pressable onPress={onOcultar} accessibilityRole="button" accessibilityLabel="Ocultar esta tarjeta">
+            <Text className="text-xs font-semibold" style={{ color: theme.colors.textSecondary }}>
+              Ocultar
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       {carga.cargando ? (
         <View className="gap-3 mt-2" aria-busy accessibilityLabel="Cargando tus pasos">
           <Bloque ancho="30%" alto={12} />
@@ -65,6 +78,7 @@ export function ListaParaEmpezar({ titulo, pasos, carga }: Props) {
             <FilaDelPaso
               key={paso.id}
               paso={paso}
+              onQuitar={onQuitarPaso && !paso.hecho ? () => onQuitarPaso(paso.id) : undefined}
               onPress={
                 paso.destino
                   ? () => navigateToRoute(navigation, paso.destino!.ruta, paso.destino!.params)
@@ -78,7 +92,15 @@ export function ListaParaEmpezar({ titulo, pasos, carga }: Props) {
   );
 }
 
-function FilaDelPaso({ paso, onPress }: { paso: PasoParaEmpezar; onPress?: () => void }) {
+function FilaDelPaso({
+  paso,
+  onPress,
+  onQuitar,
+}: {
+  paso: PasoParaEmpezar;
+  onPress?: () => void;
+  onQuitar?: () => void;
+}) {
   const contenido = (
     <>
       <Ionicons
@@ -92,6 +114,13 @@ function FilaDelPaso({ paso, onPress }: { paso: PasoParaEmpezar; onPress?: () =>
         </Text>
         {paso.nota ? <Text className="text-xs text-gray-500">{paso.nota}</Text> : null}
       </View>
+      {onQuitar ? (
+        <Pressable onPress={onQuitar} accessibilityRole="button" accessibilityLabel={`Quitar «${paso.texto}»: no aplica`}>
+          <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+            No aplica
+          </Text>
+        </Pressable>
+      ) : null}
       {onPress ? <Ionicons name="chevron-forward" size={16} color={theme.colors.textMuted} /> : null}
     </>
   );

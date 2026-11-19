@@ -79,6 +79,7 @@ export function AnunciosScreen() {
         paraResidentes: values.paraResidentes,
         paraHuespedes: values.paraHuespedes,
         paraPorteria: values.paraPorteria,
+        paraTrabajadores: values.paraTrabajadores,
         votoMultiple: values.votacionMultiple,
         ocultarResultados: values.ocultarResultados,
         umbral: values.umbral ? Number(values.umbral) : undefined,
@@ -122,7 +123,8 @@ export function AnunciosScreen() {
         filtros={filtros}
         onChange={updateFiltro}
         mostrarEncuesta={
-          rolActivo !== "guardia" && rolActivo !== "huesped-temporal"
+          // El profesional permanente no vota (18/11/2026).
+          rolActivo !== "guardia" && rolActivo !== "huesped-temporal" && rolActivo !== "trabajador"
         }
       />
       {/*

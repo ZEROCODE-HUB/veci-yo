@@ -23,13 +23,24 @@ export function loQueVeEnLaVivienda(
   rol: RolUnidad | null | undefined,
   /** Si el panel le deja invitar a la vivienda a su rol. */
   invitarPorPermiso: boolean,
+  /**
+   * La renta corta (18/11/2026, pedido del cliente): el inquilino líder la
+   * configura solo si el propietario se la dio, y con la renta corta en
+   * marcha todos los de la vivienda hacen de anfitrión. Lo sujeta
+   * `puede_configurar_alojamiento`.
+   */
+  rentaCorta: { delInquilino: boolean; enMarcha: boolean } = { delInquilino: false, enMarcha: false },
 ) {
   const esSoloResidente = rol === "residente" || rol === "corresidente";
   const puedeGestionarLaVivienda = rol === "propietario" || rol === "inquilino_lider";
   return {
     esSoloResidente,
     puedeGestionarLaVivienda,
-    puedeConfigurarElAlojamiento: puedeGestionarLaVivienda || rol === "coadministrador",
+    puedeConfigurarElAlojamiento:
+      rol === "propietario" ||
+      rol === "coadministrador" ||
+      (rol === "inquilino_lider" && rentaCorta.delInquilino) ||
+      (Boolean(rol) && rol !== "huesped_temporal" && rentaCorta.enMarcha),
     puedeInvitar: !esSoloResidente && (rol === "propietario" || invitarPorPermiso),
   };
 }

@@ -1,3 +1,4 @@
+import { theme } from "@/config";
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Linking, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,10 +7,13 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useCondominioActivo, useNavegacion } from "@/shared/hooks";
 import { supabase } from "@/shared/services/supabase";
-import { ahora, formatDateInput } from "@/shared/utils";
+import { ahora, formatDateInput, formatTime } from "@/shared/utils";
+import { estaEnCurso, horaMas } from "../helpers/ahoraEnLasZonas";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import type { ReservaZona } from "@/shared/types";
 import {
+  actualizarReserva,
+  cancelarReserva,
   obtenerReservas,
   resolverReserva,
   urlComprobante,
@@ -82,7 +86,37 @@ export function ReservasDePorteriaScreen() {
     [reservas.data, hoy],
   );
 
+  /*
+    Quién está ahora en las zonas (18/11/2026, pedido del cliente), y lo que
+    el conserje puede hacer con una reserva en curso: ampliarla o cancelarla.
+    La base deja a la portería cambiarlas y lo anota en la bitácora.
+  */
+  const horaActual = formatTime(ahora());
+  const enCurso = useMemo(
+    () => proximas.filter((r) => estaEnCurso(r, hoy, horaActual)),
+    [proximas, hoy, horaActual],
+  );
+
   const refrescar = () => void queryClient.invalidateQueries({ queryKey: ["zonas"] });
+  const ampliar = useMutation({
+    mutationFn: (r: ReservaZona) => {
+      const [, hasta] = String(r.horario ?? "").split(/\s*-\s*/);
+      return actualizarReserva(r.uuid ?? "", { horaFin: horaMas(hasta ?? "", 30) });
+    },
+    onSuccess: () => {
+      refrescar();
+      addToast("Reserva ampliada 30 minutos", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo ampliar la reserva"), "error"),
+  });
+  const cancelar = useMutation({
+    mutationFn: (r: ReservaZona) => cancelarReserva(r.uuid ?? ""),
+    onSuccess: () => {
+      refrescar();
+      addToast("Reserva cancelada", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo cancelar la reserva"), "error"),
+  });
   const resolver = useMutation({
     mutationFn: (d: { id: string; estado: "Aprobado" | "Rechazado"; motivo?: string }) =>
       resolverReserva(d.id, d.estado, d.motivo),
@@ -123,6 +157,43 @@ export function ReservasDePorteriaScreen() {
       ) : reservas.isError ? (
         <Text className="text-sm text-danger">{mensajeDeError(reservas.error, "No se pudieron cargar las reservas")}</Text>
       ) : null}
+      {enCurso.length > 0 ? (
+        <View className="gap-2 rounded-xl p-3" style={{ backgroundColor: theme.colors.successSoft }}>
+          <Text className="text-sm font-bold text-gray-900">Ahora en las zonas comunes</Text>
+          {enCurso.map((r) => (
+            <View key={`ahora-${r.uuid ?? r.id}`} className="gap-1.5 rounded-lg bg-white p-2.5">
+              <Text className="text-sm font-semibold text-gray-900">{r.nombre}</Text>
+              <Text className="text-xs text-gray-600">
+                {[
+                  r.horario,
+                  r.depto ? `Depto ${r.depto}` : null,
+                  `${(r.acompanantes ?? 0) + 1} ${(r.acompanantes ?? 0) === 0 ? "persona" : "personas"}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  loading={ampliar.isPending && ampliar.variables?.uuid === r.uuid}
+                  onPress={() => ampliar.mutate(r)}
+                >
+                  Ampliar 30 min
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  loading={cancelar.isPending && cancelar.variables?.uuid === r.uuid}
+                  onPress={() => cancelar.mutate(r)}
+                >
+                  Cancelar
+                </Button>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
       {proximas.length === 0 && reservas.data !== undefined ? (
         <Text className="py-8 text-center text-sm text-gray-500">No hay reservas de hoy en adelante.</Text>
       ) : null}
@@ -146,7 +217,7 @@ export function ReservasDePorteriaScreen() {
           <View className="flex-row flex-wrap gap-2">
             {r.comprobante ? (
               <Button size="sm" variant="secondary" onPress={() => void verComprobante(r.comprobante ?? "")}>
-                Ver comprobante
+                Ver documento adjunto
               </Button>
             ) : null}
             {puedeAprobar && r.estado === "Pendiente" && r.uuid ? (

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { SharedStackParamList } from "@/shared/types";
 import { Button, Modal, SegunLaCarga } from "@/shared/components";
 import {
   DarAccesoALaApp,
   FormularioInvitacion,
-  FormularioTrabajador,
   InvitacionesPendientes,
   ListaDeTrabajadores,
   PersonasDeLaUnidad,
@@ -51,6 +53,7 @@ export function PropietarioInvitarScreen() {
   const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
   /** La empleada, el chofer (17/11/2026): van aparte, no son un rol de la vivienda. */
   const trabajadores = useTrabajadoresDeLaVivienda();
+  const navigation = useNavigation<NativeStackNavigationProp<SharedStackParamList>>();
 
   if (!puedeInvitar) {
     return (
@@ -118,13 +121,24 @@ export function PropietarioInvitarScreen() {
             dandoDeBajaId={trabajadores.dandoDeBajaId}
           />
         </SegunLaCarga>
-        <FormularioTrabajador
-          form={trabajadores.form}
-          error={trabajadores.error}
-          agregando={trabajadores.agregando}
-          onChange={trabajadores.setForm}
-          onAgregar={trabajadores.agregar}
-        />
+        {/*
+          Un solo registro (18/11/2026, pedido del cliente): el profesional
+          permanente se agrega desde Visitas, con sus días y «¿Tendrá cuenta
+          en la app?». Aquí queda la lista de los que ya hay.
+        */}
+        <View className="gap-2">
+          <Text className="text-base font-bold text-gray-900">Agregar profesional permanente</Text>
+          <Text className="text-xs text-gray-500">
+            La empleada, el chofer, la niñera, el profesor: quien viene los mismos días cada semana. Se registra
+            en Visitas, con sus días y si tendrá cuenta en la app.
+          </Text>
+          <Button
+            variant="secondary"
+            onPress={() => navigation.navigate("VisitasNuevo", { tipoPreseleccionado: "permanente" })}
+          >
+            Registrar profesional permanente
+          </Button>
+        </View>
       </ScrollView>
 
       <DarAccesoALaApp persona={darAccesoA} onClose={() => setDarAccesoA(null)} />

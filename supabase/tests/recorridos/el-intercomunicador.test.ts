@@ -7,6 +7,7 @@ import {
   llamarAPorteria,
   llamarAVivienda,
   permisoDeVoz,
+  olvidarPermisoDeVoz,
 } from "@/features/intercom/services/intercom.repo";
 
 /**
@@ -116,6 +117,9 @@ describe("la vivienda llama a la portería", () => {
   });
 
   it("alguien que no está en la llamada no recibe permiso de voz", async () => {
+    // El de Sofía quedó guardado en este mismo proceso (17/11/2026): se olvida
+    // para que la pregunta llegue al servidor con la sesión de Bruno.
+    olvidarPermisoDeVoz(id);
     await entrarComo(AJENO);
     await expect(permisoDeVoz(id)).rejects.toThrow(/no es tuya/i);
     await salir();

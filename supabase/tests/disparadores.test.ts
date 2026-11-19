@@ -251,6 +251,8 @@ describe("avisar cuando la fila nace resuelta", () => {
     const guillermo = await entrar(CUENTA.propietario);
     const marcela = await entrar(CUENTA.admin);
     const laura = await entrar(CUENTA.laura);
+    // Rocío vive en la 205. La pide Laura, la inquilina líder (18/11/2026).
+    const rocio = await entrar("residente@veciyo.test");
 
     /**
      * Desde que una zona sin trámite aprueba al crear, ese aviso no llegaba
@@ -259,10 +261,10 @@ describe("avisar cuando la fila nace resuelta", () => {
      * vivienda, sí.
      */
 
-    const reserva = await insertar(guillermo, "reserva_zona?select=id", {
+    const reserva = await insertar(laura, "reserva_zona?select=id", {
       zona_id: sinTramite.id,
       unidad_id: UNIDAD.u205,
-      solicitada_por: guillermo.usuarioId,
+      solicitada_por: laura.usuarioId,
       fecha: fechaEnDias(10),
       hora_inicio: "14:00",
       hora_fin: "15:00",
@@ -270,14 +272,21 @@ describe("avisar cuando la fila nace resuelta", () => {
     });
     const reservaId = reserva.datos[0].id;
 
-    // Laura vive en la 205 y no la pidió: se entera.
-    const deLaura = await leer(
-      laura,
+    // Rocío vive en la 205 y no la pidió: se entera.
+    const deRocio = await leer(
+      rocio,
       `notificacion?select=tipo&entidad_id=eq.${reservaId}`,
     );
-    expect(deLaura.datos.map((n: any) => n.tipo)).toContain("reserva_aprobada");
+    expect(deRocio.datos.map((n: any) => n.tipo)).toContain("reserva_aprobada");
 
-    // Guillermo la pidió: no se le avisa de lo que acaba de hacer.
+    // Laura la pidió: no se le avisa de lo que acaba de hacer.
+    const deLaura = await leer(
+      laura,
+      `notificacion?select=id&entidad_id=eq.${reservaId}`,
+    );
+    expect(deLaura.datos).toHaveLength(0);
+
+    // Y Guillermo, el dueño, no: con inquilino líder el día a día no le llega.
     const deGuillermo = await leer(
       guillermo,
       `notificacion?select=id&entidad_id=eq.${reservaId}`,

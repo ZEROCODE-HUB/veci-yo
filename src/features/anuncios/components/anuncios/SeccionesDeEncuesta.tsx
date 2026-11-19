@@ -1,10 +1,13 @@
 import { theme } from "@/config";
+import { useEffect } from "react";
 import { Controller, useFieldArray, useWatch, type Control, type UseFormSetValue } from "react-hook-form";
 import { Pressable, Text, View } from "react-native";
 import { CampoFecha, Input, Toggle } from "@/shared/components";
 import { formatDateInput, parseFechaIso } from "@/shared/utils";
 import type { AnuncioFormValues } from "../../types/anuncios";
 import { explicarUmbral } from "../../helpers/resultadoDeEncuesta";
+import { opcionPorIndice } from "../../helpers/indiceDelEdificio";
+import type { IndiceDelEdificio } from "../../services/anuncios.repo";
 import { EleccionEnTarjetas } from "./EleccionEnTarjetas";
 import { SeccionDelFormulario } from "./SeccionDelFormulario";
 
@@ -21,10 +24,13 @@ export function SeccionesDeEncuesta({
   control,
   setValue,
   opcionesMin,
+  indiceDelEdificio,
 }: {
   control: Control<AnuncioFormValues>;
   setValue: UseFormSetValue<AnuncioFormValues>;
   opcionesMin: number;
+  /** Cuánto suma el índice de votación: sin el 100 %, no se cuenta por índice. */
+  indiceDelEdificio: IndiceDelEdificio | null;
 }) {
   const { fields, append, remove } = useFieldArray({ control, name: "opcionesVotacion" });
   const [quienVota, comoSeCuenta, reglaAprobacion, umbralAprobacion, votacionMultiple, fechaPublicada, fechaFinalizacion] =
@@ -40,6 +46,14 @@ export function SeccionesDeEncuesta({
         "fechaFinalizacion",
       ],
     });
+
+  const porIndice = opcionPorIndice(indiceDelEdificio);
+  // Si el valor propuesto era «según el índice» y el edificio no suma 100 %,
+  // se vuelve a «voto igual»: no se puede publicar así (18/11/2026).
+  const noSePuedePorIndice = indiceDelEdificio !== null && !porIndice.sePuede;
+  useEffect(() => {
+    if (noSePuedePorIndice && comoSeCuenta === "indice") setValue("comoSeCuenta", "igual");
+  }, [noSePuedePorIndice, comoSeCuenta, setValue]);
 
   return (
     <View className="gap-3">
@@ -113,7 +127,8 @@ export function SeccionesDeEncuesta({
               {
                 valor: "indice",
                 titulo: "Según el índice de votación",
-                detalle: "Cada departamento vale su índice (se pone en Arquitectura › Torres, al editarlo).",
+                detalle: porIndice.detalle,
+                deshabilitada: !porIndice.sePuede,
               },
             ]}
           />

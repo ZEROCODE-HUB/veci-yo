@@ -332,7 +332,9 @@ describe("Reconocimientos", () => {
       Se le hace sitio: se aparta lo que ya dio este mes, para que el rechazo
       que llegue sea el que interesa.
     */
-    const guillermo = await entrar(CUENTA.propietario);
+    // Marcela, que vive en la 301: da y recibe quien reside (Guillermo ya no
+    // reside en ninguna: en la 205 vive Laura como inquilina líder, 17/11/2026).
+    const guillermo = await entrar(CUENTA.admin);
     const insignias = await leer(guillermo, "insignia?select=id&limit=1");
     await apartarLosDelMes(guillermo.usuarioId);
 
@@ -357,7 +359,9 @@ describe("Reconocimientos", () => {
       cambia con la regla: ahora el segundo se rechaza **aunque sea otra
       insignia**, que es lo que de verdad hay que sujetar.
     */
-    const guillermo = await entrar(CUENTA.propietario);
+    // Marcela, que vive en la 301: da y recibe quien reside (Guillermo ya no
+    // reside en ninguna: en la 205 vive Laura como inquilina líder, 17/11/2026).
+    const guillermo = await entrar(CUENTA.admin);
     // Quien recibe tiene que vivir en el edificio: desde el 29/10 Sofía no
     // vive en la 102, que se alquila por noches. Laura vive en la 205.
     const sofia = await entrar(CUENTA.laura);
@@ -436,8 +440,9 @@ describe("Cuadro de honor", () => {
       headers: { ...servicioHeaders, Prefer: "return=representation" },
       body: JSON.stringify({
         insignia_id: insignias.datos[0].id,
-        // Para Guillermo: el cuadro cuenta las del responsable de cada vivienda.
-        usuario_id: guillermo.usuarioId,
+        // Para Marcela, que vive en la 301: el cuadro cuenta las del
+        // responsable de cada vivienda, y solo se reconoce a quien reside.
+        usuario_id: (await entrar(CUENTA.admin)).usuarioId,
         condominio_id: CONDOMINIO,
         otorgado_por: laura.usuarioId,
         motivo: "[prueba] cuadro de honor",

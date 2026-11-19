@@ -69,18 +69,24 @@ const ROLES_DE_LA_VIVIENDA: RolUnidad[] = [
 ];
 
 /*
-  El anfitrión lo pone el dueño: atiende **su** renta corta. Al inquilino
-  líder no se le ofrece.
+  El anfitrión lo pone el dueño: atiende **su** renta corta. Y el inquilino
+  líder también (18/11/2026, pedido del cliente): el inquilino líder solo
+  invita residentes. La base lo sujeta en `crear_invitacion`.
 */
-const ROLES_SOLO_DEL_DUENO: RolUnidad[] = ["coadministrador"];
+const ROLES_SOLO_DEL_DUENO: RolUnidad[] = ["coadministrador", "inquilino_lider"];
 
 /** Una línea bajo el desplegable que dice qué es el rol elegido. */
 export const AYUDA_DEL_ROL: Partial<Record<RolUnidad, string>> = {
   coadministrador:
-    "Quien atiende la renta corta por ti, por ejemplo una empresa de Airbnb o un familiar",
+    "Quien atiende la renta corta por ti, por ejemplo una empresa de Airbnb o un familiar. Puede haber varios.",
+  propietario: "Otro dueño de esta vivienda: verá y gestionará lo mismo que tú.",
 };
 
-const ROLES_SOLO_ADMINISTRACION: RolUnidad[] = ["propietario"];
+/*
+  El copropietario: desde el 18/11/2026 lo invita también el propietario
+  (pedido del cliente; antes solo la administración, KT 4.3).
+*/
+const ROLES_DEL_DUENO_Y_LA_ADMINISTRACION: RolUnidad[] = ["propietario"];
 
 /** Cómo se llama cada rol en este desplegable. */
 const ETIQUETA_EN_LA_INVITACION: Partial<Record<RolUnidad, string>> = {
@@ -93,7 +99,7 @@ export function rolesQuePuedeInvitar(quien: { esDueno: boolean; esAdministracion
     ...ROLES_DE_LA_VIVIENDA.filter(
       (rol) => quien.esDueno || quien.esAdministracion || !ROLES_SOLO_DEL_DUENO.includes(rol),
     ),
-    ...(quien.esAdministracion ? ROLES_SOLO_ADMINISTRACION : []),
+    ...(quien.esAdministracion || quien.esDueno ? ROLES_DEL_DUENO_Y_LA_ADMINISTRACION : []),
   ].map((value) => ({
     value,
     label: ETIQUETA_EN_LA_INVITACION[value] ?? ETIQUETA_ROL[value],
