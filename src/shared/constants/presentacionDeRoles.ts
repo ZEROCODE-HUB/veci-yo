@@ -45,8 +45,8 @@ export const PRESENTACION_DE_ROL: Record<
     icono: "bag-outline",
   },
   trabajador: {
-    titulo: "Trabajador permanente",
-    descripcion: "Contestar el intercomunicador de la vivienda",
+    titulo: "Profesional permanente",
+    descripcion: "Anuncios, citófono y visitas de la vivienda, según lo que te permitan",
     icono: "call-outline",
   },
   /*

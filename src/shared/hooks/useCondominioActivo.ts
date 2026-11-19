@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores/auth-store";
+import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useUnidadesDisponibles } from "./useUnidadesDisponibles";
 
 /**
@@ -13,11 +14,15 @@ export function useCondominioActivo(): string | null {
   const condominios = useAuthStore((s) => s.condominios);
   const unidades = useAuthStore((s) => s.unidades);
   const { unidades: unidadesDelEdificio } = useUnidadesDisponibles();
+  // El profesional permanente no tiene membresías: su edificio viene en la
+  // ubicación (18/11/2026).
+  const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
 
   return (
     condominios[0]?.condominioId ??
     unidades[0]?.condominioId ??
     unidadesDelEdificio[0]?.condominioId ??
+    ubicaciones.find((u) => u.condominioId)?.condominioId ??
     null
   );
 }

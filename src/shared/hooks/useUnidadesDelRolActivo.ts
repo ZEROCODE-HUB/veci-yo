@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useAuthStore } from "@/stores/auth-store";
+import { useUbicacionStore } from "@/stores/ubicacion-store";
 import { useUnidadActiva } from "./useUnidadActiva";
 import {
   unidadElegidaDelRol,
@@ -33,9 +34,16 @@ export function useUnidadElegidaDelRol(): string[] {
   const rolActivo = useAuthStore((s) => s.rolActivo);
   const unidades = useAuthStore((s) => s.unidades);
   const elegidaId = useUnidadActiva()?.unidadId;
+  /*
+    El profesional permanente no tiene membresía (18/11/2026): su vivienda es
+    la ubicación elegida. Sin esto, «Mis visitas» le salía siempre vacía.
+  */
+  const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
+  const deTrabajador =
+    rolActivo === "trabajador" ? ((ubicaciones.find((u) => u.favorito) ?? ubicaciones[0])?.unidadId ?? "") : "";
 
   return useMemo(
-    () => unidadElegidaDelRol(rolActivo, unidades, elegidaId),
-    [rolActivo, unidades, elegidaId],
+    () => (deTrabajador ? [deTrabajador] : unidadElegidaDelRol(rolActivo, unidades, elegidaId)),
+    [deTrabajador, rolActivo, unidades, elegidaId],
   );
 }

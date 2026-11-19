@@ -123,7 +123,8 @@ export function AnunciosScreen() {
         filtros={filtros}
         onChange={updateFiltro}
         mostrarEncuesta={
-          rolActivo !== "guardia" && rolActivo !== "huesped-temporal"
+          // El profesional permanente no vota (18/11/2026).
+          rolActivo !== "guardia" && rolActivo !== "huesped-temporal" && rolActivo !== "trabajador"
         }
       />
       {/*
