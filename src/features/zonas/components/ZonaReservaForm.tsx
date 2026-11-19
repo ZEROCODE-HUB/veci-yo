@@ -14,7 +14,7 @@ import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useCamposApilados } from "@/shared/layouts";
 import type { ZonaComun } from "@/shared/types";
 import type { ReservaZonaFormData } from "../schemas/reserva.schema";
-import { useZonaReservaForm } from "../hooks";
+import { useZonaReservaForm, type ReservaHecha } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
 import { DocumentoDelReglamento } from "./DocumentoDelReglamento";
 import { diaEnLetra } from "../services/tiraDeDias";
@@ -26,16 +26,8 @@ interface Props {
   initialDate?: string;
   initialDepartment?: string;
   initialComments?: string;
-  onSuccess: (result: {
-    depto: string;
-    hora: string;
-    reservaNum: string;
-    /** Que puesto toco. Nulo en las zonas de un solo puesto. */
-    puesto: number | null;
-    zona: string;
-    /** Si espera aprobación de la administración (29/10/2026). */
-    pendiente: boolean;
-  }) => void;
+  /** Lo que se enseña en la tarjeta de la reserva (18/11/2026). */
+  onSuccess: (result: ReservaHecha) => void;
 }
 
 /*
@@ -84,6 +76,10 @@ function FormularioDeReserva({
     esGuardia,
     comprobante,
     elegirComprobante,
+    plazoAdjuntoHoras,
+    form,
+    nombresDeMiVivienda,
+    sumarAsistente,
   } = useZonaReservaForm({
     zona,
     rol,
@@ -146,9 +142,18 @@ function FormularioDeReserva({
       : null,
   ].filter((texto): texto is string => !!texto);
 
+  const { setValue } = form;
   const [reglamentoAbierto, setReglamentoAbierto] = React.useState(false);
+  /** Se abrió desde «Reservar»: lleva «Aceptar» y «Rechazar» (18/11/2026). */
+  const [paraReservar, setParaReservar] = React.useState(false);
 
   const handleSubmit = () => {
+    // La portería marca la casilla por el vecino; a los demás se les abre el reglamento.
+    if (!esGuardia) {
+      setParaReservar(true);
+      setReglamentoAbierto(true);
+      return;
+    }
     submit();
   };
 
@@ -208,29 +213,6 @@ function FormularioDeReserva({
           </Text>
         </View>
       ) : null}
-      {/*
-        Zona de pago: el comprobante se adjunta antes de enviar la reserva
-        (29/10/2026, Para Claude 143; antes solo al guardia). Obligatorio.
-      */}
-      {pideComprobante ? (
-        <View className="gap-2 rounded-xl border border-gray-200 p-3">
-          <Text className="text-sm font-bold text-gray-900">Comprobante de pago *</Text>
-          <Text className="text-xs text-gray-500">
-            Es una zona de pago: adjunta la foto o el PDF del comprobante de pago antes de enviar la reserva.
-          </Text>
-          <Button
-            size="sm"
-            variant="secondary"
-            onPress={() =>
-              void elegirDocumento().then((archivo) => {
-                if (archivo) elegirComprobante(archivo);
-              })
-            }
-          >
-            {comprobante ? `Cambiar (${comprobante.nombre || "archivo elegido"})` : "Adjuntar comprobante"}
-          </Button>
-        </View>
-      ) : null}
       {/* Cuánto tiempo (pedido del cliente, 29/10/2026). */}
       {opcionesDuracion.length > 1 ? (
         <Select
@@ -266,6 +248,38 @@ function FormularioDeReserva({
           options={cantidadPersonas}
         />
       )}
+      {/*
+        Quienes viven contigo, para sumarlos con un toque (18/11/2026). Los
+        demás («Otro») se escriben a mano abajo.
+      */}
+      {fields.personas && nombresDeMiVivienda.length > 0 ? (
+        <View className="gap-1.5">
+          <Text className="text-sm text-gray-500">Suma a quien vive contigo</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {nombresDeMiVivienda.map((nombre) => {
+              const puesto = asistentes.some((a) => a.nombre === nombre);
+              return (
+                <Pressable
+                  key={nombre}
+                  onPress={() => sumarAsistente(nombre)}
+                  disabled={puesto}
+                  accessibilityRole="button"
+                  accessibilityLabel={puesto ? `${nombre}, ya va` : `Sumar a ${nombre}`}
+                  aria-disabled={puesto}
+                  className="rounded-full px-3 py-1.5"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: puesto ? theme.colors.success : theme.colors.border,
+                    backgroundColor: puesto ? theme.colors.successSoft : theme.colors.bgCard,
+                  }}
+                >
+                  <Text className="text-xs text-gray-800">{puesto ? `✓ ${nombre}` : `+ ${nombre}`}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
       {asistentes.length > 0 && (
         <View className="gap-2">
           <Text className="text-sm text-gray-500">
@@ -377,6 +391,32 @@ function FormularioDeReserva({
         </View>
       )}
       {/*
+        El comprobante, al final y opcional (18/11/2026, pedido del cliente):
+        primero se reserva, queda pendiente, y se adjunta ahora o después
+        desde «Mis reservas», dentro del plazo de la zona.
+      */}
+      {pideComprobante ? (
+        <View className="gap-2 rounded-xl border border-gray-200 p-3">
+          <Text className="text-sm font-bold text-gray-900">Comprobante de pago (opcional)</Text>
+          <Text className="text-xs leading-4 text-gray-500">
+            {plazoAdjuntoHoras > 0
+              ? `Puedes reservar ahora y adjuntarlo después desde «Mis reservas». Tienes ${plazoAdjuntoHoras} horas; si no llega, la reserva se cancela sola.`
+              : "Puedes reservar ahora y adjuntarlo después desde «Mis reservas»."}
+          </Text>
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={() =>
+              void elegirDocumento().then((archivo) => {
+                if (archivo) elegirComprobante(archivo);
+              })
+            }
+          >
+            {comprobante ? `Cambiar (${comprobante.nombre || "archivo elegido"})` : "Adjuntar comprobante"}
+          </Button>
+        </View>
+      ) : null}
+      {/*
         El departamento ya estaba decidido antes de abrir esto: a un vecino se
         le toma el de su ubicacion activa --la del selector de la cabecera-- y
         a la porteria se le pregunta en un modal antes de navegar. Este campo
@@ -426,22 +466,25 @@ function FormularioDeReserva({
         «al guardia no le sale el check para aceptar el reglamento»). Cuando
         reserva la portería, lo acepta en nombre de la vivienda.
       */}
-      <Controller
-        control={control}
-        name="acceptTerms"
-        render={({ field: { value, onChange } }) => (
-          <Checkbox
-            checked={Boolean(value)}
-            onChange={onChange}
-            label={
-              esGuardia
-                ? "El vecino acepta el reglamento de la zona"
-                : "Acepto el reglamento de la zona"
-            }
-          />
-        )}
-      />
-      <Pressable onPress={() => setReglamentoAbierto(true)}>
+      {esGuardia ? (
+        <Controller
+          control={control}
+          name="acceptTerms"
+          render={({ field: { value, onChange } }) => (
+            <Checkbox
+              checked={Boolean(value)}
+              onChange={onChange}
+              label="El vecino acepta el reglamento de la zona"
+            />
+          )}
+        />
+      ) : null}
+      <Pressable
+        onPress={() => {
+          setParaReservar(false);
+          setReglamentoAbierto(true);
+        }}
+      >
         <Text className="text-xs underline" style={{ color: theme.colors.primary }}>
           Leer el reglamento de {zona.nombre}
         </Text>
@@ -488,6 +531,31 @@ function FormularioDeReserva({
             ruta={zonaConfig.reglamentoArchivo}
             nombre={zonaConfig.reglamentoArchivoNombre}
           />
+          {/*
+            Antes de reservar se lee y se acepta (18/11/2026, pedido del
+            cliente): sin aceptar no se reserva; «Rechazar» solo cierra.
+          */}
+          {paraReservar ? (
+            <View className="flex-row gap-2">
+              <View className="flex-1">
+                <Button variant="secondary" fullWidth onPress={() => setReglamentoAbierto(false)}>
+                  Rechazar
+                </Button>
+              </View>
+              <View className="flex-1">
+                <Button
+                  fullWidth
+                  onPress={() => {
+                    setValue("acceptTerms", true, { shouldValidate: true });
+                    setReglamentoAbierto(false);
+                    submit();
+                  }}
+                >
+                  Aceptar y reservar
+                </Button>
+              </View>
+            </View>
+          ) : null}
         </View>
       </Modal>
       {errors.acceptTerms && (

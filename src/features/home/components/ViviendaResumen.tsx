@@ -9,10 +9,21 @@ import { useViviendaResumen } from "../hooks/useViviendaResumen";
 import { useFotoDelEdificio } from "../hooks/useFotoDelEdificio";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { useNavegacion } from "@/shared/hooks";
+import { useNotificaciones } from "../hooks/useNotificaciones";
+import { novedadesPorModulo } from "../helpers/novedadesPorModulo";
 
 const iconVivienda = require("@/assets/icons/home/vivienda.png");
 
 export function ViviendaResumen() {
+  // Los globitos de cada módulo (18/11/2026): avisos sin leer de la bandeja.
+  const { notificaciones, marcarLeida } = useNotificaciones();
+  const novedades = novedadesPorModulo(notificaciones);
+  // Al entrar al módulo, lo suyo queda visto: el globito se va.
+  const verNovedades = (moduloId: string) => {
+    for (const n of notificaciones) {
+      if (!n.leida && novedadesPorModulo([n])[moduloId]) marcarLeida(n.id);
+    }
+  };
   const navigation = useNavegacion();
   const {
     cargando,
@@ -199,7 +210,10 @@ export function ViviendaResumen() {
               onPress={
                 sinPropiedades
                   ? undefined
-                  : () => abrirModulo(modulo.screen, modulo.helpKey)
+                  : () => {
+                      verNovedades(modulo.id);
+                      abrirModulo(modulo.screen, modulo.helpKey);
+                    }
               }
               className="bg-white rounded-xl p-3.5 items-center justify-center relative"
               style={{
@@ -226,6 +240,25 @@ export function ViviendaResumen() {
                   />
                 </View>
               )}
+              {novedades[modulo.id] ? (
+                <View
+                  className="items-center justify-center rounded-full px-1.5"
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    left: 8,
+                    minWidth: 22,
+                    height: 22,
+                    backgroundColor: theme.colors.danger,
+                    zIndex: 10,
+                  }}
+                  accessibilityLabel={`${novedades[modulo.id]} sin ver`}
+                >
+                  <Text className="text-xs font-bold" style={{ color: theme.colors.textInverse }}>
+                    {novedades[modulo.id] > 9 ? "9+" : String(novedades[modulo.id])}
+                  </Text>
+                </View>
+              ) : null}
               <Image
                 source={modulo.icon}
                 style={{ width: 88, height: 88 }}

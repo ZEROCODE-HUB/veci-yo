@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 import {
+  BottomSheet,
+  BottomSheetOption,
   Button,
   CampoFecha,
   CampoHora,
@@ -17,6 +19,7 @@ import {
   SegunLaCarga,
   Select,
 } from "@/shared/components";
+import { BitacoraDeReserva } from "./BitacoraDeReserva";
 import { FotoDeZona } from "@/features/zonas/components/FotoDeZona";
 import { useZonas } from "@/features/zonas/hooks";
 import { urlComprobante } from "@/features/zonas/services/zonas.repo";
@@ -200,6 +203,8 @@ export function GestionZonaReservasView({
   const [editing, setEditing] = useState<ReservaVista | null>(null);
   const [canceling, setCanceling] = useState<ReservaVista | null>(null);
   const [deleting, setDeleting] = useState<ReservaVista | null>(null);
+  /** «Más…»: editar, cancelar y eliminar, en un menú (18/11/2026: había muchos botones). */
+  const [masDe, setMasDe] = useState<ReservaVista | null>(null);
   // Rechazar pide el motivo: el vecino tiene que saber por qué.
   const [rechazando, setRechazando] = useState<ReservaVista | null>(null);
   /*
@@ -256,9 +261,17 @@ export function GestionZonaReservasView({
             : item.fechaISO < today),
       );
     return list.sort((a, b) => {
+      /*
+        Arriba lo que está por aprobar y más cerca de vencer (18/11/2026,
+        pedido del cliente): las pendientes primero, la más próxima antes.
+      */
+      const pendienteA = a.estado === "Pendiente" ? 0 : 1;
+      const pendienteB = b.estado === "Pendiente" ? 0 : 1;
+      if (pendienteA !== pendienteB) return pendienteA - pendienteB;
       const comparison = `${a.fechaISO}${a.horaInicio}`.localeCompare(
         `${b.fechaISO}${b.horaInicio}`,
       );
+      if (pendienteA === 0) return comparison;
       return sortAsc ? comparison : -comparison;
     });
   }, [allReservations, filter, sortAsc]);
@@ -519,29 +532,9 @@ export function GestionZonaReservasView({
                         size="sm"
                         variant="secondary"
                         fullWidth
-                        onPress={() => startEdit(reservation)}
+                        onPress={() => setMasDe(reservation)}
                       >
-                        Editar
-                      </Button>
-                    </View>
-                    <View className="min-w-[45%] flex-1">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        fullWidth
-                        onPress={() => setCanceling(reservation)}
-                      >
-                        Cancelar
-                      </Button>
-                    </View>
-                    <View className="min-w-[45%] flex-1">
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        fullWidth
-                        onPress={() => setDeleting(reservation)}
-                      >
-                        Eliminar
+                        Más…
                       </Button>
                     </View>
                   </View>
@@ -728,8 +721,9 @@ export function GestionZonaReservasView({
               aprobacion se hacia a ciegas.
             */}
             <View>
+              {/* No siempre es un comprobante de pago (18/11/2026). */}
               <Text className="mb-1 text-sm text-gray-500">
-                Comprobante de pago
+                Documento adjunto
               </Text>
               {detail.comprobante ? (
                 <Button
@@ -737,7 +731,7 @@ export function GestionZonaReservasView({
                   variant="secondary"
                   onPress={() => void verComprobante(detail.comprobante!)}
                 >
-                  Ver comprobante
+                  Ver documento adjunto
                 </Button>
               ) : (
                 <Text className="text-sm leading-5 text-gray-500">
@@ -746,9 +740,37 @@ export function GestionZonaReservasView({
                 </Text>
               )}
             </View>
+            {detail.uuid ? <BitacoraDeReserva reservaId={detail.uuid} /> : null}
           </View>
         )}
       </Modal>
+      <BottomSheet visible={Boolean(masDe)} onClose={() => setMasDe(null)}>
+        <BottomSheetOption
+          label="Editar"
+          onPress={() => {
+            const r = masDe;
+            setMasDe(null);
+            if (r) startEdit(r);
+          }}
+        />
+        <BottomSheetOption
+          label="Cancelar la reserva"
+          onPress={() => {
+            const r = masDe;
+            setMasDe(null);
+            if (r) setCanceling(r);
+          }}
+        />
+        <BottomSheetOption
+          label="Eliminar"
+          variant="danger"
+          onPress={() => {
+            const r = masDe;
+            setMasDe(null);
+            if (r) setDeleting(r);
+          }}
+        />
+      </BottomSheet>
       <Modal
         visible={!!canceling}
         onClose={() => setCanceling(null)}

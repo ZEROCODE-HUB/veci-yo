@@ -78,6 +78,13 @@ export function crearGestionZonaSchema({
       activa: z.boolean(),
       usaSlots: z.boolean(),
       eligeNumero: z.boolean(),
+      // 18/11/2026: los límites. 0 es «sin límite».
+      personasPorReserva: z.number().int().min(0, "Las personas por reserva no pueden ser negativas."),
+      reservasActivasMaximas: z.number().int().min(0, "Las reservas por delante no pueden ser negativas."),
+      limiteReservasPor: z.enum(["vivienda", "persona"]),
+      anticipacionMinimaHoras: z.number().int().min(0, "La anticipación no puede ser negativa."),
+      plazoAdjuntoHoras: z.number().int().min(0, "El plazo no puede ser negativo."),
+      nombresDeZonas: z.array(z.string()),
       horariosDisponibles: z.array(z.string()),
       reglamento: z.string(),
       requiereAprobacion: z.boolean(),

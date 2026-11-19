@@ -75,6 +75,8 @@ export function AdministradorGestionZonaFormScreen() {
       ),
       cupos: parametrosDeLaBase.numero("zona_cupos_por_defecto"),
       moneda: monedaDelEdificio ?? "",
+      reservasActivas: parametrosDeLaBase.numero("zona_reservas_activas_por_defecto"),
+      plazoAdjuntoHoras: parametrosDeLaBase.numero("zona_plazo_adjunto_por_defecto"),
     });
     if (!current) return empty;
     return {
@@ -92,6 +94,12 @@ export function AdministradorGestionZonaFormScreen() {
       capacidadMaxima: current?.capacidadMaxima ?? 0,
       cuposSimultaneos: current.cuposSimultaneos ?? empty.cuposSimultaneos,
       eligeNumero: current?.eligeNumero ?? false,
+      personasPorReserva: current.personasPorReserva ?? 0,
+      reservasActivasMaximas: current.reservasActivasMaximas ?? 0,
+      limiteReservasPor: current.limiteReservasPor ?? "vivienda",
+      anticipacionMinimaHoras: current.anticipacionMinimaHoras ?? 0,
+      plazoAdjuntoHoras: current.plazoAdjuntoHoras ?? 0,
+      nombresDeZonas: current.nombresDeZonas ?? [],
       horariosDisponibles: [],
       reglamento: current?.reglamento ?? "",
       requiereAprobacion: current?.requiereAprobacion ?? false,
@@ -178,7 +186,13 @@ export function AdministradorGestionZonaFormScreen() {
               // El formulario exige al menos 1: no hace falta respaldo.
               cuposSimultaneos: Number(value.cuposSimultaneos),
               usaSlots: value.usaSlots,
-              eligeNumero: value.eligeNumero,
+              // Desde el 18/11/2026 se elige siempre qué zona: cada una tiene nombre.
+              eligeNumero: Number(value.cuposSimultaneos) > 1 ? true : value.eligeNumero,
+              personasPorReserva: Number(value.personasPorReserva) || null,
+              reservasActivasMaximas: Number(value.reservasActivasMaximas) || null,
+              limiteReservasPor: value.limiteReservasPor,
+              anticipacionMinimaHoras: Number(value.anticipacionMinimaHoras) || 0,
+              plazoAdjuntoHoras: Number(value.plazoAdjuntoHoras) || null,
               requiereAprobacion: value.requiereAprobacion,
               montoGarantia: Number(value.montoGarantia) || 0,
               costoLimpieza: Number(value.costoLimpieza) || 0,
@@ -202,6 +216,7 @@ export function AdministradorGestionZonaFormScreen() {
                 ? { uri: value.imagen }
                 : null,
             reglamentoArchivo,
+            nombresDeZonas: value.nombresDeZonas.slice(0, Number(value.cuposSimultaneos) || 0),
           });
         }}
         onSuccess={() => navigation.goBack()}

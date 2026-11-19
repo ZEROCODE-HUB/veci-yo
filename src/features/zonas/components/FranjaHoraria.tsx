@@ -131,11 +131,9 @@ export function FranjaHoraria({
                 titulo={
                   esGestion
                     ? `${reserva.depto}${reserva.solicitante ? ` · ${reserva.solicitante}` : ""}`
-                    : // `numero` es opcional y las reservas sembradas no lo
-                      // tienen: decia "Reserva N°" y ahi se quedaba.
-                      reserva.reservaNum
-                      ? `Reserva N° ${reserva.reservaNum}`
-                      : "Tu reserva"
+                    : // Sin el número de reserva (18/11/2026, pedido del cliente):
+                      // «Tu reserva», con cuántas personas.
+                      `Tu reserva · ${(reserva.acompanantes ?? 0) + 1} ${(reserva.acompanantes ?? 0) === 0 ? "persona" : "personas"}`
                 }
                 /*
                   Y cual toco. El puesto se guardaba y no se releia en ninguna
@@ -159,9 +157,8 @@ export function FranjaHoraria({
                 color={theme.colors.textSecondary}
                 atenuada
                 titulo="Ocupado"
-                horario={
-                  ajenas === 1 ? "Otra vivienda" : `${ajenas} reservas`
-                }
+                // De los vecinos no se dice nada más (18/11/2026): solo que está ocupado.
+                horario={ajenas === 1 ? "Reservado" : `${ajenas} reservados`}
               />
             )}
 
