@@ -77,8 +77,15 @@ export function TopBar({ navigation: navigationProp }: TopBarProps) {
     Ahora sale de la membresia de condominio que trae la sesion, que es donde
     vive ese dato.
   */
+  // El del rol activo, no el primero de la lista (20/11/2026, cuenta con varios edificios).
+  const condominioDelRolActivo =
+    rolActivo === "administrador"
+      ? (condominios.find((c) => c.rol === "administrador") ?? condominios.find((c) => c.rol === "coadministrador"))
+      : rolActivo === "guardia"
+        ? condominios.find((c) => c.rol === "guardia")
+        : undefined;
   const nombreEdificio =
-    condominios[0]?.condominioNombre ||
+    condominioDelRolActivo?.condominioNombre ||
     ubicacionActiva?.direccion ||
     ubicacionActiva?.alias ||
     "";
