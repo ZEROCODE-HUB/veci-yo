@@ -13,9 +13,11 @@ const Stack = createNativeStackNavigator<ViviendaStackParamList>();
 
 function ViviendaScreen() {
   // La porteria no tiene vivienda: su pestaña del medio es la de portería.
-  const esGuardia = useAuthStore((s) => s.rolActivo) === "guardia";
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const esGuardia = rolActivo === "guardia";
+  // El profesional permanente no chatea: sin el botón de mensajes, como en su Inicio (20/11/2026).
   return (
-    <ScreenLayout padding={false} floatingChild={<CommsFab />}>
+    <ScreenLayout padding={false} floatingChild={rolActivo === "trabajador" ? undefined : <CommsFab />}>
       {esGuardia ? <PorteriaResumen /> : <ViviendaResumen />}
     </ScreenLayout>
   );
