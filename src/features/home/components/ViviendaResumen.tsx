@@ -116,7 +116,8 @@ export function ViviendaResumen() {
             {rolActivo === "huesped-temporal" || esAlojamiento ? "Alojamiento" : "Vivienda"}
           </Text>
         </View>
-        {rolActivo !== "huesped-temporal" && !esGuardia && (
+        {/* El profesional permanente no configura la vivienda (20/11/2026). */}
+        {rolActivo !== "huesped-temporal" && rolActivo !== "trabajador" && !esGuardia && (
           <Pressable
             onPress={sinPropiedades ? undefined : handleConfiguracion}
             className={`w-full items-center py-3 ${sinPropiedades ? "bg-gray-200" : "bg-primary"} ${!esAdministrador || !configOpen ? "rounded-full" : ""}`}

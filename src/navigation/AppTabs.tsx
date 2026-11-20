@@ -111,8 +111,8 @@ export function AppTabs() {
         pero no es «mi vivienda»: es la de portería (zonas comunes,
         estacionamientos de visita, chat). Lo pidio la responsable de producto.
       */}
-      {/* El profesional permanente no tiene «Viviendas»: lo suyo está en Inicio (18/11/2026). */}
-      {!soloPerfil && rolActivo !== "trabajador" && (
+      {/* El profesional permanente también: ahí ve sus módulos, Anuncios y Visitas (20/11/2026). */}
+      {!soloPerfil && (
       <Tab.Screen
         name="ViviendaTab"
         component={ViviendaStack}

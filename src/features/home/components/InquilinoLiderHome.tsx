@@ -46,6 +46,7 @@ export function InquilinoLiderHome() {
     esResidente,
     sinPropiedades,
     esHuesped,
+    esTrabajador,
     noResidente,
     esSoloResidente,
     puedeVerTrafico,
@@ -121,7 +122,7 @@ export function InquilinoLiderHome() {
       {sinPropiedades ? <PrimeraPropiedad /> : null}
 
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}
-      {!esGuardia && !esAdmin ? <RecordatoriosDePreregistro /> : null}
+      {!esGuardia && !esAdmin && !esTrabajador ? <RecordatoriosDePreregistro /> : null}
 
       {/* La portería busca por nombre, departamento o QR del huésped. */}
       {/* Antes del buscador: cuánto le queda de turno y la prórroga (Para Claude 177/178). */}
@@ -229,8 +230,13 @@ export function InquilinoLiderHome() {
         Lo suyo, no lo de sus huéspedes: correspondencia, zonas comunes y
         visitas, según le apliquen (QA 23/10/2026).
       */}
+      {/*
+        El profesional permanente usa este mismo Inicio desde el 20/11/2026
+        (pedido del cliente): su resumen dice solo lo que le toca, los anuncios
+        y, si se lo permitieron, las visitas.
+      */}
       {!esGuardia && !esAdmin && !esHuesped && !sinPropiedades ? (
-        <TuResumen residente={esResidente} />
+        <TuResumen residente={esResidente} trabajador={esTrabajador} />
       ) : null}
 
       {/* Hoy y mañana en sus viviendas — también para el que no vive ahí. */}
@@ -805,7 +811,7 @@ export function InquilinoLiderHome() {
         (comparación con la maqueta, 16/10/2026).
       */}
       {/* Un residente no tiene huéspedes: es del dueño o del anfitrión (17/11/2026). */}
-      {!esGuardia && !esAdmin && !esSoloResidente ? <AvisosDeMisHuespedes /> : null}
+      {!esGuardia && !esAdmin && !esSoloResidente && !esTrabajador ? <AvisosDeMisHuespedes /> : null}
 
       <EstacionamientosDeVisitaModal
         visible={parkingOpen}
