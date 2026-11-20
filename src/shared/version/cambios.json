@@ -2,7 +2,8 @@
   {
     "fecha": "2026-11-20",
     "puntos": [
-      "Inicio: se quitó la tarjeta «Mis viviendas». Para cambiar de vivienda se usa el selector de arriba."
+      "Inicio: se quitó la tarjeta «Mis viviendas». Para cambiar de vivienda se usa el selector de arriba.",
+      "Profesional permanente: ahora usa el mismo menú que los demás (Inicio, Viviendas y Perfil). En Viviendas ve Anuncios y, si le dieron permiso, Visitas."
     ]
   },
   {

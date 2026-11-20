@@ -106,9 +106,11 @@ export function useInquilinoLiderHome() {
     rolActivo === "propietario" || rolActivo === "propietario-no-residente";
   // Sin vivienda no se es residente de nada: ni reputación ni gratitud.
   const sinPropiedades = rolActivo === "propietario-sin-propiedades";
+  // El profesional permanente trabaja ahí, no vive: ni reputación ni gratitud (20/11/2026).
+  const esTrabajador = rolActivo === "trabajador";
   const esResidente = esPropietario
     ? (unidadActiva?.esResidente ?? true)
-    : !esGuardia && !esAdmin && !sinPropiedades && !!rolActivo;
+    : !esGuardia && !esAdmin && !sinPropiedades && !esTrabajador && !!rolActivo;
   const noResidente = esNoResidente(rolActivo, esResidente);
   /*
     El residente ve solo lo de vivir ahí (17/11/2026, plan aprobado por el
@@ -189,6 +191,7 @@ export function useInquilinoLiderHome() {
     cargaGratitud: estadoDe(consultaGratitud),
     cargaInsignias: estadoDe(consultaInsignias),
     esHuesped: rolActivo === "huesped-temporal",
+    esTrabajador,
     reputacionInsignias,
     visitas,
     HORAS_TURNO,

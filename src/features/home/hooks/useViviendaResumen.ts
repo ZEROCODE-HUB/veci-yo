@@ -18,6 +18,7 @@ import {
   MODULOS_VEDADOS_AL_NO_RESIDENTE,
   modulosVedadosConInquilinoLider,
 } from "../helpers/noResidente";
+import { modulosDelTrabajador } from "../helpers/modulosDelTrabajador";
 
 // El huesped ve lo de su estancia, no lo de la comunidad: el cuadro de honor es
 // del residente, y RLS ya se lo niega, asi que dejarlo en el menu solo llevaria
@@ -123,7 +124,17 @@ export function useViviendaResumen() {
     rolActivo === "propietario-sin-propiedades" ||
     (esPropietario && ubicaciones.length === 0);
 
-  const visibleModules = esHuespedTemporal
+  /*
+    El profesional permanente ve el mismo menú que la vivienda, con solo lo
+    suyo (20/11/2026, pedido del cliente): los anuncios —sin encuestas: no
+    vota— y las visitas, si quien lo registró le dio ese permiso.
+  */
+  const esTrabajador = rolActivo === "trabajador";
+  const creaVisitas = esTrabajador && ubicacionActiva?.rol === "trabajador" && ubicacionActiva.puedeCrearVisitas === true;
+
+  const visibleModules = esTrabajador
+    ? modulosDelTrabajador(MODULOS_CONFIG, creaVisitas)
+    : esHuespedTemporal
     ? [
         ...MODULOS_CONFIG.filter(
           (modulo) => !MODULOS_VEDADOS_AL_HUESPED.includes(modulo.id),
