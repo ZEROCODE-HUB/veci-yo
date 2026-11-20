@@ -15,7 +15,6 @@ import { MisReservas } from "@/features/zonas/components";
 import { useInquilinoLiderHome } from "../hooks/useInquilinoLiderHome";
 import { navigateToRoute } from "@/navigation/helpers/navigation.helpers";
 import { IngresosSalidasTable } from "./IngresosSalidasTable";
-import { MisViviendas } from "./MisViviendas";
 import { GratitudCard } from "./GratitudCard";
 import { TuResumen } from "./TuResumen";
 import { PrimeraPropiedad } from "./PrimeraPropiedad";
@@ -115,12 +114,10 @@ export function InquilinoLiderHome() {
       contentContainerStyle={{ padding: 16, gap: 16 }}
     >
       {/*
-        Todas las viviendas de quien tiene mas de una, antes que nada: es lo
-        que dice en cual esta y que pasa en las demas. A la porteria y a la
-        administracion no les sale: su inicio es el del edificio.
+        La tarjeta «Mis viviendas» (todas las viviendas con lo de hoy) se quitó
+        el 20/11/2026 a pedido del cliente: para cambiar de vivienda está el
+        selector de arriba.
       */}
-      {!esGuardia && !esAdmin && <MisViviendas />}
-
       {sinPropiedades ? <PrimeraPropiedad /> : null}
 
       {/* Las estancias que llegan en 3 días o menos sin preregistro. */}

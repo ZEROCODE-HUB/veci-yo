@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-20",
+    "puntos": [
+      "Inicio: se quitó la tarjeta «Mis viviendas». Para cambiar de vivienda se usa el selector de arriba."
+    ]
+  },
+  {
     "fecha": "2026-11-18",
     "puntos": [
       "Mensajería con la portería: al elegir a una persona («Conserje · Federico Valverde») se abre un chat solo con ella, con su nombre arriba. Se le puede escribir aunque no esté de turno: la app avisa cuándo vuelve, el mensaje le espera y le llega el aviso. La administración también puede leer esos chats.",
