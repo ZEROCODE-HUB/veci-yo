@@ -9,7 +9,6 @@ import { InvitacionesPendientes } from "../components/InvitacionesPendientes";
 import { InvitacionDeHuesped } from "../components/InvitacionDeHuesped";
 import { InvitacionesDelEdificio } from "../components/InvitacionesDelEdificio";
 import { InvitacionDeTrabajador } from "../components/InvitacionDeTrabajador";
-import { TrabajadorHome } from "../components/TrabajadorHome";
 
 export function HomeScreen() {
   const rolActivo = useAuthStore((state) => state.rolActivo);
@@ -28,9 +27,8 @@ export function HomeScreen() {
       <InvitacionDeHuesped />
       {/* Y la de trabajador permanente de una vivienda (17/11/2026). */}
       <InvitacionDeTrabajador />
-      {rolActivo === "trabajador" ? (
-        <TrabajadorHome />
-      ) : rolActivo === "huesped-temporal" ? (
+      {/* El profesional permanente usa el mismo Inicio que la vivienda (20/11/2026). */}
+      {rolActivo === "huesped-temporal" ? (
         <ViviendaResumen />
       ) : rolActivo ? (
         <InquilinoLiderHome />

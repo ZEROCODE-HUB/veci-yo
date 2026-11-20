@@ -9,10 +9,13 @@ import { ahora, formatDate, formatDateInput } from "@/shared/utils";
 import { useCorrespondencia } from "@/features/correspondencia/hooks/useCorrespondencia";
 import { useZonas } from "@/features/zonas/hooks/useZonas";
 import { useVisitas } from "@/features/visitas/hooks/useVisitas";
+import { useUbicacionStore } from "@/stores/ubicacion-store";
 
 interface Props {
   /** Vive en la vivienda: su correspondencia y sus zonas comunes le aplican. */
   residente: boolean;
+  /** Es el profesional permanente de la vivienda (20/11/2026). */
+  trabajador?: boolean;
 }
 
 /**
@@ -23,7 +26,48 @@ interface Props {
  * puede registrar una visita (por ejemplo, un día que el alojamiento está
  * vacío).
  */
-export function TuResumen({ residente }: Props) {
+export function TuResumen({ residente, trabajador = false }: Props) {
+  return trabajador ? <DelTrabajador /> : <DeLaVivienda residente={residente} />;
+}
+
+/**
+ * El del profesional permanente: los anuncios que van para él y, si quien lo
+ * registró se lo permitió, sus visitas. Nada de correspondencia ni de zonas,
+ * que son de quien vive ahí (20/11/2026: antes tenía un Inicio aparte).
+ */
+function DelTrabajador() {
+  const navigation = useNavegacion();
+  const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
+  const vivienda = ubicaciones.find((u) => u.favorito) ?? ubicaciones[0];
+  const puedeCrearVisitas = vivienda?.rol === "trabajador" && vivienda.puedeCrearVisitas === true;
+
+  return (
+    <View className="bg-white rounded-xl p-5 gap-1" style={{ boxShadow: theme.shadows.card }}>
+      <Text className="text-xl font-bold text-gray-900 mb-1">Tu resumen</Text>
+      <Fila
+        icono="megaphone-outline"
+        texto="Anuncios del edificio"
+        onPress={() => navigateToRoute(navigation, "Anuncios")}
+      />
+      {puedeCrearVisitas ? (
+        <>
+          <Fila
+            icono="people-outline"
+            texto="Las visitas que registraste"
+            onPress={() => navigateToRoute(navigation, "Visitas")}
+          />
+          <View className="mt-2">
+            <Button variant="secondary" fullWidth onPress={() => navigateToRoute(navigation, "VisitasNuevo")}>
+              Registrar una visita
+            </Button>
+          </View>
+        </>
+      ) : null}
+    </View>
+  );
+}
+
+function DeLaVivienda({ residente }: Props) {
   const navigation = useNavegacion();
   const permisos = usePermisosEnLaVivienda();
   /*
