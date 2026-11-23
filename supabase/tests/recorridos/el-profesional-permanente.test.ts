@@ -5,6 +5,7 @@ import {
   cambiarPermisosDeTrabajador,
   obtenerMisInvitacionesDeTrabajador,
   obtenerPermisosDeTrabajadores,
+  obtenerSituacionDeTrabajadores,
 } from "@/features/propietario/services/trabajadores.repo";
 import { crearVisita, obtenerVisitas } from "@/features/visitas/services/visitas.repo";
 import { obtenerAnuncios } from "@/features/anuncios/services/anuncios.repo";
@@ -120,6 +121,18 @@ describe("el profesional permanente con cuenta, de principio a fin", () => {
     await salir();
   });
 
+  it("Sofía ve en qué va: ya tiene cuenta con ese correo, pero no aceptó (23/11/2026)", async () => {
+    await entrarComo(SOFIA);
+    const situacion = await obtenerSituacionDeTrabajadores(U102);
+    const suya = Object.values(situacion).filter((x) => x.estado !== "sin_app" && x.estado !== "activo");
+    expect(suya.map((x) => x.estado)).toContain("cuenta_creada");
+    await salir();
+    // Y alguien de otra vivienda no lo ve.
+    await entrarComo("propietario@veciyo.test");
+    await expect(obtenerSituacionDeTrabajadores(U102)).rejects.toThrow(/Solo quien gestiona/);
+    await salir();
+  });
+
   it("su registro sale con el nombre que escribió Sofía", async () => {
     const datos = await datosParaRegistrarse(token);
     expect(datos?.correo).toBe(correo);
@@ -133,6 +146,14 @@ describe("el profesional permanente con cuenta, de principio a fin", () => {
     expect(await obtenerMisInvitacionesDeTrabajador()).toHaveLength(0);
     // Y no se acepta dos veces.
     await expect(aceptarInvitacion(token)).rejects.toThrow(/ya no esta disponible/i);
+    await salir();
+    // Ahora, para Sofía, está activo.
+    await entrarComo(SOFIA);
+    const { data: fila } = await servicio
+      .from("trabajador_de_la_vivienda").select("id").eq("correo_invitado", correo).single();
+    expect((await obtenerSituacionDeTrabajadores(U102))[fila!.id].estado).toBe("activo");
+    await salir();
+    await entrarComo(correo);
   });
 
   it("su sesión sabe en qué vivienda y edificio está, y qué puede", async () => {

@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Modal, Toggle } from "@/shared/components";
 import type {
+  EstadoDelProfesional,
   PermisosDeTrabajador,
+  SituacionDelProfesional,
   TrabajadorDeLaVivienda,
 } from "../../services/trabajadores.repo";
 import { detalleDelTrabajador } from "../../helpers/trabajadorPermanente";
@@ -12,8 +14,10 @@ interface Props {
   trabajadores: TrabajadorDeLaVivienda[];
   onDarDeBaja: (id: string) => void;
   dandoDeBajaId?: string;
-  /** Los permisos de cada uno, por id; vacío si quien mira no los gestiona. */
-  permisos?: Record<string, PermisosDeTrabajador>;
+  /** Permisos y en qué va cada uno, por id; vacío si quien mira no los gestiona. */
+  situacion?: Record<string, SituacionDelProfesional>;
+  /** El título de la lista; `null` para no ponerlo (en el detalle de su visita). */
+  titulo?: string | null;
   onCambiarPermisos?: (
     id: string,
     permisos: PermisosDeTrabajador,
@@ -31,11 +35,32 @@ interface Props {
  * Y «Editar privilegios» para los que tienen cuenta (23/11/2026, el cliente al
  * probar la 142: solo se podían elegir al registrarlo).
  */
+/** En qué va, dicho para el propietario (23/11/2026). */
+function textoDelEstado(estado: EstadoDelProfesional, correo: string | null): string {
+  switch (estado) {
+    case "activo":
+      return "Activo: entra con su cuenta";
+    case "cuenta_creada":
+      return "Ya creó su cuenta; le falta aceptar la invitación en Inicio";
+    case "invitado":
+      return correo ? `Invitación enviada a ${correo}` : "Invitación enviada";
+    default:
+      return "Sin app: solo figura en el directorio";
+  }
+}
+
+function colorDelEstado(estado: EstadoDelProfesional): string {
+  if (estado === "activo") return theme.colors.success;
+  if (estado === "sin_app") return theme.colors.textSecondary;
+  return theme.colors.warningDark;
+}
+
 export function ListaDeTrabajadores({
   trabajadores,
   onDarDeBaja,
   dandoDeBajaId,
-  permisos = {},
+  situacion = {},
+  titulo = "Profesionales permanentes",
   onCambiarPermisos,
   guardandoPermisos = false,
   onReenviar,
@@ -53,7 +78,7 @@ export function ListaDeTrabajadores({
 
   const abrirPermisos = (t: TrabajadorDeLaVivienda) => {
     setBorrador(
-      permisos[t.id] ?? {
+      situacion[t.id] ?? {
         puedeCrearVisitas: false,
         puedeContestarCitofono: true,
       },
@@ -63,9 +88,7 @@ export function ListaDeTrabajadores({
 
   return (
     <View className="gap-2">
-      <Text className="text-base font-bold text-gray-900">
-        Profesionales permanentes
-      </Text>
+      {titulo ? <Text className="text-base font-bold text-gray-900">{titulo}</Text> : null}
       {trabajadores.map((t) => (
         <View
           key={t.id}
@@ -77,12 +100,17 @@ export function ListaDeTrabajadores({
             <Text className="text-xs text-gray-500">
               {detalleDelTrabajador(t)}
             </Text>
-            {t.correoInvitado && !t.tieneCuenta ? (
+            {situacion[t.id] ? (
+              <Text className="text-xs font-medium" style={{ color: colorDelEstado(situacion[t.id].estado) }}>
+                {textoDelEstado(situacion[t.id].estado, t.correoInvitado)}
+              </Text>
+            ) : t.correoInvitado && !t.tieneCuenta ? (
               <Text className="text-xs text-gray-500">{`Invitado: ${t.correoInvitado}`}</Text>
             ) : null}
           </View>
           <View className="items-end gap-1">
-            {t.conApp && !t.tieneCuenta && t.correoInvitado && onReenviar ? (
+            {t.conApp && !t.tieneCuenta && t.correoInvitado && onReenviar &&
+            (situacion[t.id]?.estado ?? "invitado") === "invitado" ? (
               <Button
                 size="sm"
                 variant="ghost"
@@ -95,7 +123,7 @@ export function ListaDeTrabajadores({
                 Reenviar invitación
               </Button>
             ) : null}
-            {t.conApp && permisos[t.id] && onCambiarPermisos ? (
+            {t.conApp && situacion[t.id] && onCambiarPermisos ? (
               <Button
                 size="sm"
                 variant="ghost"

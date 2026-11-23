@@ -6,7 +6,7 @@ import {
   cambiarPermisosDeTrabajador,
   darDeBajaTrabajador,
   invitarTrabajador,
-  obtenerPermisosDeTrabajadores,
+  obtenerSituacionDeTrabajadores,
   obtenerTrabajadores,
   type PermisosDeTrabajador,
 } from "../services/trabajadores.repo";
@@ -17,11 +17,13 @@ import {
  * (18/11/2026). La vivienda es la misma que la de «Invitar a
  * alguien» (la ubicación activa).
  */
-export function useTrabajadoresDeLaVivienda() {
+export function useTrabajadoresDeLaVivienda(unidadDeLaVisita?: string) {
   const addToast = useUIStore((s) => s.addToast);
   const client = useQueryClient();
   const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
-  const unidadId = (ubicaciones.find((u) => u.favorito) ?? ubicaciones[0])?.unidadId ?? "";
+  // La de la visita, si se abre desde Visitas (23/11/2026); si no, la activa.
+  const unidadId =
+    unidadDeLaVisita ?? (ubicaciones.find((u) => u.favorito) ?? ubicaciones[0])?.unidadId ?? "";
   const clave = ["unidad", "trabajadores", unidadId];
 
   const lista = useQuery({
@@ -30,10 +32,10 @@ export function useTrabajadoresDeLaVivienda() {
     enabled: Boolean(unidadId),
   });
 
-  // Sus permisos, para editarlos (23/11/2026). Si no los gestiona, la base no los da.
-  const permisos = useQuery({
-    queryKey: [...clave, "permisos"],
-    queryFn: () => obtenerPermisosDeTrabajadores(unidadId),
+  // Sus permisos y en qué va, para editarlos (23/11/2026). Si no los gestiona, la base no los da.
+  const situacion = useQuery({
+    queryKey: [...clave, "situacion"],
+    queryFn: () => obtenerSituacionDeTrabajadores(unidadId),
     enabled: Boolean(unidadId),
     retry: false,
   });
@@ -77,7 +79,7 @@ export function useTrabajadoresDeLaVivienda() {
     puede: Boolean(unidadId),
     reenviarInvitacion: (t: { id: string; correo: string; nombre: string }) => reenviar.mutate(t),
     reenviandoId: reenviar.isPending ? reenviar.variables?.id : undefined,
-    permisos: permisos.data ?? {},
+    situacion: situacion.data ?? {},
     cambiarPermisos: (id: string, nuevos: PermisosDeTrabajador) =>
       cambiarPermisos.mutateAsync({ id, permisos: nuevos }),
     guardandoPermisos: cambiarPermisos.isPending,

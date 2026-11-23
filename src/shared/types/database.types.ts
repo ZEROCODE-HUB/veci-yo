@@ -6944,6 +6944,16 @@ export type Database = {
           unidad: string
         }[]
       }
+      estado_de_trabajadores: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          estado: string
+          id: string
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
+          visita_id: string
+        }[]
+      }
       estado_del_codigo_descuento: {
         Args: { p_codigo: string }
         Returns: {
