@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/services/supabase";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores";
-import { useUnidadElegidaDelRol } from "@/shared/hooks";
+import { useCondominioActivo, useUnidadElegidaDelRol } from "@/shared/hooks";
 import { estadoDe } from "@/shared/components";
 import {
   actualizarParticipante,
@@ -54,7 +54,11 @@ export function useZonas() {
   const client = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
 
-  const zonas = useQuery({ queryKey: ZONAS_QUERY_KEY, queryFn: obtenerZonas });
+  const condominioDeLasZonas = useCondominioActivo() ?? "";
+  const zonas = useQuery({
+    queryKey: [...ZONAS_QUERY_KEY, condominioDeLasZonas],
+    queryFn: () => obtenerZonas(condominioDeLasZonas),
+  });
   /*
     El ambito lo decide el rol con el que se entro, igual que en las visitas.
 

@@ -53,8 +53,8 @@ export function useAdministradorArquitectura() {
   const parametrosDeLaBase = useParametrosDeLaBase();
 
   const query = useQuery({
-    queryKey: arquitecturaQueryKey,
-    queryFn: obtenerArquitectura,
+    queryKey: [...arquitecturaQueryKey, condominioId],
+    queryFn: () => obtenerArquitectura(condominioId),
   });
 
   const invalidar = () => {
@@ -127,7 +127,7 @@ export function useAdministradorArquitectura() {
       actualizarTorre(uuid, datos),
     onMutate: ({ uuid, datos }) => {
       client.setQueryData<Awaited<ReturnType<typeof obtenerArquitectura>>>(
-        arquitecturaQueryKey,
+        [...arquitecturaQueryKey, condominioId],
         (antes) =>
           antes
             ? {
