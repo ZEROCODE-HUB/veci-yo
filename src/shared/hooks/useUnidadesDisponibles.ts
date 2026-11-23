@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/shared/services/supabase";
+import { useAuthStore } from "@/stores/auth-store";
+import { useUbicacionStore } from "@/stores/ubicacion-store";
+import { condominioDelRol } from "./condominioDelRol";
 
 export interface UnidadDisponible {
   unidadId: string;
@@ -26,14 +29,28 @@ export interface UnidadDisponible {
  * que no existe.
  */
 export function useUnidadesDisponibles() {
+  /*
+    Del edificio del rol activo (20/11/2026). RLS deja ver las viviendas de
+    **todos** los edificios donde la persona tiene un rol: con la cuenta
+    multirol, la portería de Pino ofrecía cinco «101» y llamar al de otro
+    edificio fallaba («No puedes llamar a ese destino desde aquí»).
+  */
+  const rolActivo = useAuthStore((s) => s.rolActivo);
+  const condominios = useAuthStore((s) => s.condominios);
+  const misUnidades = useAuthStore((s) => s.unidades);
+  const ubicaciones = useUbicacionStore((s) => s.ubicaciones);
+  const elegida = ubicaciones.find((u) => u.favorito) ?? ubicaciones[0];
+  const condominioId = condominioDelRol(rolActivo, condominios, misUnidades, elegida);
+
   const query = useQuery({
-    queryKey: ["unidades-disponibles"],
+    queryKey: ["unidades-disponibles", condominioId],
     queryFn: async (): Promise<UnidadDisponible[]> => {
-      const { data, error } = await supabase
+      let consulta = supabase
         .from("unidad")
         .select("id, codigo, piso, condominio_id, torre:torre_id ( numero, nombre )")
-        .is("deleted_at", null)
-        .order("codigo");
+        .is("deleted_at", null);
+      if (condominioId) consulta = consulta.eq("condominio_id", condominioId);
+      const { data, error } = await consulta.order("codigo");
 
       if (error) throw error;
 

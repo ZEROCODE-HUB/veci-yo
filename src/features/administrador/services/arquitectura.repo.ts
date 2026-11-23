@@ -129,41 +129,53 @@ export interface Arquitectura {
   }>;
 }
 
-export async function obtenerArquitectura(): Promise<Arquitectura> {
+/**
+ * `condominioId`: el edificio del rol activo. Sin él trae **todo lo que RLS
+ * deja ver**, y quien administra un edificio y además vive o es guardia en
+ * otro veía las torres y viviendas de los dos mezcladas: varios «101», y el
+ * índice de votación se editaba en la vivienda del otro edificio (20/11/2026,
+ * cuenta multirol del cliente).
+ */
+export async function obtenerArquitectura(condominioId?: string): Promise<Arquitectura> {
+  let torreQ = supabase.from("torre").select("*").is("deleted_at", null);
+  let unidadQ = supabase
+    .from("unidad")
+    .select("id, codigo, piso, estado, tipologia_id, indice_votacion, torre:torre_id ( id, numero )")
+    .is("deleted_at", null);
+  let depositoQ = supabase
+    .from("deposito")
+    .select("id, codigo, ubicacion, unidad_id, torre:torre_id ( numero ), unidad:unidad_id ( codigo )");
+  let porteriaQ = supabase.from("porteria").select("*").is("deleted_at", null);
+  let estacionamientoQ = supabase
+    .from("estacionamiento")
+    /*
+      En una sola pieza y no concatenando: Supabase deduce el tipo de la
+      respuesta **del literal** del `select`.
+    */
+    .select(
+      `id, codigo, ubicacion, tipo, unidad_id, nivel_id,
+       torre:torre_id ( numero ),
+       asignaciones:asignacion_estacionamiento ( liberado_en )`,
+    );
+  let nivelQ = supabase.from("nivel_estacionamiento").select("id, nombre, nomenclatura, orden, torre_id");
+  if (condominioId) {
+    torreQ = torreQ.eq("condominio_id", condominioId);
+    unidadQ = unidadQ.eq("condominio_id", condominioId);
+    depositoQ = depositoQ.eq("condominio_id", condominioId);
+    porteriaQ = porteriaQ.eq("condominio_id", condominioId);
+    estacionamientoQ = estacionamientoQ.eq("condominio_id", condominioId);
+    nivelQ = nivelQ.eq("condominio_id", condominioId);
+  }
+
   const [torres, unidades, depositos, porterias, estacionamientos, niveles] =
     await Promise.all([
-      supabase.from("torre").select("*").is("deleted_at", null).order("numero"),
-      supabase
-        .from("unidad")
-        .select("id, codigo, piso, estado, tipologia_id, indice_votacion, torre:torre_id ( id, numero )")
-        .is("deleted_at", null)
-        .order("codigo"),
-      supabase
-        .from("deposito")
-        .select("id, codigo, ubicacion, unidad_id, torre:torre_id ( numero ), unidad:unidad_id ( codigo )")
-        .order("codigo"),
-      supabase.from("porteria").select("*").is("deleted_at", null).order("nombre"),
-      supabase
-        .from("estacionamiento")
-        /*
-          En una sola pieza y no concatenando: Supabase deduce el tipo de la
-          respuesta **del literal** del `select`, asi que partido en dos cadenas
-          devolvia `GenericStringError` y el mapeo de abajo tenia que ir con
-          `any` para compilar.
-        */
-        .select(
-          `id, codigo, ubicacion, tipo, unidad_id, nivel_id,
-           torre:torre_id ( numero ),
-           asignaciones:asignacion_estacionamiento ( liberado_en )`,
-        )
-        .order("codigo"),
-      supabase
-        .from("nivel_estacionamiento")
-        .select("id, nombre, nomenclatura, orden, torre_id")
-        .order("orden")
-        .order("nombre"),
+      torreQ.order("numero"),
+      unidadQ.order("codigo"),
+      depositoQ.order("codigo"),
+      porteriaQ.order("nombre"),
+      estacionamientoQ.order("codigo"),
+      nivelQ.order("orden").order("nombre"),
     ]);
-
   for (const r of [torres, unidades, depositos, porterias, estacionamientos, niveles]) {
     if (r.error) throw r.error;
   }

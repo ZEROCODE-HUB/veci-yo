@@ -44,7 +44,7 @@ export function useDirectorio() {
   */
   const arquitectura = useQuery({
     queryKey: ["condominio", "arquitectura", condominioId],
-    queryFn: obtenerArquitectura,
+    queryFn: () => obtenerArquitectura(condominioId),
     enabled: Boolean(condominioId),
   });
   /*

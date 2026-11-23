@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-23",
+    "puntos": [
+      "Quien tiene roles en varios edificios ya no ve las viviendas, torres y zonas comunes de los otros edificios mezcladas: cada rol ve solo las de su edificio. Arregla los varios «101» al llamar desde portería, el índice de votación que no se guardaba y el «No puedes llamar a ese destino»."
+    ]
+  },
+  {
     "fecha": "2026-11-20",
     "puntos": [
       "Zonas comunes: se arregló «No se pudo guardar el cambio» para quien administra un edificio y además tiene otro rol en otro edificio. La app guardaba en el edificio equivocado; ahora usa el del rol con el que entraste.",

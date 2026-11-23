@@ -52,7 +52,7 @@ export function usePasosDelAdministrador(): PasosConCarga {
   // Las mismas tres que `useDatosCondominio` y `useZonas`.
   const arquitectura = useQuery({
     queryKey: ["condominio", "arquitectura", condominioId],
-    queryFn: obtenerArquitectura,
+    queryFn: () => obtenerArquitectura(condominioId),
     enabled: habilitado,
   });
   const guardias = useQuery({
@@ -60,7 +60,10 @@ export function usePasosDelAdministrador(): PasosConCarga {
     queryFn: () => obtenerGuardias(condominioId),
     enabled: habilitado,
   });
-  const zonas = useQuery({ queryKey: ZONAS_QUERY_KEY, queryFn: obtenerZonas });
+  const zonas = useQuery({
+    queryKey: [...ZONAS_QUERY_KEY, condominioId],
+    queryFn: () => obtenerZonas(condominioId),
+  });
   const reglamentos = useQuery({
     queryKey: ["home", "reglamentos-vigentes", condominioId],
     queryFn: () => contarReglamentosVigentes(condominioId),

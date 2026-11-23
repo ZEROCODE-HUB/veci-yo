@@ -322,10 +322,14 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
   } as ZonaComunConfig & ZonaComun;
 }
 
-export async function obtenerZonas() {
-  const { data, error } = await consultaDeZonas()
-    .is("deleted_at", null)
-    .order("nombre");
+/**
+ * `condominioId`: el del rol activo. Sin él salían las zonas de todos los
+ * edificios donde la persona tiene un rol (20/11/2026, cuenta multirol).
+ */
+export async function obtenerZonas(condominioId?: string) {
+  let consulta = consultaDeZonas().is("deleted_at", null);
+  if (condominioId) consulta = consulta.eq("condominio_id", condominioId);
+  const { data, error } = await consulta.order("nombre");
 
   if (error) throw error;
   const filas = data ?? [];
