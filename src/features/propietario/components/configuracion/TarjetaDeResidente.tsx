@@ -67,7 +67,8 @@ export function TarjetaDeResidente({
             )}
           </Text>
           <View className="flex-row justify-between">
-            <Text className="text-sm" style={gris}>CI: {r.ci}</Text>
+            {/* Sin documento no se escribe «CI:» vacío (23/11/2026). */}
+            <Text className="text-sm" style={gris}>{r.ci ? `CI: ${r.ci}` : ""}</Text>
             <Text className="text-sm" style={gris}>{r.fecha}</Text>
           </View>
           {/*

@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/services/supabase";
+import { enviarInvitacion, type InvitacionCreada } from "@/shared/services/invitaciones";
 
 /**
  * El trabajador permanente de una vivienda (17/11/2026): la empleada, el
@@ -81,6 +82,27 @@ export async function cambiarPermisosDeTrabajador(id: string, permisos: Permisos
     p_puede_contestar_citofono: permisos.puedeContestarCitofono,
   });
   if (error) throw error;
+}
+
+/**
+ * La invitación a la app del profesional permanente con cuenta (23/11/2026):
+ * la misma de los demás roles, con su código, así su registro sale lleno con
+ * lo que escribió quien lo registró. Sirve también para reenviarla.
+ */
+export async function invitarTrabajador(trabajador: {
+  id: string;
+  correo: string;
+  nombre: string;
+}): Promise<InvitacionCreada> {
+  const { data, error } = await supabase.rpc("invitar_trabajador", { p_trabajador_id: trabajador.id });
+  if (error) throw error;
+  const fila = Array.isArray(data) ? data[0] : data;
+  return enviarInvitacion({
+    invitacionId: fila?.invitacion_id as string,
+    token: fila?.token as string,
+    correo: trabajador.correo,
+    nombre: trabajador.nombre,
+  });
 }
 
 export async function darDeBajaTrabajador(id: string): Promise<void> {

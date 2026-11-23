@@ -37,6 +37,7 @@ const ETIQUETA_ROL: Record<string, string> = {
   administrador: "Administrador",
   guardia: "Seguridad",
   huesped_temporal: "Huésped temporal",
+  trabajador: "Profesional permanente",
 };
 
 /*

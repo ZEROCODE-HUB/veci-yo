@@ -5,10 +5,10 @@ import {
   cambiarPermisosDeTrabajador,
   obtenerMisInvitacionesDeTrabajador,
   obtenerPermisosDeTrabajadores,
-  responderInvitacionDeTrabajador,
 } from "@/features/propietario/services/trabajadores.repo";
 import { crearVisita, obtenerVisitas } from "@/features/visitas/services/visitas.repo";
 import { obtenerAnuncios } from "@/features/anuncios/services/anuncios.repo";
+import { aceptarInvitacion, datosParaRegistrarse } from "@/shared/services/invitaciones";
 
 /**
  * Recorrido: el profesional permanente con cuenta (18/11/2026, pedido del
@@ -29,6 +29,7 @@ const MARCA = "[prueba] profesional recorrido";
 
 let correo = "";
 let usuarioId = "";
+let token = "";
 const publicaciones: string[] = [];
 
 beforeAll(async () => {
@@ -79,6 +80,7 @@ afterAll(async () => {
     await servicio.from("notificacion").delete().eq("entidad_id", id);
     await servicio.from("publicacion").delete().eq("id", id);
   }
+  await servicio.from("invitacion").delete().eq("correo", correo);
   await servicio.from("trabajador_de_la_vivienda").delete().eq("correo_invitado", correo);
   if (usuarioId) {
     await servicio.from("notificacion").delete().eq("usuario_id", usuarioId);
@@ -100,16 +102,37 @@ describe("el profesional permanente con cuenta, de principio a fin", () => {
       puedeCrearVisitas: true,
     });
     expect(id).toBeTruthy();
+    // La invitación de siempre, con su código (23/11/2026). El token sale de
+    // la función de la base: `enviarInvitacion` no lo devuelve con el correo encendido.
+    const { data, error } = await supabase.rpc("invitar_trabajador", { p_trabajador_id: id });
+    expect(error).toBeNull();
+    token = (Array.isArray(data) ? data[0] : data)?.token ?? "";
+    expect(token).toBeTruthy();
     await salir();
   });
 
-  it("él ve la invitación al entrar y la acepta", async () => {
+  it("alguien de otra vivienda no puede invitarlo", async () => {
+    const { data: fila } = await servicio
+      .from("trabajador_de_la_vivienda").select("id").eq("correo_invitado", correo).single();
+    await entrarComo("propietario@veciyo.test");
+    const { error } = await supabase.rpc("invitar_trabajador", { p_trabajador_id: fila!.id });
+    expect(error?.message).toMatch(/No tienes permiso/);
+    await salir();
+  });
+
+  it("su registro sale con el nombre que escribió Sofía", async () => {
+    const datos = await datosParaRegistrarse(token);
+    expect(datos?.correo).toBe(correo);
+    expect(`${datos?.nombre} ${datos?.apellido}`).toContain("Rosa");
+  });
+
+  it("él acepta con el enlace y la tarjeta de Inicio ya no se la ofrece", async () => {
     await entrarComo(correo);
-    const invitaciones = await obtenerMisInvitacionesDeTrabajador();
-    expect(invitaciones).toHaveLength(1);
-    expect(invitaciones[0].unidad).toBe("102");
-    await responderInvitacionDeTrabajador(invitaciones[0].id, true);
+    expect(await obtenerMisInvitacionesDeTrabajador()).toHaveLength(1);
+    await aceptarInvitacion(token);
     expect(await obtenerMisInvitacionesDeTrabajador()).toHaveLength(0);
+    // Y no se acepta dos veces.
+    await expect(aceptarInvitacion(token)).rejects.toThrow(/ya no esta disponible/i);
   });
 
   it("su sesión sabe en qué vivienda y edificio está, y qué puede", async () => {

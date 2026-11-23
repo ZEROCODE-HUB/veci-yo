@@ -46,8 +46,8 @@ export function ResidentesDeLaVivienda({
         Residentes actuales ({deHoy.filter((r) => r.rol !== "Huesped Temporal").length})
       </Text>
       <Text className="text-xs" style={{ color: theme.colors.textSecondary, lineHeight: 18 }}>
-        El Residente Inquilino Lider o el Propietario son quienes pueden agregar o
-        editar los residentes de la propiedad.
+        El propietario o el inquilino líder pueden agregar o editar a las
+        personas de la vivienda.
       </Text>
 
       {GRUPOS_JERARQUIA.map((grupo) => {
