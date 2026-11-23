@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, CampoFecha, Modal, Select, Toggle } from "@/shared/components";
+import { Button, CampoFecha, EtiquetaDelCampo, Modal, Select, Toggle } from "@/shared/components";
 import { Text, View } from "react-native";
 import type { Guardia, TurnoOverride } from "@/shared/types";
 import { recurringScheduleSchema, turnoOverrideSchema } from "../../schemas";
@@ -212,7 +212,7 @@ export function GuardiaTurnosModal({
                   <View className="flex-row gap-2">
                     <View className="flex-1">
                       <Select
-                        label="Hora inicio"
+                        label="Hora inicio *"
                         value={editando.horaInicio}
                         options={HORAS_DEL_DIA}
                         onChange={(valor) => setEditando({ ...editando, horaInicio: String(valor) })}
@@ -220,7 +220,7 @@ export function GuardiaTurnosModal({
                     </View>
                     <View className="flex-1">
                       <Select
-                        label="Hora fin"
+                        label="Hora fin *"
                         value={editando.horaFin}
                         options={HORAS_DEL_DIA}
                         onChange={(valor) => setEditando({ ...editando, horaFin: String(valor) })}
@@ -337,9 +337,7 @@ export function GuardiaTurnosModal({
           </View>
           {recurring && (
             <View className="rounded-2xl bg-gray-50 p-3 gap-3">
-              <Text className="text-sm font-semibold text-gray-900">
-                Días de la semana
-              </Text>
+              <EtiquetaDelCampo label="Días de la semana *" />
               <View className="flex-row flex-wrap gap-2">
                 {weekDays.map((day) => (
                   <Button
@@ -361,30 +359,22 @@ export function GuardiaTurnosModal({
                 ))}
               </View>
               <Select
-                label="Hora inicio"
+                label="Hora inicio *"
                 placeholder="Inicio"
                 value={recurrenceStart}
                 options={HORAS_DEL_DIA}
-                onChange={(value) => recurringForm.setValue("horaInicio", String(value))}
+                onChange={(value) => recurringForm.setValue("horaInicio", String(value), { shouldValidate: recurringForm.formState.isSubmitted })}
+                error={recurringForm.formState.errors.horaInicio?.message}
               />
               <Select
-                label="Hora fin"
+                label="Hora fin *"
                 placeholder="Fin"
                 value={recurrenceEnd}
                 options={HORAS_DEL_DIA}
-                onChange={(value) => recurringForm.setValue("horaFin", String(value))}
+                onChange={(value) => recurringForm.setValue("horaFin", String(value), { shouldValidate: recurringForm.formState.isSubmitted })}
+                error={recurringForm.formState.errors.horaFin?.message}
               />
-              {Boolean(
-                aviso ||
-                  recurringForm.formState.errors.horaInicio?.message ||
-                  recurringForm.formState.errors.horaFin?.message,
-              ) && (
-                <Text className="text-xs text-red-600">
-                  {aviso ||
-                    recurringForm.formState.errors.horaInicio?.message ||
-                    recurringForm.formState.errors.horaFin?.message}
-                </Text>
-              )}
+              {aviso ? <Text className="text-xs text-red-600">{aviso}</Text> : null}
               <Button
                 fullWidth
                 loading={enCurso === "recurrente"}
@@ -429,8 +419,9 @@ export function GuardiaTurnosModal({
             trabaja.
           </Text>
           <CampoFecha
-            label="Fecha"
+            label="Fecha *"
             enLinea
+            error={overrideForm.formState.errors.fecha?.message}
             minima={ahora()}
             value={overrideForm.watch("fecha")}
             onChange={(iso) =>
@@ -440,7 +431,7 @@ export function GuardiaTurnosModal({
           <View className="flex-row gap-2">
             <View className="flex-1">
               <Select
-                label="Hora inicio"
+                label="Hora inicio (opcional)"
                 placeholder="No trabaja"
                 value={overrideForm.watch("horaInicio")}
                 options={HORAS_DEL_DIA}
@@ -451,7 +442,7 @@ export function GuardiaTurnosModal({
             </View>
             <View className="flex-1">
               <Select
-                label="Hora fin"
+                label="Hora fin (opcional)"
                 placeholder="No trabaja"
                 value={overrideForm.watch("horaFin")}
                 options={HORAS_DEL_DIA}
@@ -461,15 +452,11 @@ export function GuardiaTurnosModal({
               />
             </View>
           </View>
-          {Boolean(
-            overrideForm.formState.errors.fecha?.message ||
-              overrideForm.formState.errors.horaFin?.message,
-          ) && (
+          {overrideForm.formState.errors.horaFin?.message ? (
             <Text className="text-xs text-red-600">
-              {overrideForm.formState.errors.fecha?.message ||
-                overrideForm.formState.errors.horaFin?.message}
+              {overrideForm.formState.errors.horaFin.message}
             </Text>
-          )}
+          ) : null}
           <Button
             fullWidth
             loading={enCurso === "puntual"}

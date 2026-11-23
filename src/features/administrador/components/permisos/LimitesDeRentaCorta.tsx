@@ -65,7 +65,7 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
       <View className="flex-row gap-2.5">
         <View className="flex-1">
           <Input
-            label="Noches mínimas"
+            label="Noches mínimas (opcional)"
             value={noches}
             onChangeText={(texto) => setNoches(soloCifras(texto))}
             placeholder="Sin mínimo"
@@ -75,7 +75,7 @@ export function LimitesDeRentaCorta({ condominioId }: { condominioId: string }) 
         </View>
         <View className="flex-1">
           <Input
-            label="Personas máximas"
+            label="Personas máximas (opcional)"
             value={aforo}
             onChangeText={(texto) => setAforo(soloCifras(texto))}
             placeholder="Sin máximo"

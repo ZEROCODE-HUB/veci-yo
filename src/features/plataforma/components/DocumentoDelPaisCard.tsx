@@ -56,6 +56,15 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
     }
   };
 
+  // Lo mismo que exige la base (documento_del_pais_largo), dicho bajo cada campo.
+  const errorEtiqueta = etiqueta.trim() === "" ? "Escribe cómo se llama el documento" : undefined;
+  const nMin = Number(minimo);
+  const nMax = Number(maximo);
+  const errorMinimo = minimo === "" || nMin < 1 ? "Al menos 1" : undefined;
+  const errorMaximo =
+    maximo === "" || nMax > 30 ? "Como mucho 30" : !errorMinimo && nMax < nMin ? "No puede ser menor que el mínimo" : undefined;
+  const hayErrores = Boolean(errorEtiqueta || errorMinimo || errorMaximo);
+
   const aQuien = [d.paraAdultos ? "adultos" : null, d.paraMenores ? "menores" : null]
     .filter(Boolean)
     .join(" y ");
@@ -116,13 +125,27 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
 
       {abierto ? (
         <View className="gap-3 pt-1">
-          <Input label="Cómo se llama en este país" value={etiqueta} onChangeText={setEtiqueta} />
+          <Input label="Cómo se llama en este país *" value={etiqueta} onChangeText={setEtiqueta} error={errorEtiqueta} />
           <FilaConInterruptor texto="Se le pide a un adulto" value={adultos} onChange={setAdultos} />
           <FilaConInterruptor texto="Se le pide a un menor" value={menores} onChange={setMenores} />
           <FilaConInterruptor texto="El número lleva solo cifras" value={cifras} onChange={setCifras} />
           <FilaDeCampos gap={12}>
-            <Input label="Largo mínimo" value={minimo} onChangeText={setMinimo} soloCifras />
-            <Input label="Largo máximo" value={maximo} onChangeText={setMaximo} soloCifras />
+            <Input
+              label="Largo mínimo *"
+              explicacion="Cuántos caracteres tiene como mínimo el número, sin puntos, guiones ni espacios."
+              value={minimo}
+              onChangeText={setMinimo}
+              soloCifras
+              error={errorMinimo}
+            />
+            <Input
+              label="Largo máximo *"
+              explicacion="Cuántos caracteres tiene como máximo el número, sin puntos, guiones ni espacios. Hasta 30."
+              value={maximo}
+              onChangeText={setMaximo}
+              soloCifras
+              error={errorMaximo}
+            />
           </FilaDeCampos>
           <FilaConInterruptor texto="Tiene dos caras (se fotografía el reverso)" value={caras} onChange={setCaras} />
           <FilaConInterruptor texto="Pide la fecha de expedición" value={fecha} onChange={setFecha} />
@@ -160,6 +183,7 @@ export function DocumentoDelPaisCard({ documento: d, esDueno, guardando, guardar
               });
             }}
             loading={guardando}
+            disabled={hayErrores}
             fullWidth
           >
             Guardar documento

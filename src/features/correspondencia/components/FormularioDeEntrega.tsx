@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Input } from "@/shared/components";
 
@@ -25,6 +26,9 @@ export function FormularioDeEntrega({
   entregando,
   onCancelar,
 }: Props) {
+  // Pulsó «Confirmar» sin nombre: se dice debajo del campo.
+  const [intento, setIntento] = useState(false);
+  const falta = nombre.trim() === "";
   return (
     <View className="gap-4">
       {/*
@@ -36,18 +40,25 @@ export function FormularioDeEntrega({
         confirmar.
       </Text>
       <Input
-        label="Nombre de quien recibe"
+        label="Nombre de quien recibe *"
         soloLetras
         value={nombre}
         onChangeText={onNombreChange}
         placeholder="Nombre y apellido"
+        error={intento && falta ? "Escribe el nombre de quien recibe" : undefined}
       />
       <Button
         variant="primary"
         fullWidth
-        disabled={nombre.trim() === "" || entregando}
+        disabled={entregando}
         loading={entregando}
-        onPress={onConfirmar}
+        onPress={() => {
+          if (falta) {
+            setIntento(true);
+            return;
+          }
+          onConfirmar();
+        }}
       >
         Confirmar Entrega
       </Button>

@@ -106,7 +106,7 @@ export function CoadministradorForm({
         name="apellido"
         render={({ field, fieldState }) => (
           <Input
-            label="Apellido"
+            label="Apellido (opcional)"
             soloLetras
             placeholder="Apellido"
             value={field.value}
@@ -141,7 +141,7 @@ export function CoadministradorForm({
             con el prefijo dentro, que es lo que no se puede volver a separar.
           */
           <CampoTelefono
-            label="Celular"
+            label="Celular (opcional)"
             codigoPais={watch("codigoPais")}
             onCodigoPaisChange={(codigo) =>
               setValue("codigoPais", codigo, { shouldValidate: true })

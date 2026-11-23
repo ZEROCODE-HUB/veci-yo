@@ -2,6 +2,9 @@
   {
     "fecha": "2026-11-23",
     "puntos": [
+      "Formularios de toda la app: cada campo dice si es obligatorio (asterisco rojo) u «(opcional)», y si falta algo el error sale debajo del campo. Donde un campo no se entiende solo, hay una «i» que lo explica.",
+      "Zonas comunes: el plazo para adjuntar el comprobante se elige en horas y minutos.",
+      "Número de documento: el error ahora dice «Revisa el número de documento» y cuántas cifras lleva, para no confundirlo con el teléfono.",
       "Profesional permanente: ahora recibe la misma invitación que los demás roles. Al registrarse, su nombre, teléfono y documento ya vienen llenos con lo que escribiste. Si no la aceptó, en su tarjeta está «Reenviar invitación».",
       "Permisos más claros: el profesional permanente tiene «Editar privilegios» igual que un residente, con las mismas palabras («Contestar el citófono», «Registrar visitas»). En Configuración: «Vive aquí», y textos más simples para el propietario y los residentes.",
       "Invitar a alguien: la lista ahora se llama «Profesionales permanentes» y cada uno con cuenta tiene «Editar permisos» (crear visitas y contestar el citófono). Para agregar uno nuevo, el botón lleva a Visitas.",

@@ -25,7 +25,9 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
         <View className="flex-1">
           <Input
             label="Mínimo de noches *"
+            explicacion="Lo menos que puede quedarse un huésped en una reserva."
             value={r.minDias ? String(r.minDias) : ""}
+            error={r.erroresConfig.minDias}
             // Solo cifras: vaciarlo volvía a 1 y teclear «5» daba «15».
             onChangeText={(v) => r.setMinDias(tope("renta_corta_estancia_maxima_noches", v))}
             soloCifras
@@ -34,8 +36,10 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
         <View className="flex-1">
           {/* Vacío = sin máximo. El calendario de la nueva reserva no deja pasarse (24/10/2026). */}
           <Input
-            label="Máximo de noches"
+            label="Máximo de noches (opcional)"
+            explicacion="Lo más que puede quedarse un huésped. Déjalo vacío si no hay máximo."
             value={r.maxDias ? String(r.maxDias) : ""}
+            error={r.erroresConfig.maxDias}
             placeholder="Sin máximo"
             onChangeText={(v) => r.setMaxDias(tope("renta_corta_estancia_maxima_noches", v))}
             soloCifras
@@ -46,7 +50,9 @@ export function EstanciaYAforo({ renta: r, parametros }: { renta: RentaCorta; pa
         <View className="flex-1">
           <Input
             label="Capacidad máxima *"
+            explicacion="Cuántas personas pueden alojarse a la vez en la vivienda, contando a los niños."
             value={r.maxHuespedes ? String(r.maxHuespedes) : ""}
+            error={r.erroresConfig.maxHuespedes}
             // Obligatoria, como el mínimo de noches: al guardar se pide al menos 1
             // (Para Claude 113, 27/10/2026).
             placeholder="Ej.: 4"

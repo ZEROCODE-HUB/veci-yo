@@ -199,6 +199,8 @@ export function GestionZonaReservasView({
   const [sortAsc, setSortAsc] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [department, setDepartment] = useState("");
+  // «Continuar» sin departamento: el error sale debajo del campo.
+  const [faltaDepartamento, setFaltaDepartamento] = useState(false);
   const [detail, setDetail] = useState<ReservaVista | null>(null);
   const [editing, setEditing] = useState<ReservaVista | null>(null);
   const [canceling, setCanceling] = useState<ReservaVista | null>(null);
@@ -390,6 +392,7 @@ export function GestionZonaReservasView({
             fullWidth
             onPress={() => {
               setDepartment("");
+              setFaltaDepartamento(false);
               setCreateOpen(true);
             }}
           >
@@ -552,16 +555,23 @@ export function GestionZonaReservasView({
       >
         <View className="gap-4">
           <Select
-            label="¿Para qué departamento es la reserva?"
+            label="¿Para qué departamento es la reserva? *"
             value={department}
             options={codigosDe()}
-            onChange={(value) => setDepartment(String(value))}
+            onChange={(value) => {
+              setDepartment(String(value));
+              setFaltaDepartamento(false);
+            }}
             placeholder="Elige el departamento"
+            error={faltaDepartamento ? "Elige el departamento" : undefined}
           />
           <Button
             fullWidth
-            disabled={!department}
             onPress={() => {
+              if (!department) {
+                setFaltaDepartamento(true);
+                return;
+              }
               setCreateOpen(false);
               onCreate(department);
             }}
@@ -642,7 +652,7 @@ export function GestionZonaReservasView({
             name="comentarios"
             render={({ field, fieldState }) => (
               <Input
-                label="Observaciones"
+                label="Observaciones (opcional)"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Opcional"
@@ -839,7 +849,7 @@ export function GestionZonaReservasView({
             Dile al vecino por qué no se puede. Lo verá en «Mis reservas».
           </Text>
           <Input
-            label="Motivo"
+            label="Motivo *"
             value={motivoRechazo}
             onChangeText={(texto) => {
               setMotivoRechazo(texto);

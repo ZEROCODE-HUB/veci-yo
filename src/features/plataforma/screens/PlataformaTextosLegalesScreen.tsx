@@ -20,6 +20,8 @@ export function PlataformaTextosLegalesScreen() {
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
   const [confirmando, setConfirmando] = useState(false);
+  // Publicar sin título o sin texto: el error sale debajo de cada campo.
+  const [intento, setIntento] = useState(false);
 
   if (cargando) return <Cargando texto="los textos legales" />;
 
@@ -29,10 +31,16 @@ export function PlataformaTextosLegalesScreen() {
     setTitulo(vigente?.titulo ?? TEXTOS_LEGALES_DE_LA_APP[t]);
     setContenido(vigente?.contenido ?? "");
     setConfirmando(false);
+    setIntento(false);
   };
 
   const enviar = async () => {
     if (!tipo) return;
+    if (!titulo.trim() || !contenido.trim()) {
+      setIntento(true);
+      setConfirmando(false);
+      return;
+    }
     if (!confirmando) {
       setConfirmando(true);
       return;
@@ -65,14 +73,25 @@ export function PlataformaTextosLegalesScreen() {
 
             {tipo === t ? (
               <View className="gap-2">
-                <Input label="Título" value={titulo} onChangeText={setTitulo} />
-                <Input label="Texto" value={contenido} onChangeText={setContenido} multiline rows={12} />
+                <Input
+                  label="Título *"
+                  value={titulo}
+                  onChangeText={setTitulo}
+                  error={intento && !titulo.trim() ? "Escribe el título" : undefined}
+                />
+                <Input
+                  label="Texto *"
+                  value={contenido}
+                  onChangeText={setContenido}
+                  multiline
+                  rows={12}
+                  error={intento && !contenido.trim() ? "Escribe el texto" : undefined}
+                />
                 <Button
                   fullWidth
                   variant={confirmando ? "danger" : "primary"}
                   onPress={enviar}
                   loading={publicar.isPending}
-                  disabled={!titulo.trim() || !contenido.trim()}
                 >
                   {confirmando ? "Confirmar: publicar para todos" : "Publicar versión nueva"}
                 </Button>

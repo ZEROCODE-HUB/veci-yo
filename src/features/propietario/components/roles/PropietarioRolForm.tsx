@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import { View, Text } from "react-native";
 import { Controller, type Control } from "react-hook-form";
-import { Button, Checkbox, Input, Toggle } from "@/shared/components";
+import { Button, Checkbox, InfoButton, Input, Toggle } from "@/shared/components";
 import type {
   CrearRolFormData,
   CrearRolFormEntrada,
@@ -78,11 +78,18 @@ export function PropietarioRolForm({
           control={control}
           name="esAnfitrionPrimario"
           render={({ field }) => (
-            <Checkbox
-              checked={!!field.value}
-              onChange={field.onChange}
-              label="Anfitrión primario"
-            />
+            <View className="flex-row items-center gap-1">
+              <Checkbox
+                checked={!!field.value}
+                onChange={field.onChange}
+                label="Anfitrión primario"
+              />
+              <InfoButton
+                titulo="Anfitrión primario"
+                descripcion="A quien llama primero la portería cuando llega una visita, y a quien contactan los huéspedes. Hay uno por vivienda."
+                size={16}
+              />
+            </View>
           )}
         />
       )}
@@ -123,9 +130,9 @@ export function PropietarioRolForm({
             soloLetras
             value={field.value || ""}
             onChangeText={field.onChange}
-            label="Nombre"
+            label="Nombre (opcional)"
             placeholder="Ej. Ana Pérez (su hermana)"
-          error={fieldState.error?.message}
+            error={fieldState.error?.message}
           />
         )}
       />
@@ -138,9 +145,9 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                label="Prefijo"
+                label="Prefijo (opcional)"
                 placeholder="+57"
-              error={fieldState.error?.message}
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -153,9 +160,9 @@ export function PropietarioRolForm({
               <Input
                 value={field.value || ""}
                 onChangeText={field.onChange}
-                label="Teléfono"
+                label="Teléfono (opcional)"
                 placeholder="300 123 4567"
-              error={fieldState.error?.message}
+                error={fieldState.error?.message}
               />
             )}
           />

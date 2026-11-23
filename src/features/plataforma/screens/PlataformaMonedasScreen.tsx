@@ -120,7 +120,13 @@ function EditarMoneda({
           />
         ) : (
           <>
-            <Input label="Nombre" value={nombre} onChangeText={setNombre} editable={esDueno} />
+            <Input
+              label="Nombre *"
+              value={nombre}
+              onChangeText={setNombre}
+              editable={esDueno}
+              error={nombre.trim() === "" ? "Escribe el nombre" : undefined}
+            />
             <View className="flex-row items-center justify-between gap-3">
               <Text className="flex-1 text-sm text-gray-700">Se ofrece al configurar un edificio</Text>
               <Toggle
@@ -156,22 +162,22 @@ function AgregarMoneda({ visible, onClose }: { visible: boolean; onClose: () => 
   const [nombre, setNombre] = useState("");
   const [decimales, setDecimales] = useState("2");
   const [confirmando, setConfirmando] = useState(false);
+  // Al pulsar «Agregar» con algo mal, cada error sale debajo de su campo.
+  const [intento, setIntento] = useState(false);
 
   if (!visible) return null;
   const codigoLimpio = codigo.trim().toUpperCase();
-  const problema = !/^[A-Z]{3}$/.test(codigoLimpio)
-    ? "El código son tres letras, por ejemplo BOB"
-    : nombre.trim() === ""
-      ? "Escribe el nombre"
-      : !/^[0-4]$/.test(decimales.trim())
-        ? "Los decimales van de 0 a 4"
-        : null;
+  const errorCodigo = /^[A-Z]{3}$/.test(codigoLimpio) ? undefined : "El código son tres letras, por ejemplo BOB";
+  const errorNombre = nombre.trim() === "" ? "Escribe el nombre" : undefined;
+  const errorDecimales = /^[0-4]$/.test(decimales.trim()) ? undefined : "Los decimales van de 0 a 4";
+  const problema = errorCodigo || errorNombre || errorDecimales;
 
   const cerrar = () => {
     setCodigo("");
     setNombre("");
     setDecimales("2");
     setConfirmando(false);
+    setIntento(false);
     onClose();
   };
 
@@ -198,11 +204,39 @@ function AgregarMoneda({ visible, onClose }: { visible: boolean; onClose: () => 
           />
         ) : (
           <>
-            <Input label="Código ISO (tres letras)" value={codigo} onChangeText={setCodigo} placeholder="BOB" />
-            <Input label="Nombre" value={nombre} onChangeText={setNombre} placeholder="Boliviano" />
-            <Input label="Decimales" value={decimales} onChangeText={setDecimales} soloCifras />
-            {problema && codigo.trim() !== "" ? <Text className="text-xs text-danger">{problema}</Text> : null}
-            <Button fullWidth onPress={() => setConfirmando(true)} disabled={Boolean(problema)}>
+            <Input
+              label="Código ISO *"
+              explicacion="El código internacional de la moneda, de tres letras: COP, USD, BOB."
+              value={codigo}
+              onChangeText={setCodigo}
+              placeholder="BOB"
+              error={intento || codigo.trim().length >= 3 ? errorCodigo : undefined}
+            />
+            <Input
+              label="Nombre *"
+              value={nombre}
+              onChangeText={setNombre}
+              placeholder="Boliviano"
+              error={intento ? errorNombre : undefined}
+            />
+            <Input
+              label="Decimales *"
+              explicacion="Cuántas cifras van después de la coma en los importes de esta moneda, de 0 a 4. El dólar, por ejemplo, usa 2."
+              value={decimales}
+              onChangeText={setDecimales}
+              soloCifras
+              error={intento || decimales !== "" ? errorDecimales : undefined}
+            />
+            <Button
+              fullWidth
+              onPress={() => {
+                if (problema) {
+                  setIntento(true);
+                  return;
+                }
+                setConfirmando(true);
+              }}
+            >
               Agregar
             </Button>
           </>

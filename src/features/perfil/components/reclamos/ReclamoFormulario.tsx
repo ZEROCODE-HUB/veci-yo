@@ -89,7 +89,7 @@ export function ReclamoFormulario({
         name="titulo"
         render={({ field }) => (
           <Input
-            label="Titulo*"
+            label="Título *"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Describe brevemente el motivo"
@@ -103,7 +103,7 @@ export function ReclamoFormulario({
         name="descripcion"
         render={({ field }) => (
           <Input
-            label="Descripción*"
+            label="Descripción *"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Describe el problema con el mayor detalle posible"
@@ -118,7 +118,7 @@ export function ReclamoFormulario({
         name="area"
         render={({ field }) => (
           <Select
-            label="Categoría*"
+            label="Categoría *"
             value={field.value}
             options={opcionesDeArea}
             onChange={(value) => {
@@ -132,6 +132,7 @@ export function ReclamoFormulario({
               onAreaChange(next);
             }}
             placeholder="Elige una categoría"
+            error={errors.area?.message}
           />
         )}
       />
@@ -142,11 +143,6 @@ export function ReclamoFormulario({
           una PQRS.
         </Text>
       ) : null}
-      {errors.area?.message && (
-        <Text className="text-xs text-red-500 font-medium -mt-2">
-          {errors.area.message}
-        </Text>
-      )}
 
       {tiposDisponibles.length > 0 && (
         <>
@@ -155,19 +151,15 @@ export function ReclamoFormulario({
             name="tipo"
             render={({ field }) => (
               <Select
-                label="Subcategoría*"
+                label="Subcategoría *"
                 value={field.value}
                 options={tiposDisponibles}
                 onChange={(value) => field.onChange(String(value) || "")}
                 placeholder="Elige una subcategoría"
+                error={errors.tipo?.message}
               />
             )}
           />
-          {errors.tipo?.message && (
-            <Text className="text-xs text-red-500 font-medium -mt-2">
-              {errors.tipo.message}
-            </Text>
-          )}
         </>
       )}
 
@@ -210,7 +202,7 @@ export function ReclamoFormulario({
           name="modelo"
           render={({ field }) => (
             <Input
-              label="Modelo del dispositivo*"
+              label="Modelo del dispositivo *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej. iPhone 15 Pro, Samsung Galaxy S24, Pixel 9"
@@ -225,7 +217,7 @@ export function ReclamoFormulario({
         name="destinatario"
         render={({ field }) => (
           <Select
-            label="Destinatario"
+            label="Destinatario (opcional)"
             value={field.value}
             options={ETIQUETAS_DESTINATARIO}
             onChange={(value) => field.onChange(String(value))}
@@ -239,12 +231,12 @@ export function ReclamoFormulario({
         name="correo"
         render={({ field, fieldState }) => (
           <Input
-            label="Correo electrónico"
+            label="Correo electrónico (opcional)"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="correo@ejemplo.com"
             type="email"
-          error={fieldState.error?.message}
+            error={fieldState.error?.message}
           />
         )}
       />
@@ -269,12 +261,12 @@ export function ReclamoFormulario({
             name="telefono"
             render={({ field: numero }) => (
               <CampoTelefono
-                label="Teléfono"
+                label="Teléfono (opcional)"
                 codigoPais={pais.value}
                 onCodigoPaisChange={pais.onChange}
                 telefono={numero.value}
                 onTelefonoChange={numero.onChange}
-              error={fieldState.error?.message}
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -286,7 +278,8 @@ export function ReclamoFormulario({
         name="medioContacto"
         render={({ field }) => (
           <Select
-            label="Medio de contacto preferido"
+            label="Medio de contacto preferido (opcional)"
+            explicacion="Por dónde prefieres que te respondan. Si eliges correo o teléfono, escríbelo arriba."
             value={field.value}
             options={ETIQUETAS_MEDIO}
             onChange={(value) => field.onChange(String(value))}

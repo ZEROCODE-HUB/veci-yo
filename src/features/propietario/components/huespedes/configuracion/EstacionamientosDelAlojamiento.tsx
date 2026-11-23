@@ -12,7 +12,7 @@ export function EstacionamientosDelAlojamiento({ renta: r }: { renta: RentaCorta
       <View className="flex-row items-center gap-3">
         <View className="w-[100px]">
           <Input
-            label="Cantidad"
+            label="Cantidad (opcional)"
             value={r.estacionamientosProp === null ? "" : String(r.estacionamientosProp)}
             placeholder="Sin indicar"
             onChangeText={(v) =>

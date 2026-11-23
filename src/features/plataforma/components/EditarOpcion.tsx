@@ -63,6 +63,8 @@ export function EditarOpcion({ lista, opcion, esDueno, onClose }: Props) {
     resumen.push({ que: "Orden", antes: String(opcion.orden), despues: orden.trim() });
   }
   let extraMalo: string | null = null;
+  // El error de cada dato propio, debajo de su campo.
+  const erroresExtra: Record<string, string> = {};
   const nuevoExtra: Record<string, unknown> = {};
   for (const c of lista.camposExtra) {
     const texto = extra[c.clave] ?? "";
@@ -70,12 +72,15 @@ export function EditarOpcion({ lista, opcion, esDueno, onClose }: Props) {
     const valor = deTexto(c, texto);
     if (valor === undefined) {
       extraMalo = `Revisa «${c.etiqueta}»`;
+      erroresExtra[c.clave] = c.tipo === "hora" ? "Escríbelo como HH:MM, por ejemplo 08:30" : "Escribe solo un número";
       continue;
     }
     nuevoExtra[c.clave] = valor;
     resumen.push({ que: c.etiqueta, antes: aTexto(c, opcion.extra[c.clave]), despues: texto.trim() });
   }
   if (Object.keys(nuevoExtra).length > 0) cambios.extra = nuevoExtra;
+  const errorNombre = etiqueta.trim() === "" ? "Escribe el nombre" : undefined;
+  const errorOrden = /^\d+$/.test(orden.trim()) ? undefined : "Escribe un número";
 
   const confirmar = async () => {
     try {
@@ -102,12 +107,20 @@ export function EditarOpcion({ lista, opcion, esDueno, onClose }: Props) {
           />
         ) : (
           <>
-            <Input label="Nombre" value={etiqueta} onChangeText={setEtiqueta} editable={esDueno} />
+            <Input label="Nombre *" value={etiqueta} onChangeText={setEtiqueta} editable={esDueno} error={errorNombre} />
             <View className="flex-row items-center justify-between gap-3">
               <Text className="flex-1 text-sm text-gray-700">Se ofrece</Text>
               <Toggle value={activo} onChange={setActivo} disabled={!esDueno} accessibilityLabel="Se ofrece" />
             </View>
-            <Input label="Orden (más bajo, más arriba)" value={orden} onChangeText={setOrden} soloCifras editable={esDueno} />
+            <Input
+              label="Orden *"
+              explicacion="El lugar de la opción en la lista: la del número más bajo sale primero."
+              value={orden}
+              onChangeText={setOrden}
+              soloCifras
+              editable={esDueno}
+              error={errorOrden}
+            />
             {lista.camposExtra.map((c) =>
               c.tipo === "booleano" ? (
                 <View key={c.clave} className="flex-row items-center justify-between gap-3">
@@ -122,10 +135,14 @@ export function EditarOpcion({ lista, opcion, esDueno, onClose }: Props) {
               ) : (
                 <Input
                   key={c.clave}
-                  label={c.tipo === "lista" ? `${c.etiqueta} (separadas por comas)` : c.etiqueta}
+                  // Vacío, un dato propio queda sin valor; una hora, en cambio, no se entiende vacía.
+                  label={`${c.tipo === "lista" ? `${c.etiqueta}, separadas por comas` : c.etiqueta}${
+                    c.tipo === "hora" ? " *" : " (opcional)"
+                  }`}
                   value={extra[c.clave] ?? ""}
                   onChangeText={(v) => setExtra({ ...extra, [c.clave]: v })}
                   editable={esDueno}
+                  error={erroresExtra[c.clave]}
                 />
               ),
             )}
@@ -134,12 +151,11 @@ export function EditarOpcion({ lista, opcion, esDueno, onClose }: Props) {
                 Esta lista tiene que ver con lo legal o con lo que se manda al gobierno.
               </Text>
             ) : null}
-            {extraMalo ? <Text className="text-xs text-danger">{extraMalo}</Text> : null}
             {esDueno ? (
               <Button
                 fullWidth
                 onPress={() => setConfirmando(true)}
-                disabled={resumen.length === 0 || Boolean(extraMalo) || etiqueta.trim() === ""}
+                disabled={resumen.length === 0 || Boolean(extraMalo || errorNombre || errorOrden)}
               >
                 Guardar
               </Button>

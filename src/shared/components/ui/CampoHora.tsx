@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { Modal } from "./Modal";
 
 interface ListaProps {
@@ -94,6 +95,8 @@ interface Props {
   minima?: string;
   /** Se pinta en línea en vez de abrir un modal. Ver `CampoFecha`. */
   enLinea?: boolean;
+  /** El error de validación, bajo el campo y con el borde en rojo (23/11/2026). */
+  error?: string;
 }
 
 /**
@@ -121,6 +124,7 @@ export function CampoHora({
   onChange,
   placeholder = "Elegir hora",
   ayuda,
+  error,
   paso = 15,
   minima,
   enLinea = false,
@@ -142,14 +146,14 @@ export function CampoHora({
   return (
     <View className="w-full">
       {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
+        <EtiquetaDelCampo label={label ?? ""} />
       )}
 
       <Pressable
         onPress={() => setAbierto((previo) => !previo)}
         accessibilityRole="button"
         accessibilityLabel={label ?? placeholder}
-        className="rounded-xl border border-gray-200 bg-white px-4 py-3 active:opacity-70"
+        className={`rounded-xl border bg-white px-4 py-3 active:opacity-70 ${error ? "border-danger" : "border-gray-200"}`}
       >
         <Text className={`text-sm ${value ? "text-gray-900" : "text-gray-500"}`}>
           {value || placeholder}
@@ -157,6 +161,7 @@ export function CampoHora({
       </Pressable>
 
       {Boolean(ayuda) && <Text className="text-xs text-gray-500 mt-1">{ayuda}</Text>}
+      {error ? <Text className="text-xs text-danger mt-1.5 font-medium">{error}</Text> : null}
 
       {/*
         En línea cuando el campo vive dentro de un modal. Un modal sobre otro
@@ -175,7 +180,7 @@ export function CampoHora({
             <Modal
               visible={abierto}
               onClose={() => setAbierto(false)}
-              title={label ?? "Elegir hora"}
+              title={label ? label.replace(/\s*\*\s*$/, "") : "Elegir hora"}
             >
               {lista}
             </Modal>

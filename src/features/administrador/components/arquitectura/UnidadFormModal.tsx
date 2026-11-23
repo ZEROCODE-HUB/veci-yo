@@ -83,11 +83,17 @@ export function UnidadFormModal({
   const [borrador, setBorrador] = React.useState<BorradorDeRecursos>(BORRADOR_VACIO);
   const [duenoNombre, setDuenoNombre] = React.useState("");
   const [duenoCorreo, setDuenoCorreo] = React.useState("");
+  // El propietario es opcional, pero a medias no sirve: con uno de los dos
+  // datos y sin el otro, la invitación no salía y nadie se enteraba.
+  const [intento, setIntento] = React.useState(false);
+  const faltaCorreoDelDueno = Boolean(duenoNombre.trim()) && !duenoCorreo.trim();
+  const faltaNombreDelDueno = !duenoNombre.trim() && Boolean(duenoCorreo.trim());
+  const correoDelDuenoMalo =
+    Boolean(duenoCorreo.trim()) && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(duenoCorreo.trim());
   const {
     control,
     handleSubmit,
     reset,
-    watch,
     // Mientras se guarda: el botón gira y no deja guardar dos veces (13/11/2026).
     formState: { isSubmitting },
   } = useForm<UnitFormValues>({
@@ -100,6 +106,7 @@ export function UnidadFormModal({
       setBorrador(BORRADOR_VACIO);
       setDuenoNombre("");
       setDuenoCorreo("");
+      setIntento(false);
     }
   }, [visible, editing]);
 
@@ -187,15 +194,15 @@ export function UnidadFormModal({
             return (
               <View className="gap-1">
                 <Input
-                  label="Índice de votación, en %"
+                  label="Índice de votación, en % (opcional)"
+                  explicacion="Qué parte del edificio vale su voto en las encuestas que se cuentan según el índice. Entre todos los departamentos tienen que sumar 100 %."
                   value={field.value}
                   onChangeText={(texto) => field.onChange(texto.replace(/[^0-9.,]/g, ""))}
                   placeholder="Ej. 2,5"
                   error={fieldState.error?.message}
                 />
                 <Text className="text-xs leading-4 text-gray-500">
-                  Qué parte del edificio vale su voto en las encuestas que se cuentan según el índice. Entre todos los
-                  departamentos tienen que sumar 100 %. Déjalo vacío si todavía no lo sabes.
+                  Déjalo vacío si todavía no lo sabes.
                 </Text>
                 <Text className={cuenta.pasa ? "text-xs leading-4 text-danger" : "text-xs leading-4 text-gray-700"}>
                   {cuenta.texto}
@@ -248,8 +255,28 @@ export function UnidadFormModal({
                   Al guardar el departamento, el propietario recibe un correo con su invitación para aceptar la vivienda.
                 </Text>
               </View>
-              <Input label="Nombre y apellido" soloLetras value={duenoNombre} onChangeText={setDuenoNombre} placeholder="Ej. Ana Restrepo" />
-              <Input label="Correo" type="email" value={duenoCorreo} onChangeText={setDuenoCorreo} placeholder="ana@correo.com" />
+              <Input
+                label="Nombre y apellido (opcional)"
+                soloLetras
+                value={duenoNombre}
+                onChangeText={setDuenoNombre}
+                placeholder="Ej. Ana Restrepo"
+                error={intento && faltaNombreDelDueno ? "Escribe también el nombre del propietario" : ""}
+              />
+              <Input
+                label="Correo (opcional)"
+                type="email"
+                value={duenoCorreo}
+                onChangeText={setDuenoCorreo}
+                placeholder="ana@correo.com"
+                error={
+                  intento && faltaCorreoDelDueno
+                    ? "Escribe también el correo del propietario"
+                    : correoDelDuenoMalo
+                      ? "Escribe un correo válido, como nombre@dominio.com"
+                      : ""
+                }
+              />
               <Text className="text-xs text-gray-500">
                 Entra a la app con este correo (o crea su cuenta con él) y acepta. Los estacionamientos y depósitos de arriba van con la invitación.
               </Text>
@@ -259,8 +286,11 @@ export function UnidadFormModal({
         <Button
           fullWidth
           loading={isSubmitting}
-          disabled={!watch("codigo")}
-          onPress={() =>
+          onPress={() => {
+            if (!editing && (faltaCorreoDelDueno || faltaNombreDelDueno || correoDelDuenoMalo)) {
+              setIntento(true);
+              return;
+            }
             void handleSubmit((form) =>
               onSave(
                 form,
@@ -274,8 +304,8 @@ export function UnidadFormModal({
                           : null,
                     },
               ),
-            )()
-          }
+            )();
+          }}
         >
           {editing
             ? "Guardar cambios"

@@ -51,7 +51,7 @@ export function ClaveDePuertaDeLaReserva({ visitaId }: Props) {
       */}
       <SegunLaCarga estado={estado} texto="la clave" forma="formulario" cuantos={1} enLinea>
         <Input
-          label="Clave de la puerta"
+          label="Clave de la puerta (opcional)"
           value={texto}
           onChangeText={setTexto}
           placeholder="Ej.: 4821#"

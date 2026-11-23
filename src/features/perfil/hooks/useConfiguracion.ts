@@ -49,6 +49,11 @@ export function useConfiguracion() {
 
   const [form, setForm] = useState<Preferencias>(preferenciasVacias);
   const [cargado, setCargado] = useState(false);
+  /*
+    El motivo bajo el campo, no solo en un aviso que se va (23/11/2026,
+    cliente: cada campo tiene que decir qué le falta).
+  */
+  const [errores, setErrores] = useState<Partial<Record<keyof Preferencias, string>>>({});
 
   useEffect(() => {
     if (!data || cargado) return;
@@ -116,8 +121,14 @@ export function useConfiguracion() {
   });
 
   /** Escribe mientras se teclea; la base se entera con «Guardar». */
-  const escribir = (cambios: Partial<Preferencias>) =>
+  const escribir = (cambios: Partial<Preferencias>) => {
     setForm((actual) => ({ ...actual, ...cambios }));
+    setErrores((actuales) => {
+      const quedan = { ...actuales };
+      for (const campo of Object.keys(cambios) as (keyof Preferencias)[]) delete quedan[campo];
+      return quedan;
+    });
+  };
 
   /** Un interruptor no tiene "salir del campo": guarda al cambiar. */
   const cambiar = (cambios: Partial<Preferencias>) => {
@@ -155,7 +166,8 @@ export function useConfiguracion() {
   /** Por qué ese valor no se puede guardar, o cadena vacía. */
   const errorDe = (campo: keyof Preferencias, valor: string): string => {
     const limpio = valor.trim();
-    if (limpio === "") return "";
+    // El teléfono propio lo pide el registro: no se puede dejar vacío.
+    if (limpio === "") return campo === "telefono" ? "Escribe tu número de teléfono." : "";
     if (campo === "telefono" || campo === "telefonoAlt") {
       /*
         Sin los largos de la base no hay contra qué comprobarlo, y guardar sin
@@ -199,6 +211,8 @@ export function useConfiguracion() {
     escribir,
     cambiar,
     cambiarContactoAlt,
+    /** Por qué no se pudo guardar ese campo, para pintarlo debajo. */
+    errorDelCampo: (campo: keyof Preferencias) => errores[campo],
     /**
      * Para el `onBlur` de las cajas de texto.
      *
@@ -221,6 +235,7 @@ export function useConfiguracion() {
       if (typeof nuevo === "string") {
         const error = errorDe(campo, nuevo);
         if (error) {
+          setErrores((actuales) => ({ ...actuales, [campo]: error }));
           addToast(error, "error");
           return;
         }
@@ -246,6 +261,7 @@ export function useConfiguracion() {
         if (form[campo] === data[campo]) continue;
         const error = errorDe(campo, form[campo]);
         if (error) {
+          setErrores({ [campo === "codigoPaisAlt" ? "telefonoAlt" : campo === "codigoPais" ? "telefono" : campo]: error });
           addToast(error, "error");
           return;
         }
@@ -253,6 +269,7 @@ export function useConfiguracion() {
       }
       if (form.usarContactoAlt && !data.usarContactoAlt) {
         if (!form.telefonoAlt.trim() && !form.correoAlt.trim()) {
+          setErrores({ telefonoAlt: "Indica un teléfono o un correo alternativo." });
           addToast("Indica un teléfono o un correo alternativo", "error");
           return;
         }

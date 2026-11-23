@@ -40,7 +40,7 @@ export function RecuperarPasswordModal({
             para recuperar el acceso.
           </Text>
           <Input
-            label="Correo"
+            label="Correo *"
             value={correo}
             onChangeText={(value) => {
               setCorreo(value);

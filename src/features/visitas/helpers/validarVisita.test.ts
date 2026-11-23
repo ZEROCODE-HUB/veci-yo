@@ -33,7 +33,7 @@ describe("lo que una visita nueva no puede llevar", () => {
     expect(errorDeDocumento("1234567890123", cedula)).toMatch(/entre 5 y 12/);
     // Y los números de la regla son los del panel, no unos escritos aquí.
     const dniPeru = { soloCifras: true, largoMinimo: 8, largoMaximo: 8 };
-    expect(errorDeDocumento("1234567", dniPeru)).toMatch(/entre 8 y 8/);
+    expect(errorDeDocumento("1234567", dniPeru)).toMatch(/tener 8 cifras/);
     expect(errorDeDocumento("AB123456", { soloCifras: false, largoMinimo: 4, largoMaximo: 20 })).toBe("");
   });
 

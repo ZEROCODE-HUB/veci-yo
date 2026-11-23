@@ -66,14 +66,14 @@ export function EditarMiReserva({ reserva, tope, onClose }: Props) {
         </Text>
         <View className="flex-row gap-2.5">
           <View className="flex-1">
-            <CampoHora label="Desde" paso={30} value={desde} onChange={setDesde} />
+            <CampoHora label="Desde *" paso={30} value={desde} onChange={setDesde} />
           </View>
           <View className="flex-1">
-            <CampoHora label="Hasta" paso={30} value={hasta} onChange={setHasta} />
+            <CampoHora label="Hasta *" paso={30} value={hasta} onChange={setHasta} />
           </View>
         </View>
         <Select
-          label="¿Cuántas personas van?"
+          label="¿Cuántas personas van? *"
           value={personas}
           options={opciones}
           onChange={(v) => setPersonas(Number(v))}

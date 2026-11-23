@@ -132,7 +132,8 @@ export function ConexionTra({
             mas no se detecta hasta que el ministerio rechaza el reporte.
           */}
           <Input
-            label="Token de la TRA"
+            label="Token de la TRA *"
+            explicacion="La clave que te da el Ministerio de Comercio (MinCIT) para que Veciyo reporte a tus huéspedes en la Tarjeta de Registro Alojamiento."
             value={token}
             onChangeText={setToken}
             placeholder="Pegá aquí el token que te dio el MinCIT"

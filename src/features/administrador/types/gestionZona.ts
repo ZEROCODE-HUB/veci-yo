@@ -28,7 +28,7 @@ export type GestionZonaFormValues = Omit<GestionZona, "fechasEspeciales" | "usaS
   reservasActivasMaximas: number;
   limiteReservasPor: "vivienda" | "persona";
   anticipacionMinimaHoras: number;
-  plazoAdjuntoHoras: number;
+  plazoAdjuntoMinutos: number;
   nombresDeZonas: string[];
 };
 
@@ -76,7 +76,7 @@ export interface PlantillaDeZona {
   moneda: string;
   /** `zona_reservas_activas_por_defecto` y `zona_plazo_adjunto_por_defecto` (18/11/2026). */
   reservasActivas: number;
-  plazoAdjuntoHoras: number;
+  plazoAdjuntoMinutos: number;
 }
 
 export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormValues => ({
@@ -90,5 +90,5 @@ export const gestionZonaVacia = (plantilla: PlantillaDeZona): GestionZonaFormVal
   permiteCorta: true, permiteLarga: true,
   capacidadMaxima: 0, cuposSimultaneos: plantilla.cupos, eligeNumero: true,
   personasPorReserva: 0, reservasActivasMaximas: plantilla.reservasActivas, limiteReservasPor: "vivienda",
-  anticipacionMinimaHoras: 0, plazoAdjuntoHoras: plantilla.plazoAdjuntoHoras, nombresDeZonas: [],
+  anticipacionMinimaHoras: 0, plazoAdjuntoMinutos: plantilla.plazoAdjuntoMinutos, nombresDeZonas: [],
 });

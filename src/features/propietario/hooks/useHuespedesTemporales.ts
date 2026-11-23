@@ -211,6 +211,16 @@ export function useHuespedesTemporales() {
     que tenia el alta de visitas. Ahora nace vacio y se rellena con lo que hay.
   */
   const [minDias, setMinDias] = useState(1);
+  /*
+    Por qué no se guardó, campo a campo (23/11/2026): el aviso salía solo en un
+    mensaje que se va, y no se veía cuál de los campos era.
+  */
+  const [erroresConfig, setErroresConfig] = useState<{
+    minDias?: string;
+    maxDias?: string;
+    maxHuespedes?: string;
+    checkinHasta?: string;
+  }>({});
   /** 0 es el campo vacío: sin máximo (24/10/2026). */
   const [maxDias, setMaxDias] = useState(0);
   // 0 es el campo vacío: sin dato la capacidad está «sin fijar» y el guardado
@@ -443,18 +453,26 @@ export function useHuespedesTemporales() {
           );
         }
       }
+      const errores = {
+        minDias: minDias < 1 ? "Escribe el mínimo de noches: al menos 1." : undefined,
+        maxHuespedes: maxHuespedes < 1 ? "Escribe la capacidad: al menos 1 persona." : undefined,
+        maxDias:
+          maxDias > 0 && maxDias < minDias
+            ? "No puede ser menor que el mínimo de noches."
+            : undefined,
+        checkinHasta:
+          !checkin.todoElDia && checkin.desde && checkin.hasta && checkin.desde >= checkin.hasta
+            ? "Tiene que ser después de la hora «Desde»."
+            : undefined,
+      };
+      setErroresConfig(errores);
       if (minDias < 1 || maxHuespedes < 1) {
         throw new Error("El mínimo de noches y la capacidad son al menos 1.");
       }
-      if (maxDias > 0 && maxDias < minDias) {
+      if (errores.maxDias) {
         throw new Error("El máximo de noches no puede ser menor que el mínimo.");
       }
-      if (
-        !checkin.todoElDia &&
-        checkin.desde &&
-        checkin.hasta &&
-        checkin.desde >= checkin.hasta
-      ) {
+      if (errores.checkinHasta) {
         throw new Error("El horario de entrada termina antes de empezar.");
       }
       await guardarAlojamiento(unidadId, {
@@ -608,6 +626,8 @@ export function useHuespedesTemporales() {
   };
 
   return {
+    /** Lo que rechazó el último guardado, para decirlo bajo cada campo. */
+    erroresConfig,
     tieneSuscripcion,
     /** La suscripción: hasta que llega no se sabe si la hay. */
     cargaDeLaSuscripcion: estadoDe(consultaSuscripcion),

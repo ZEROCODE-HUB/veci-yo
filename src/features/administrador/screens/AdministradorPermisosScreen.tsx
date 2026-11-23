@@ -314,7 +314,7 @@ export function AdministradorPermisosScreen() {
           {difference && (
             <View className="mt-3 gap-1">
               <Input
-                label="Hasta cuántas noches cuenta como estancia corta"
+                label="Hasta cuántas noches cuenta como estancia corta (opcional)"
                 soloCifras
                 placeholder="30"
                 value={

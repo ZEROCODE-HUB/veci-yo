@@ -67,14 +67,20 @@ export function ContratoAltaModal({
   const mesesMin = parametros.listo ? parametros.numero("contrato_meses_minimo") : null;
   const mesesMax = parametros.listo ? parametros.numero("contrato_meses_maximo") : null;
 
-  /** Lo que falta, dicho: el botón se apagaba sin explicar nada. */
-  const motivo = !fechaInicio
-    ? "Elige la fecha de inicio."
-    : mesesMin !== null && mesesMax !== null && meses !== null && (meses < mesesMin || meses > mesesMax)
+  /*
+    Lo que falta, dicho bajo cada campo: el botón se apagaba sin explicar nada,
+    y después el motivo salía al final, lejos del campo (23/11/2026).
+  */
+  const errorFecha = !fechaInicio ? "Elige la fecha de inicio." : "";
+  const errorDuracion =
+    mesesMin !== null && mesesMax !== null && meses !== null && (meses < mesesMin || meses > mesesMax)
       ? `La duración va de ${mesesMin} a ${mesesMax} meses, o vacía si no tiene fin.`
-      : montoNumero !== null && Number.isNaN(montoNumero)
-        ? "Revisa el monto: solo números, como 850.000."
-        : "";
+      : "";
+  const errorMonto =
+    montoNumero !== null && Number.isNaN(montoNumero)
+      ? "Revisa el monto: solo números, como 850.000."
+      : "";
+  const motivo = errorFecha || errorDuracion || errorMonto;
   // Hasta tener el rango no se guarda; la base lo comprueba igual.
   const puedeGuardar = !motivo && !guardando && mesesMin !== null;
 
@@ -82,7 +88,7 @@ export function ContratoAltaModal({
     <Modal visible={visible} onClose={onClose} title="Registrar contrato">
       <View className="flex-col gap-3">
         <Select
-          label="Inquilino"
+          label="Inquilino (opcional)"
           value={membresiaId}
           options={[
             { label: "Sin asignar", value: "" },
@@ -96,35 +102,35 @@ export function ContratoAltaModal({
         />
 
         <CampoFecha
-          label="Fecha de inicio"
+          label="Fecha de inicio *"
           enLinea
           value={fechaInicio}
           onChange={setFechaInicio}
+          error={errorFecha}
         />
 
         <Input
-          label="Duración (meses)"
+          label="Duración en meses (opcional)"
+          explicacion="Cuántos meses dura el contrato. Déjala vacía si no tiene fecha de fin."
           value={duracion}
           onChangeText={(v) => setDuracion(v.replace(/\D/g, ""))}
           placeholder="12"
+          error={errorDuracion}
         />
 
         <Input
-          label="Monto del alquiler"
+          label="Monto del alquiler (opcional)"
           value={monto}
           onChangeText={setMonto}
           placeholder="Sin monto"
           type="numeric"
+          error={errorMonto}
         />
 
         <View className="flex-row items-center justify-between">
           <Text className="shrink text-sm text-gray-900">Monitorear el pago</Text>
           <Toggle value={monitorea} onChange={() => setMonitorea(!monitorea)} />
         </View>
-
-        {motivo ? (
-          <Text className="text-xs text-red-600">{motivo}</Text>
-        ) : null}
 
         <Button
           variant="primary"

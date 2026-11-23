@@ -170,14 +170,14 @@ export function PlataformaEdificioNuevoScreen() {
           El edificio
         </Text>
         <Input
-          label="Nombre"
+          label="Nombre *"
           value={nombre}
           onChangeText={setNombre}
           placeholder="Las Barranqueras 246"
           error={errores.nombre}
         />
         <Input
-          label="Dirección"
+          label="Dirección *"
           value={direccion}
           onChangeText={setDireccion}
           placeholder="Carrera 5 #26-10"
@@ -191,7 +191,7 @@ export function PlataformaEdificioNuevoScreen() {
         />
         <SegunLaCarga estado={estadoDePaises} texto="los países" forma="lineas" cuantos={1} enLinea>
           <Select
-            label="País"
+            label="País *"
             value={pais}
             options={paises.map((p) => ({ label: p.nombre, value: p.codigo }))}
             onChange={(valor) => setPais(String(valor))}
@@ -217,7 +217,7 @@ export function PlataformaEdificioNuevoScreen() {
           error={errores.correoAdmin}
         />
         <Input
-          label="A nombre de"
+          label={correoAdmin.trim() ? "A nombre de *" : "A nombre de (opcional)"}
           value={nombreAdmin}
           onChangeText={setNombreAdmin}
           placeholder="Nombre de quien va a administrar"

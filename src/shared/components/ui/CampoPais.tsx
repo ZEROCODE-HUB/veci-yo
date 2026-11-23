@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { SelectorDePais } from "./SelectorDePais";
@@ -51,7 +52,7 @@ export function CampoPais({
   return (
     <View className="w-full">
       {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
+        <EtiquetaDelCampo label={label ?? ""} />
       )}
 
       <Pressable

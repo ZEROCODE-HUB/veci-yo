@@ -37,6 +37,7 @@ export function CantidadDeInvitados({
               value={v.depto || null}
               options={["Todos", ...v.codigosDe(v.torre)]}
               onChange={(x) => v.setDepto(x === "Todos" ? "" : String(x))}
+              error={v.errores.depto}
             />
           </View>
         </View>

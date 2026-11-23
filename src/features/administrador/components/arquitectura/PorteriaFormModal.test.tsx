@@ -28,7 +28,7 @@ describe("el formulario de una portería", () => {
       />,
     );
 
-    expect(screen.getByText("Tipo de acceso")).toBeDefined();
+    expect(screen.getByText(/Tipo de acceso/)).toBeDefined();
     // Y arranca en peatonal, que es lo que tenían todas hasta ahora: el campo
     // nuevo no cambia lo que ya existe.
     expect(screen.getByText("Entrada peatonal")).toBeDefined();

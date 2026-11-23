@@ -7,7 +7,7 @@ import { z } from "zod";
  * que vivienda son claves foraneas y no se reasignan desde aqui.
  */
 export const reservaZonaEditSchema = z.object({
-  fecha: z.string(),
+  fecha: z.string().min(1, "Elige la fecha"),
   horaInicio: z.string(),
   horaFin: z.string(),
   comentarios: z.string(),
