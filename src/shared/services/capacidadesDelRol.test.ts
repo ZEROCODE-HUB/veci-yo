@@ -44,7 +44,7 @@ describe("resumenDelRol", () => {
     const r = resumenDelRol("trabajador_con_app", configurables);
     expect(r.podra).toEqual([
       "Entrar a la app con su cuenta",
-      "Contestar el intercomunicador y autorizar la visita que anuncia la portería",
+      "Contestar el citófono y autorizar la visita que anuncia la portería",
       "Figurar en el directorio de la vivienda, para que la portería lo llame",
       "Ver los anuncios de la administración",
     ]);

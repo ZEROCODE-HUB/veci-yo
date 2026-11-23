@@ -52,7 +52,7 @@ type Capacidad = CapacidadFija | AccionConfigurable;
 /** Cómo se dice cada capacidad, en el orden en que se enseña. */
 const TEXTO: { clave: Capacidad; texto: string }[] = [
   { clave: "entrar_a_la_app", texto: "Entrar a la app con su cuenta" },
-  { clave: "contestar_intercomunicador", texto: "Contestar el intercomunicador y autorizar la visita que anuncia la portería" },
+  { clave: "contestar_intercomunicador", texto: "Contestar el citófono y autorizar la visita que anuncia la portería" },
   { clave: "figurar_en_el_directorio", texto: "Figurar en el directorio de la vivienda, para que la portería lo llame" },
   { clave: "ver_visitas", texto: "Ver las visitas de la vivienda" },
   { clave: "registrar_visitas", texto: "Registrar visitas" },

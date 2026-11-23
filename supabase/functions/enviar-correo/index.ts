@@ -160,6 +160,8 @@ const COMO_QUE: Record<string, (vivienda: string) => string> = {
   residente: (vivienda) => `como residente${vivienda}`,
   corresidente: (vivienda) => `como corresidente${vivienda}`,
   huesped_temporal: (vivienda) => `como huésped${vivienda}`,
+  // El profesional permanente con cuenta (23/11/2026): la invitación de siempre.
+  trabajador: (vivienda) => `como profesional permanente${vivienda}`,
 };
 
 function plantilla(
