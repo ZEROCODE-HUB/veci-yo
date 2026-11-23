@@ -100,14 +100,15 @@ export function EditarAjuste({ parametro, onClose }: Props) {
           />
         ) : p.valoresPermitidos && p.valoresPermitidos.length > 0 ? (
           <Select
-            label="Valor"
+            label="Valor *"
             value={valor}
             options={p.valoresPermitidos.map((v) => ({ label: v, value: v }))}
             onChange={(v) => setValor(String(v))}
           />
         ) : (
           <Input
-            label={p.unidad ? `Valor (${p.unidad})` : "Valor"}
+            // Un texto puede quedar vacío (la base lo admite); lo demás, no.
+            label={`${p.unidad ? `Valor (${p.unidad})` : "Valor"}${p.tipo === "texto" ? " (opcional)" : " *"}`}
             value={valor}
             onChangeText={setValor}
             type={NUMERICOS.includes(p.tipo) ? "numeric" : "text"}

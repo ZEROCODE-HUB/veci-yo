@@ -1,17 +1,22 @@
 import React from "react";
-import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Input, Select } from "@/shared/components";
 import type { CorrespondenciaFormData } from "../../schemas";
 import { ESTADOS_ENCOMIENDA } from "../../constants";
 
-/** El estado en que llega la encomienda y su descripción: en el alta y en un informe. */
+/**
+ * El estado en que llega la encomienda y su descripción: en el alta y en un
+ * informe. En el alta el estado es obligatorio y la descripción no; en un
+ * informe, al revés: lo que hace falta es contar qué pasó.
+ */
 export function EstadoYDescripcion({
   control,
   errors,
+  informando = false,
 }: {
   control: Control<CorrespondenciaFormData>;
   errors: FieldErrors<CorrespondenciaFormData>;
+  informando?: boolean;
 }) {
   return (
     <>
@@ -20,22 +25,21 @@ export function EstadoYDescripcion({
         name="estadoEncomienda"
         render={({ field: { onChange, value } }) => (
           <Select
-            label="Estado de encomienda *"
+            label={informando ? "Estado de encomienda (opcional)" : "Estado de encomienda *"}
             value={value || null}
             options={[...ESTADOS_ENCOMIENDA]}
             onChange={(v) => onChange(String(v))}
+            error={errors.estadoEncomienda?.message}
           />
         )}
       />
-      {errors.estadoEncomienda && (
-        <Text className="text-xs text-danger -mt-2 font-medium">{errors.estadoEncomienda.message}</Text>
-      )}
 
       <Controller
         control={control}
         name="descripcion"
         render={({ field: { onChange, onBlur, value }, fieldState }) => (
           <Input
+            label={informando ? "Qué pasó con el envío *" : "Descripción (opcional)"}
             value={value || ""}
             onChangeText={onChange}
             onBlur={onBlur}

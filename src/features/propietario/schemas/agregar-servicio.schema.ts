@@ -29,7 +29,7 @@ const diaDelMes = z
  * el hook, que es la frontera con la base —la columna es `smallint`—.
  */
 export const agregarServicioSchema = z.object({
-  nombreServicio: z.string().min(1, "Nombre del servicio requerido"),
+  nombreServicio: z.string().trim().min(1, "Escribe qué servicio es: luz, agua, internet…"),
   nombreEmpresa: z.string().optional(),
   numeroCliente: z.string().optional(),
   numeroMedidor: z.string().optional(),

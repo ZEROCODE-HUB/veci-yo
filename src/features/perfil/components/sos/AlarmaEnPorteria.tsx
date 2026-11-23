@@ -27,7 +27,8 @@ export function AlarmaEnPorteria() {
   const [atendiendo, setAtendiendo] = useState<AlarmaAbierta | null>(null);
   const [quePaso, setQuePaso] = useState("");
   const [queVio, setQueVio] = useState("");
-  const [error, setError] = useState("");
+  // Tras pulsar sin llenar, cada campo vacío dice lo que falta.
+  const [intentado, setIntentado] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
   const { data: alarmas = [] } = useQuery({
@@ -60,7 +61,7 @@ export function AlarmaEnPorteria() {
 
   const desactivar = async () => {
     if (!quePaso.trim() || !queVio.trim()) {
-      setError("Escribe qué pasó y qué viste.");
+      setIntentado(true);
       return;
     }
     setEnviando(true);
@@ -70,7 +71,7 @@ export function AlarmaEnPorteria() {
       setAtendiendo(null);
       setQuePaso("");
       setQueVio("");
-      setError("");
+      setIntentado(false);
       await cliente.invalidateQueries({ queryKey: ["sos", "activas"] });
     } catch (e) {
       addToast(mensajeDeError(e, "No se pudo desactivar el S.O.S."), "error");
@@ -102,25 +103,20 @@ export function AlarmaEnPorteria() {
           </Button>
         ) : null}
         <Input
-          label="Qué pasó"
+          label="Qué pasó *"
           value={quePaso}
-          onChangeText={(t) => {
-            setQuePaso(t);
-            setError("");
-          }}
+          onChangeText={setQuePaso}
           multiline
           showEditIcon={false}
+          error={intentado && !quePaso.trim() ? "Escribe qué pasó." : undefined}
         />
         <Input
-          label="Qué viste"
+          label="Qué viste *"
           value={queVio}
-          onChangeText={(t) => {
-            setQueVio(t);
-            setError("");
-          }}
+          onChangeText={setQueVio}
           multiline
           showEditIcon={false}
-          error={error || undefined}
+          error={intentado && !queVio.trim() ? "Escribe qué viste." : undefined}
         />
         <Button variant="danger" fullWidth loading={enviando} onPress={desactivar}>
           Desactivar y reportar incidencia

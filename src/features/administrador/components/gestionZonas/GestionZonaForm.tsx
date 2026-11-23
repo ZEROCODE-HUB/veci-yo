@@ -6,6 +6,7 @@ import {
   Button,
   CampoFecha,
   CampoHora,
+  EtiquetaDelCampo,
   ImageUploadCard,
   Input,
   Modal,
@@ -27,6 +28,7 @@ import { useFormatoDeArchivo } from "@/shared/hooks/useFormatoDeArchivo";
 import { useParametrosDeLaBase } from "@/shared/hooks";
 import { useMonedas } from "@/shared/hooks/useMonedas";
 import { ahora } from "@/shared/utils/reloj.util";
+import { textoDelPlazo } from "@/features/zonas/helpers/textoDelPlazo";
 
 const TIPO_A_ID: Record<string, string> = {
   Barbecue: "bbq",
@@ -39,16 +41,23 @@ const TIPO_A_ID: Record<string, string> = {
   "Laundry Room": "lavanderia",
 };
 
+/** Del plazo del comprobante: 0 a 72 horas, y minutos de 5 en 5. */
+const OPCIONES_DE_HORAS = Array.from({ length: 73 }, (_, h) => ({ value: String(h), label: `${h} h` }));
+const OPCIONES_DE_MINUTOS = Array.from({ length: 12 }, (_, i) => ({ value: String(i * 5), label: `${i * 5} min` }));
+
 function NumberField({
   control,
   name,
   label,
   placeholder = "0",
+  explicacion,
 }: {
   control: Control<GestionZonaFormValues>;
   name: keyof GestionZonaFormValues;
   label: string;
   placeholder?: string;
+  /** Una «i» junto a la etiqueta (23/11/2026). */
+  explicacion?: string;
 }) {
   return (
     <Controller
@@ -57,6 +66,7 @@ function NumberField({
       render={({ field, fieldState }) => (
         <Input
           label={label}
+          explicacion={explicacion}
           value={String(field.value ?? "")}
           // Solo cifras: una letra daba `NaN` y el mensaje de zod en inglés.
           onChangeText={(value) => {
@@ -116,7 +126,7 @@ function FechaEspecialRow({
         <View className="flex-row gap-2">
           <View className="flex-1">
             <CampoHora
-              label="Apertura"
+              label="Apertura *"
               enLinea
               paso={30}
               value={value.horaApertura || ""}
@@ -125,7 +135,7 @@ function FechaEspecialRow({
           </View>
           <View className="flex-1">
             <CampoHora
-              label="Cierre"
+              label="Cierre *"
               enLinea
               paso={30}
               value={value.horaCierre || ""}
@@ -263,7 +273,7 @@ export function GestionZonaForm({
             name="nombre"
             render={({ field, fieldState }) => (
               <Input
-                label="Nombre de la zona"
+                label="Nombre de la zona *"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ej: BBQ Principal"
@@ -274,13 +284,15 @@ export function GestionZonaForm({
           <Controller
             control={control}
             name="tipo"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Select
-                label="Tipo de zona"
+                label="Tipo de zona *"
+                explicacion="Sirve para agruparla y elegir su icono: recreación (piscina, parrilla), servicios (lavandería) o eventos (salón)."
                 value={field.value}
                 options={TIPOS_ZONA}
                 onChange={field.onChange}
                 placeholder="Selecciona un tipo"
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -321,7 +333,7 @@ export function GestionZonaForm({
             name="imagen"
             render={({ field }) => (
               <ImageUploadCard
-                label="Imagen / Banner"
+                label="Imagen / Banner (opcional)"
                 value={field.value}
                 onChange={field.onChange}
                 defaultSource={!isNew ? defaultSource : undefined}
@@ -353,7 +365,8 @@ export function GestionZonaForm({
           <NumberField
             control={control}
             name="cuposSimultaneos"
-            label="¿Cuántas de estas zonas hay?"
+            label="¿Cuántas de estas zonas hay? *"
+            explicacion="Si tienes varias iguales, por ejemplo 3 parrillas, pon 3. Cada una se reserva por separado y puedes darle su propio nombre."
             placeholder="1"
           />
           <Text className="text-xs leading-4 text-gray-500">
@@ -382,14 +395,16 @@ export function GestionZonaForm({
               <NumberField
                 control={control}
                 name="personasPorReserva"
-                label="Personas por reserva"
+                label="Personas por reserva (opcional)"
+                explicacion="Cuántas personas puede traer cada reserva, contando a quien reserva. En 0, sin límite."
               />
             </View>
             <View className="flex-1">
               <NumberField
                 control={control}
                 name="capacidadMaxima"
-                label="Capacidad total a la vez"
+                label="Capacidad total a la vez (opcional)"
+                explicacion="Cuántas personas caben en todo el espacio al mismo tiempo, sumando todas las reservas de esa hora. En 0, sin límite."
               />
             </View>
           </View>
@@ -405,9 +420,10 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioApertura"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <CampoHora
-                    label="Hora de apertura"
+                    label="Hora de apertura *"
+                    error={fieldState.error?.message}
                     paso={30}
                     value={field.value}
                     onChange={field.onChange}
@@ -419,9 +435,10 @@ export function GestionZonaForm({
               <Controller
                 control={control}
                 name="horarioCierre"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <CampoHora
-                    label="Hora de cierre"
+                    label="Hora de cierre *"
+                    error={fieldState.error?.message}
                     paso={30}
                     value={field.value}
                     onChange={field.onChange}
@@ -435,7 +452,8 @@ export function GestionZonaForm({
               <NumberField
                 control={control}
                 name="duracionMinimaMin"
-                label="Duración mínima (min)"
+                label="Duración mínima (min) *"
+                explicacion="Lo menos que puede durar una reserva, en minutos."
                 placeholder="1"
               />
             </View>
@@ -443,7 +461,8 @@ export function GestionZonaForm({
               <NumberField
                 control={control}
                 name="duracionMaximaMin"
-                label="Duración máxima (min)"
+                label="Duración máxima (min) *"
+                explicacion="Lo más que puede durar una reserva, en minutos. Con «Por bloques», es el largo de cada bloque."
                 placeholder="1"
               />
             </View>
@@ -451,11 +470,10 @@ export function GestionZonaForm({
           <NumberField
             control={control}
             name="tiempoMinimoEntreReservas"
-            label="Tiempo mínimo entre reservas (min)"
+            label="Tiempo mínimo entre reservas (min) (opcional)"
+            explicacion="Minutos libres entre una reserva y la siguiente, para limpiar o preparar la zona. En 0, pueden ir seguidas."
           />
-          <Text className="text-sm font-medium text-gray-500">
-            Días habilitados
-          </Text>
+          <EtiquetaDelCampo label="Días habilitados *" explicacion="Los días de la semana en que se puede reservar. Para cerrar un día puntual, usa «Fechas especiales»." />
           <View className="flex-row flex-wrap gap-1.5">
             {DIAS_ZONA.map((day) => {
               const active = days.includes(day);
@@ -476,6 +494,9 @@ export function GestionZonaForm({
               );
             })}
           </View>
+          {errors.diasHabilitados?.message ? (
+            <Text className="text-xs text-danger font-medium">{errors.diasHabilitados.message}</Text>
+          ) : null}
         </AdminSectionCard>
 
         {/* Cuántas reservas y con cuánto tiempo (18/11/2026, pedido del cliente). */}
@@ -483,7 +504,8 @@ export function GestionZonaForm({
           <NumberField
             control={control}
             name="reservasActivasMaximas"
-            label="Reservas por delante que puede tener cada uno"
+            label="Reservas por delante que puede tener cada uno (opcional)"
+            explicacion="Cuántas reservas futuras puede tener a la vez cada vivienda (o cada persona, si eliges «Por persona»). Cuando llega al tope, puede editar la que tiene pero no hacer otra. En 0, sin límite."
             placeholder="1"
           />
           <Controller
@@ -509,7 +531,8 @@ export function GestionZonaForm({
           <NumberField
             control={control}
             name="anticipacionMinimaHoras"
-            label="Anticipación mínima (horas)"
+            label="Anticipación mínima (horas) (opcional)"
+            explicacion="Con cuántas horas de anticipación hay que reservar. Por ejemplo, 12: hoy a las 8:00 ya no se puede reservar para hoy a las 15:00. En 0, se puede reservar al momento."
           />
           <Text className="text-xs leading-4 text-gray-500">
             {watch("anticipacionMinimaHoras") > 0
@@ -563,7 +586,8 @@ export function GestionZonaForm({
             name="reglamento"
             render={({ field, fieldState }) => (
               <Input
-                label="Reglamento de la zona"
+                label="Reglamento de la zona (opcional)"
+                explicacion="Las reglas de uso. Quien reserva tiene que aceptarlas antes de confirmar."
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 placeholder="Reglamento que verán los residentes"
@@ -607,14 +631,15 @@ export function GestionZonaForm({
               <NumberField
                 control={control}
                 name="montoGarantia"
-                label="Monto de garantía"
+                label="Monto de garantía (opcional)"
+                explicacion="Un depósito que se devuelve después si la zona queda en buen estado. En 0, sin garantía."
               />
             </View>
             <View className="flex-1">
               <NumberField
                 control={control}
                 name="costoLimpieza"
-                label="Costo de limpieza"
+                label="Costo de limpieza (opcional)"
               />
             </View>
           </View>
@@ -623,7 +648,8 @@ export function GestionZonaForm({
               <NumberField
                 control={control}
                 name="costoReserva"
-                label="Costo de reserva"
+                label="Costo de reserva (opcional)"
+                explicacion="Lo que se paga por usar la zona. Con un costo, quien reserva adjunta el comprobante de pago."
               />
             </View>
             <View className="flex-1">
@@ -632,7 +658,7 @@ export function GestionZonaForm({
                 name="moneda"
                 render={({ field }) => (
                   <Select
-                    label="Moneda"
+                    label="Moneda *"
                     value={field.value}
                     options={monedasDeLaZona}
                     onChange={field.onChange}
@@ -643,14 +669,51 @@ export function GestionZonaForm({
           </View>
           {hayCosto ? (
             <>
-              <NumberField
+              {/*
+                En horas y minutos (23/11/2026, pedido del cliente): antes eran
+                horas enteras. Se guarda en minutos (`plazo_adjunto_minutos`).
+              */}
+              <EtiquetaDelCampo
+                label="Plazo para adjuntar el comprobante (opcional)"
+                explicacion="Desde que se hace la reserva. Si en ese tiempo no adjunta el comprobante de pago, la reserva se cancela sola y se le avisa. Con 0 horas y 0 minutos, no hay plazo."
+              />
+              <Controller
                 control={control}
-                name="plazoAdjuntoHoras"
-                label="Horas para adjuntar el comprobante"
+                name="plazoAdjuntoMinutos"
+                render={({ field, fieldState }) => {
+                  const total = Number(field.value) || 0;
+                  const horas = Math.floor(total / 60);
+                  const minutos = total % 60;
+                  return (
+                    <View className="gap-1">
+                      <View className="flex-row gap-2.5">
+                        <View className="flex-1">
+                          <Select
+                            label="Horas"
+                            value={String(horas)}
+                            options={OPCIONES_DE_HORAS}
+                            onChange={(v) => field.onChange(Number(v) * 60 + minutos)}
+                          />
+                        </View>
+                        <View className="flex-1">
+                          <Select
+                            label="Minutos"
+                            value={String(minutos)}
+                            options={OPCIONES_DE_MINUTOS}
+                            onChange={(v) => field.onChange(horas * 60 + Number(v))}
+                          />
+                        </View>
+                      </View>
+                      {fieldState.error?.message ? (
+                        <Text className="text-xs text-danger font-medium">{fieldState.error.message}</Text>
+                      ) : null}
+                    </View>
+                  );
+                }}
               />
               <Text className="text-xs leading-4 text-gray-500">
-                {watch("plazoAdjuntoHoras") > 0
-                  ? `Quien reserva tiene ${watch("plazoAdjuntoHoras")} horas para adjuntar el comprobante; si no, la reserva se cancela sola y se le avisa.`
+                {watch("plazoAdjuntoMinutos") > 0
+                  ? `Quien reserva tiene ${textoDelPlazo(watch("plazoAdjuntoMinutos"))} para adjuntar el comprobante; si no, la reserva se cancela sola y se le avisa.`
                   : "Sin plazo para adjuntar el comprobante."}
               </Text>
             </>
@@ -691,7 +754,7 @@ export function GestionZonaForm({
               name="condicionesAprobacion"
               render={({ field, fieldState }) => (
                 <Input
-                  label="Condiciones para aprobarla"
+                  label="Condiciones para aprobarla (opcional)"
                   value={field.value || ""}
                   onChangeText={field.onChange}
                   placeholder="Ej: avisar con una semana, pagar la garantía antes y dejar un responsable de contacto"

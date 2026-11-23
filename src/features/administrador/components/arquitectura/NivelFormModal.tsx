@@ -55,6 +55,7 @@ export function NivelFormModal({
         <Input label="Nombre *" value={nombre} onChangeText={setNombre} placeholder="Ej: Sótano 1" />
         <Input
           label="Nomenclatura *"
+          explicacion="Un código corto del nivel, como AS1. Va al principio del código de cada estacionamiento del nivel: AS1-01, AS1-V01."
           value={nomenclatura}
           onChangeText={(v) => setNomenclatura(limpiarNomenclatura(v))}
           placeholder="Ej: AS1"

@@ -49,7 +49,7 @@ export function LoginFormulario({
           name="correo"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="Correo"
+              label="Correo *"
               value={value}
               onChangeText={onChange}
               placeholder="tu@correo.com"
@@ -64,7 +64,7 @@ export function LoginFormulario({
           name="password"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="Contraseña"
+              label="Contraseña *"
               value={value}
               onChangeText={onChange}
               placeholder="••••••••"

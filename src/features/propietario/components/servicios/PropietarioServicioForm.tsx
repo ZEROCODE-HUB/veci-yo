@@ -42,7 +42,7 @@ export function PropietarioServicioForm({
         name="nombreServicio"
         render={({ field }) => (
           <Input
-            label="Servicio"
+            label="Servicio *"
             value={field.value || ""}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
@@ -56,12 +56,12 @@ export function PropietarioServicioForm({
         name="nombreEmpresa"
         render={({ field, fieldState }) => (
           <Input
-            label="Empresa"
+            label="Empresa (opcional)"
             value={field.value || ""}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             placeholder="Quién presta el servicio"
-          error={fieldState.error?.message}
+            error={fieldState.error?.message}
           />
         )}
       />
@@ -72,11 +72,11 @@ export function PropietarioServicioForm({
             name="numeroCliente"
             render={({ field, fieldState }) => (
               <Input
-                label="N.º de cliente"
+                label="N.º de cliente (opcional)"
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-              error={fieldState.error?.message}
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -87,11 +87,11 @@ export function PropietarioServicioForm({
             name="numeroMedidor"
             render={({ field, fieldState }) => (
               <Input
-                label="N.º de medidor"
+                label="N.º de medidor (opcional)"
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-              error={fieldState.error?.message}
+                error={fieldState.error?.message}
               />
             )}
           />
@@ -108,11 +108,12 @@ export function PropietarioServicioForm({
             name="primerAviso"
             render={({ field }) => (
               <Input
-                label="Primer aviso (día del mes)"
+                label="Primer aviso (opcional)"
+                explicacion="El día del mes, del 1 al 31, en que llega el recordatorio de este servicio."
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-                placeholder="10"
+                placeholder="Día: 10"
                 soloCifras
                 error={errors.primerAviso?.message}
               />
@@ -125,11 +126,12 @@ export function PropietarioServicioForm({
             name="segundoAviso"
             render={({ field }) => (
               <Input
-                label="Segundo aviso (día del mes)"
+                label="Segundo aviso (opcional)"
+                explicacion="Otro día del mes, del 1 al 31, para un segundo recordatorio."
                 value={field.value || ""}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-                placeholder="25"
+                placeholder="Día: 25"
                 soloCifras
                 error={errors.segundoAviso?.message}
               />
@@ -146,7 +148,7 @@ export function PropietarioServicioForm({
         name="correoFactura"
         render={({ field }) => (
           <Input
-            label="Correo para la factura"
+            label="Correo para la factura (opcional)"
             value={field.value || ""}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
@@ -162,7 +164,8 @@ export function PropietarioServicioForm({
         salía un número que no se puede marcar desde fuera.
       */}
       <CampoTelefono
-        label="Teléfono de atención"
+        label="Teléfono de atención (opcional)"
+        error={errors.numeroTelefono?.message ?? errors.codigoPais?.message}
         codigoPais={watch("codigoPais") ?? ""}
         onCodigoPaisChange={(codigo) =>
           setValue("codigoPais", codigo, { shouldValidate: true })

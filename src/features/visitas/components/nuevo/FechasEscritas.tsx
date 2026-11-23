@@ -124,7 +124,7 @@ export function FechasEscritas({ entrada, salida, onRango, minNoches, maxNoches,
     <View className="flex-row gap-3">
       <View className="flex-1">
         <Input
-          label="Llegada"
+          label="Llegada *"
           value={llegada}
           onChangeText={alEscribirLlegada}
           placeholder="dd/mm/aaaa"
@@ -134,7 +134,7 @@ export function FechasEscritas({ entrada, salida, onRango, minNoches, maxNoches,
       </View>
       <View className="flex-1">
         <Input
-          label="Salida"
+          label="Salida *"
           value={vuelta}
           onChangeText={alEscribirSalida}
           placeholder="dd/mm/aaaa"

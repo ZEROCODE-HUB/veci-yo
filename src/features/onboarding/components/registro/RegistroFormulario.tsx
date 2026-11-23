@@ -36,6 +36,7 @@ export function RegistroFormulario({
     listo,
     contrasenaMin,
     tiposDocumento,
+    pistaDelDocumento,
   } = useRegistro();
 
   /*
@@ -169,10 +170,19 @@ export function RegistroFormulario({
                 ref={identificacionRef}
                 returnKeyType="next"
                 onSubmitEditing={() => passwordRef.current?.focus()}
-            showEditIcon={false}
+                showEditIcon={false}
               />
             )}
           />
+          {/*
+            Lo que acepta el tipo elegido, antes de escribir (23/11/2026): el aviso
+            «Revisa el número» se confundía con el del teléfono.
+          */}
+          {!errors.identificacion && pistaDelDocumento(watch("tipoDocumento")) ? (
+            <Text className="text-xs text-gray-500 mt-1">
+              {pistaDelDocumento(watch("tipoDocumento"))}
+            </Text>
+          ) : null}
         </View>
       </View>
 

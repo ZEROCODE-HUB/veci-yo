@@ -125,7 +125,7 @@ export function GuardiaForm({
               name="cargo"
               render={({ field }) => (
                 <Select
-                  label="Cargo"
+                  label="Cargo (opcional)"
                   placeholder="Seguridad"
                   value={field.value || "seguridad"}
                   options={cargos.opciones.map((o) => ({ value: o.codigo, label: o.etiqueta }))}
@@ -139,7 +139,7 @@ export function GuardiaForm({
             name="cedula"
             render={({ field, fieldState }) => (
               <Input
-                label="Cédula"
+                label="Cédula (opcional)"
                 placeholder="N° de identificación"
                 value={field.value}
                 onChangeText={field.onChange}
@@ -250,7 +250,7 @@ export function GuardiaForm({
             name="garita"
             render={({ field }) => (
               <Select
-                label="Garita"
+                label="Garita (opcional)"
                 placeholder="Seleccionar"
                 value={field.value}
                 options={[

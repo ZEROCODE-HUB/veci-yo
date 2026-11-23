@@ -38,7 +38,7 @@ const SELECT_ZONA = `
   monto_garantia, costo_limpieza, costo_reserva, moneda,
   reglamento, reglamento_archivo_path, reglamento_archivo_nombre, activa, condominio_id,
   personas_por_reserva, reservas_activas_maximas, limite_reservas_por,
-  anticipacion_minima_horas, plazo_adjunto_horas,
+  anticipacion_minima_horas, plazo_adjunto_horas, plazo_adjunto_minutos,
   fechas:zona_fecha_especial ( fecha, tipo, motivo, hora_apertura, hora_cierre ),
   recursos:zona_recurso ( numero, nombre )
 ` as const;
@@ -174,7 +174,7 @@ function mapearGestionZona(fila: FilaDeZona): GestionZona {
     reservasActivasMaximas: fila.reservas_activas_maximas ?? 0,
     limiteReservasPor: fila.limite_reservas_por ?? "vivienda",
     anticipacionMinimaHoras: fila.anticipacion_minima_horas ?? 0,
-    plazoAdjuntoHoras: fila.plazo_adjunto_horas ?? 0,
+    plazoAdjuntoMinutos: fila.plazo_adjunto_minutos ?? (fila.plazo_adjunto_horas ?? 0) * 60,
     nombresDeZonas: nombresPorNumero(fila.recursos ?? [], fila.cupos_simultaneos),
     /*
       Faltaba: el formulario arrancaba siempre con la aprobación apagada, así
@@ -283,7 +283,7 @@ function mapearZonaConfig(fila: FilaDeZona): ZonaComunConfig & ZonaComun {
     eligeNumero: fila.elige_numero ?? false,
     nombresDeZonas: nombresPorNumero(fila.recursos ?? [], fila.cupos_simultaneos),
     personasPorReserva: fila.personas_por_reserva ?? 0,
-    plazoAdjuntoHoras: fila.plazo_adjunto_horas ?? 0,
+    plazoAdjuntoMinutos: fila.plazo_adjunto_minutos ?? (fila.plazo_adjunto_horas ?? 0) * 60,
     // `restringida_huesped` era la negacion de esta misma columna y se
     // elimino: una idea, una columna.
     permiteCorta: fila.permite_estancia_corta ?? true,
@@ -559,7 +559,7 @@ export interface DatosZona {
   reservasActivasMaximas?: number | null;
   limiteReservasPor?: "vivienda" | "persona";
   anticipacionMinimaHoras?: number;
-  plazoAdjuntoHoras?: number | null;
+  plazoAdjuntoMinutos?: number | null;
 }
 
 /**
@@ -600,7 +600,8 @@ const COLUMNA_DE: Record<string, keyof DatosZona> = {
   reservas_activas_maximas: "reservasActivasMaximas",
   limite_reservas_por: "limiteReservasPor",
   anticipacion_minima_horas: "anticipacionMinimaHoras",
-  plazo_adjunto_horas: "plazoAdjuntoHoras",
+  plazo_adjunto_horas: "plazoAdjuntoMinutos",
+  plazo_adjunto_minutos: "plazoAdjuntoMinutos",
 };
 
 function haciaFila(datos: Partial<DatosZona>) {
@@ -643,7 +644,9 @@ function haciaFila(datos: Partial<DatosZona>) {
     reservas_activas_maximas: datos.reservasActivasMaximas || null,
     limite_reservas_por: datos.limiteReservasPor,
     anticipacion_minima_horas: datos.anticipacionMinimaHoras,
-    plazo_adjunto_horas: datos.plazoAdjuntoHoras || null,
+    // En minutos desde el 23/11/2026; el de horas, redondeado, para lo que aún lo lea.
+    plazo_adjunto_minutos: datos.plazoAdjuntoMinutos || null,
+    plazo_adjunto_horas: datos.plazoAdjuntoMinutos ? Math.ceil(datos.plazoAdjuntoMinutos / 60) : null,
   };
 }
 

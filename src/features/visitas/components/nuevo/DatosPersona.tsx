@@ -37,6 +37,8 @@ interface Props {
    * documento (`documento_amigos_obligatorio`, 16/11/2026).
    */
   porteriaPideDocumento?: boolean;
+  /** Lo que falta o está mal, debajo de cada campo (23/11/2026). */
+  errores?: Partial<Record<"nombre" | "documento" | "correo" | "telefono" | "profesion", string>>;
 }
 
 /**
@@ -92,6 +94,7 @@ export function DatosPersona({
   verificaDocumento,
   setVerificaDocumento,
   porteriaPideDocumento = false,
+  errores = {},
 }: Props) {
   const esEstancia = tipoSeleccionado === "huesped-temporal";
   /** El telefono es obligatorio cuando la portería registra un profesional. */
@@ -161,6 +164,7 @@ export function DatosPersona({
           placeholder={
             esEstancia ? "Lo completa el huésped" : "Nombre completo"
           }
+          error={errores.nombre}
         />
 
         {sePuedePlegar && !mostrarExtras ? (
@@ -210,6 +214,7 @@ export function DatosPersona({
                   value={identificacion}
                   onChangeText={setIdentificacion}
                   placeholder="Número"
+                  error={errores.documento}
                   // Un documento puede llevar letras (pasaporte, cédula de extranjería).
                   // «N° de documento» no cabía en media fila (Correcciones,
                   // 10/11/2026): la etiqueta de arriba ya dice «Documento».
@@ -224,6 +229,7 @@ export function DatosPersona({
                 onChangeText={setEmail}
                 placeholder="email@ejemplo.com"
                 type="email"
+                error={errores.correo}
               />
             )}
 
@@ -234,6 +240,7 @@ export function DatosPersona({
                 onChangeText={setTelefono}
                 placeholder={telefonoObligatorio ? "Obligatorio" : "Opcional"}
                 soloCifras
+                error={errores.telefono}
               />
             )}
           </>
@@ -273,12 +280,14 @@ export function DatosPersona({
               options={oficios}
               onChange={(v) => setProfesion(String(v))}
               placeholder="Elige la profesión"
+              error={pideOtraProfesion ? undefined : errores.profesion}
             />
             {pideOtraProfesion && (
               <Input
                 value={profesionOtro}
                 onChangeText={setProfesionOtro}
                 placeholder="Especifique la profesión"
+                error={errores.profesion}
               />
             )}
           </View>

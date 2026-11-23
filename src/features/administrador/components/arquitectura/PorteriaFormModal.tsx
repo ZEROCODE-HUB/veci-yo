@@ -56,7 +56,7 @@ export function PorteriaFormModal({
           name="nombre"
           render={({ field, fieldState }) => (
             <Input
-              label="Nombre"
+              label="Nombre *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Principal"
@@ -74,7 +74,7 @@ export function PorteriaFormModal({
           name="tipo"
           render={({ field }) => (
             <Select
-              label="Tipo de acceso"
+              label="Tipo de acceso *"
               value={field.value}
               options={Object.entries(TIPO_PORTERIA).map(([value, label]) => ({
                 value,
@@ -107,7 +107,7 @@ export function PorteriaFormModal({
           name="ubicacion"
           render={({ field, fieldState }) => (
             <Input
-              label="Ubicacion"
+              label="Ubicación (opcional)"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Ej: Entrada principal"
@@ -144,7 +144,6 @@ export function PorteriaFormModal({
         <Button
           fullWidth
           loading={isSubmitting}
-          disabled={!watch("nombre").trim()}
           onPress={() => void handleSubmit(onSave)()}
         >
           Guardar

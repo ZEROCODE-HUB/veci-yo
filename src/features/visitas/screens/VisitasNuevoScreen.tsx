@@ -192,6 +192,7 @@ export function VisitasNuevoScreen() {
             verificaDocumento={alta.amigoVerifica}
             setVerificaDocumento={alta.setAmigoVerifica}
             porteriaPideDocumento={alta.porteriaPideDocumento}
+            errores={alta.errores}
           />
           <CuentaDelProfesional alta={alta} />
           <AcompanantesDeLaVisita alta={alta} />
@@ -200,6 +201,7 @@ export function VisitasNuevoScreen() {
             esGuardia={esGuardia}
             horaInicio={alta.horaInicio}
             setHoraInicio={alta.setHoraInicio}
+            error={alta.errores.horaInicio}
           />
           <VehiculosVisita
             tieneVehiculo={alta.tieneVehiculo}
@@ -234,6 +236,7 @@ export function VisitasNuevoScreen() {
             setEstacionamientosSel={alta.setEstacionamientosSel}
             aprobadoPor={alta.aprobadoPor}
             setAprobadoPor={alta.setAprobadoPor}
+            errorAprobadoPor={alta.errores.aprobadoPor}
             anotacionesGuardia={alta.anotacionesGuardia}
             setAnotacionesGuardia={alta.setAnotacionesGuardia}
             fotosIngreso={alta.fotosIngreso}

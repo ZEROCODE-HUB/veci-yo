@@ -224,7 +224,7 @@ export function VerificacionDelHuesped({ invitado, onResolver, onAbrirInforme, o
             {QUE_HACER_AL_NO_AUTORIZAR}
           </Text>
           <Input
-            label="Motivo"
+            label="Motivo *"
             value={motivo}
             onChangeText={(texto) => {
               setMotivo(texto);

@@ -46,7 +46,7 @@ export function PerfilAliasCard(props: Props) {
       {/* El marcador de posición decía "GuilleSv" a cualquiera que abriera la
           pantalla, y ese mismo valor se guardaba si se dejaba vacío. */}
       <Input
-        label="Alias (editable)"
+        label="Alias (opcional)"
         value={props.alias}
         onChangeText={props.onAliasChange}
         placeholder="Ej. VecinoDel301"

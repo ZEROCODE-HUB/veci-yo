@@ -7,6 +7,7 @@ import {
   Image,
   type ImageSourcePropType,
 } from "react-native";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useParametrosDeLaBase } from "@/shared/hooks";
@@ -107,7 +108,7 @@ export function ImageUploadCard({
   return (
     <View>
       {Boolean(label) && (
-        <Text className="text-sm text-gray-500 font-medium mb-2">{label}</Text>
+        <EtiquetaDelCampo label={label ?? ""} />
       )}
 
       <Pressable

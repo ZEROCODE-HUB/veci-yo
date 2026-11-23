@@ -62,6 +62,8 @@ export function CorrespondenciaAgregarScreen() {
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<CorrespondenciaFormData>({
     resolver: zodResolver(correspondenciaSchema),
@@ -109,6 +111,8 @@ export function CorrespondenciaAgregarScreen() {
   // Entrega en puerta: quién entra a entregarla (Para Claude 196).
   const [ingresoNombre, setIngresoNombre] = useState("");
   const [ingresoFoto, setIngresoFoto] = useState<ArchivoElegido[]>([]);
+  // Se pulsó «Agregar» con la entrega en puerta a medias: se marca qué falta.
+  const [intentoEntrega, setIntentoEntrega] = useState(false);
 
   const categoriasOptions =
     rolActivo === "guardia"
@@ -142,9 +146,11 @@ export function CorrespondenciaAgregarScreen() {
     */
     const descripcion = (watch("descripcion") || "").trim();
     if (!descripcion) {
+      setError("descripcion", { message: "Describe qué pasó con el envío" });
       addToast("Describe qué pasó con el envío.", "error");
       return;
     }
+    clearErrors("descripcion");
     reportarIncidencia(
       {
         uuid: informarItem.uuid,
@@ -189,6 +195,7 @@ export function CorrespondenciaAgregarScreen() {
     }
 
     if (data.entregaEnPuerta && (!ingresoNombre.trim() || ingresoFoto.length === 0)) {
+      setIntentoEntrega(true);
       addToast(
         "En la entrega en puerta falta el nombre o la foto del documento de quien entra.",
         "error",
@@ -314,7 +321,7 @@ export function CorrespondenciaAgregarScreen() {
           />
         )}
 
-        <EstadoYDescripcion control={control} errors={errors} />
+        <EstadoYDescripcion control={control} errors={errors} informando={Boolean(informarItem)} />
 
         <FotosDelEnvio fotos={fotos} onCambiar={setFotos} />
 
@@ -362,6 +369,16 @@ export function CorrespondenciaAgregarScreen() {
                 onNombre={setIngresoNombre}
                 fotos={ingresoFoto}
                 onFotos={setIngresoFoto}
+                errorNombre={
+                  intentoEntrega && !ingresoNombre.trim()
+                    ? "Escribe el nombre de quien entra"
+                    : undefined
+                }
+                errorFoto={
+                  intentoEntrega && ingresoFoto.length === 0
+                    ? "Falta la foto de su documento"
+                    : undefined
+                }
               />
             ) : null}
           </>

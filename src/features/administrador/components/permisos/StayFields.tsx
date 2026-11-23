@@ -92,7 +92,7 @@ export function StayFields({
       */}
 
       <Select
-        label="Horario de check-in"
+        label="Horario de check-in (opcional)"
         value={valorDelHorario}
         options={[
           { value: "", label: "Sin horario" },

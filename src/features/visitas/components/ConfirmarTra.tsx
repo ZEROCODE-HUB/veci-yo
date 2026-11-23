@@ -166,7 +166,7 @@ export function ConfirmarTra({ visible, visitaUuid, invitadoUuid, onClose, onRep
           </View>
 
           <Select
-            label="Motivo del viaje"
+            label="Motivo del viaje *"
             value={motivo}
             options={opcionesMotivo}
             onChange={(v) => setMotivo(String(v) as Motivo)}

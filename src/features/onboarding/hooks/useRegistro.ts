@@ -13,6 +13,7 @@ import { datosParaRegistrarse } from "@/shared/services/invitaciones";
 import { olvidarCorreoPorConfirmar, recordarCorreoPorConfirmar } from "@/shared/services/correoPorConfirmar";
 import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/hooks";
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
+import { pistaDeDocumento } from "@/shared/utils/documento.util";
 import { crearEsquemaRegistro, type RegistroFormData } from "../schemas";
 
 // Una función: el país es el ajuste `pais_por_defecto`, que llega al abrir la
@@ -215,6 +216,9 @@ export function useRegistro() {
     },
     listo: esquema !== null,
     tiposDocumento: opcionesDeDocumento(documentos.reglas),
+    /** Lo que acepta el tipo elegido («Solo números, entre 5 y 12 cifras»). */
+    pistaDelDocumento: (tipo: string) =>
+      pistaDeDocumento(documentos.reglas.find((d) => d.tipo === tipo)),
     // Para el texto del campo: decía «Mínimo 8» escrito a mano.
     contrasenaMin: parametros.listo ? parametros.numero("contrasena_largo_minimo") : null,
   };

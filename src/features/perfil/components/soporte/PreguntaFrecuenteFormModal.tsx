@@ -35,7 +35,7 @@ export function PreguntaFrecuenteFormModal({
     pregunta: "",
     respuesta: "",
   });
-  const [error, setError] = useState("");
+  const [errores, setErrores] = useState<{ pregunta?: string; respuesta?: string }>({});
 
   useEffect(() => {
     if (!visible) return;
@@ -44,7 +44,7 @@ export function PreguntaFrecuenteFormModal({
       pregunta: editando?.pregunta ?? "",
       respuesta: editando?.respuesta ?? "",
     });
-    setError("");
+    setErrores({});
   }, [visible, editando]);
 
   const cambiar = (clave: keyof FormularioPregunta) => (texto: string) =>
@@ -58,34 +58,38 @@ export function PreguntaFrecuenteFormModal({
     >
       <View className="gap-3">
         <Input
-          label="Categoría"
+          label="Categoría (opcional)"
+          explicacion="Agrupa las preguntas en la lista. Si la dejas vacía, va a «General»."
           value={form.categoria}
           onChangeText={cambiar("categoria")}
           placeholder="Ej: Visitas, Zonas comunes, Pagos"
           showEditIcon={false}
         />
         <Input
-          label="Pregunta"
+          label="Pregunta *"
           value={form.pregunta}
           onChangeText={cambiar("pregunta")}
           showEditIcon={false}
-          error={error || undefined}
+          error={errores.pregunta}
         />
         <Input
-          label="Respuesta"
+          label="Respuesta *"
           value={form.respuesta}
           onChangeText={cambiar("respuesta")}
           multiline
           showEditIcon={false}
+          error={errores.respuesta}
         />
         <Button
           fullWidth
           loading={guardando}
           onPress={() => {
-            if (!form.pregunta.trim() || !form.respuesta.trim()) {
-              setError("Escribe la pregunta y su respuesta.");
-              return;
-            }
+            const faltan = {
+              pregunta: form.pregunta.trim() ? undefined : "Escribe la pregunta.",
+              respuesta: form.respuesta.trim() ? undefined : "Escribe la respuesta.",
+            };
+            setErrores(faltan);
+            if (faltan.pregunta || faltan.respuesta) return;
             onSave(form);
           }}
         >

@@ -19,6 +19,8 @@ export function PlataformaPreciosScreen() {
   const { precios, cargando, error, esDueno, cambiar } = usePreciosDeLaApp();
   const [editando, setEditando] = useState<string | null>(null);
   const [monto, setMonto] = useState("");
+  // Un precio mal escrito se dice debajo del campo, no solo en un aviso.
+  const [errorMonto, setErrorMonto] = useState("");
 
   if (cargando) return <Cargando texto="los precios" />;
 
@@ -27,7 +29,7 @@ export function PlataformaPreciosScreen() {
   const guardar = async (p: PrecioVigente) => {
     const n = Number(monto.replace(",", "."));
     if (monto.trim() === "" || Number.isNaN(n) || n < 0) {
-      addToast("Escribe un precio válido", "error");
+      setErrorMonto("Escribe un precio válido: un número igual o mayor que cero");
       return;
     }
     try {
@@ -57,7 +59,16 @@ export function PlataformaPreciosScreen() {
 
           {esDueno && editando === llave(p) ? (
             <View className="gap-2">
-              <Input label={`Precio nuevo (${p.moneda})`} value={monto} onChangeText={setMonto} type="numeric" />
+              <Input
+                label={`Precio nuevo (${p.moneda}) *`}
+                value={monto}
+                onChangeText={(texto) => {
+                  setMonto(texto);
+                  setErrorMonto("");
+                }}
+                type="numeric"
+                error={errorMonto || undefined}
+              />
               <Button onPress={() => guardar(p)} loading={cambiar.isPending} fullWidth>
                 Guardar desde hoy
               </Button>
@@ -72,6 +83,7 @@ export function PlataformaPreciosScreen() {
               onPress={() => {
                 setEditando(llave(p));
                 setMonto(String(p.monto));
+                setErrorMonto("");
               }}
               style={{ alignSelf: "flex-start" }}
             >

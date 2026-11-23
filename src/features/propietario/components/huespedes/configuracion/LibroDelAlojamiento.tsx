@@ -1,6 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
-import { theme } from "@/config";
+import { View } from "react-native";
 import { Input } from "@/shared/components";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
 import type { RentaCorta } from "./tipos";
@@ -14,45 +13,38 @@ export function LibroDelAlojamiento({ renta: r }: { renta: RentaCorta }) {
     <SeccionDeConfiguracion titulo="Información del alojamiento — Guestbook">
       <View className="flex-col gap-3">
         <Input
-          label="Wi-Fi (nombre)"
+          label="Nombre del Wi-Fi (opcional)"
           value={g.wifiName}
           onChangeText={campo("wifiName")}
           placeholder="Nombre de red"
         />
         <Input
-          label="Contraseña Wi-Fi"
+          label="Contraseña del Wi-Fi (opcional)"
           value={g.wifiPassword}
           onChangeText={campo("wifiPassword")}
           placeholder="Contraseña"
         />
         <Input
-          label="Contraseña de la puerta"
+          label="Contraseña de la puerta (opcional)"
+          explicacion="El huésped la ve en «Mi alojamiento» solo mientras dura su estancia. Se guarda cifrada."
           value={g.doorPassword}
           onChangeText={campo("doorPassword")}
           placeholder="Código / contraseña"
         />
-        <View>
-          <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
-            Instrucciones adicionales
-          </Text>
-          <Input
-            value={g.instructions}
-            onChangeText={campo("instructions")}
-            placeholder="Instrucciones de acceso..."
-            multiline
-          />
-        </View>
-        <View>
-          <Text className="text-sm mb-1" style={{ color: theme.colors.textSecondary }}>
-            Notas del alojamiento
-          </Text>
-          <Input
-            value={g.notes}
-            onChangeText={campo("notes")}
-            placeholder="Notas adicionales..."
-            multiline
-          />
-        </View>
+        <Input
+          label="Instrucciones adicionales (opcional)"
+          value={g.instructions}
+          onChangeText={campo("instructions")}
+          placeholder="Instrucciones de acceso..."
+          multiline
+        />
+        <Input
+          label="Notas del alojamiento (opcional)"
+          value={g.notes}
+          onChangeText={campo("notes")}
+          placeholder="Notas adicionales..."
+          multiline
+        />
       </View>
     </SeccionDeConfiguracion>
   );

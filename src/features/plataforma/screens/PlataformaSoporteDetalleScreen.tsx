@@ -142,7 +142,7 @@ export function PlataformaSoporteDetalleScreen() {
       <Card className="gap-4 p-4">
         <Text className="text-sm font-semibold text-gray-900">La respuesta</Text>
         <Input
-          label="Qué se hizo"
+          label={estado === "resuelto" ? "Qué se hizo *" : "Qué se hizo (opcional)"}
           value={respuesta}
           onChangeText={setRespuesta}
           multiline
@@ -151,7 +151,7 @@ export function PlataformaSoporteDetalleScreen() {
           error={error}
         />
         <Select
-          label="Estado"
+          label="Estado *"
           value={estado}
           options={ESTADOS}
           onChange={(valor) => setEstado(String(valor))}

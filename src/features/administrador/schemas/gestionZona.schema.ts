@@ -83,7 +83,7 @@ export function crearGestionZonaSchema({
       reservasActivasMaximas: z.number().int().min(0, "Las reservas por delante no pueden ser negativas."),
       limiteReservasPor: z.enum(["vivienda", "persona"]),
       anticipacionMinimaHoras: z.number().int().min(0, "La anticipación no puede ser negativa."),
-      plazoAdjuntoHoras: z.number().int().min(0, "El plazo no puede ser negativo."),
+      plazoAdjuntoMinutos: z.number().int().min(0, "El plazo no puede ser negativo."),
       nombresDeZonas: z.array(z.string()),
       horariosDisponibles: z.array(z.string()),
       reglamento: z.string(),

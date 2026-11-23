@@ -103,7 +103,7 @@ export interface GestionZona {
   /** Horas de anticipación para reservar (18/11/2026). */
   anticipacionMinimaHoras?: number;
   /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
-  plazoAdjuntoHoras?: number;
+  plazoAdjuntoMinutos?: number;
   /** El nombre de cada una de las zonas iguales, por número (18/11/2026). */
   nombresDeZonas?: string[];
 }

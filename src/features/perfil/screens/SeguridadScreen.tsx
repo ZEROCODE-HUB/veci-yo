@@ -25,7 +25,7 @@ import { EliminarCuenta } from "../components/configuracion";
  */
 export function SeguridadScreen() {
   const { addToast } = useUIStore();
-  const { carga, preferencias, escribir, guardarCampo } = useConfiguracion();
+  const { carga, preferencias, escribir, guardarCampo, errorDelCampo } = useConfiguracion();
   const [showCambiarPass, setShowCambiarPass] = useState(false);
   const [enviandoPass, setEnviandoPass] = useState(false);
 
@@ -81,12 +81,13 @@ export function SeguridadScreen() {
             enLinea
           >
             <Input
-              label="Correo alternativo"
+              label="Correo alternativo (opcional)"
               type="email"
               value={preferencias.correoAlt}
               onChangeText={(v) => escribir({ correoAlt: v })}
               onBlur={() => guardarCampo("correoAlt")}
               placeholder="correo@ejemplo.com"
+              error={errorDelCampo("correoAlt")}
             />
           </SegunLaCarga>
           <Text className="text-xs text-gray-500">

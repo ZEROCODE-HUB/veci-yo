@@ -12,6 +12,8 @@ interface Props {
     React.SetStateAction<{ placa: string; tipo: string }>
   >;
   handleAgregarVehiculo: () => void;
+  /** Lo que falta o está mal, para decirlo bajo cada campo. */
+  erroresVehiculo?: { placa?: string; tipo?: string };
   /** De la lista `tipos_de_vehiculo`: el valor es el código del enum. */
   tiposDeVehiculo: { label: string; value: string }[];
   cantidadVehiculos: number;
@@ -54,6 +56,7 @@ export function ModalesConfiguracion({
   formVehiculo,
   setFormVehiculo,
   handleAgregarVehiculo,
+  erroresVehiculo,
   tiposDeVehiculo,
   cantidadVehiculos,
   maxEstacionamientos,
@@ -69,15 +72,17 @@ export function ModalesConfiguracion({
 >
   <View className="flex-col gap-4">
     <Input
-      label="Placa del vehículo"
+      label="Placa del vehículo *"
       value={formVehiculo.placa}
       onChangeText={(v) => setFormVehiculo((p) => ({ ...p, placa: v }))}
       placeholder="Ej: ABC-1234"
+      error={erroresVehiculo?.placa}
     />
     <Select
-      label="Tipo de vehículo"
+      label="Tipo de vehículo *"
       value={formVehiculo.tipo}
       options={tiposDeVehiculo}
+      error={erroresVehiculo?.tipo}
       onChange={(v) =>
         setFormVehiculo((p) => ({ ...p, tipo: String(v) }))
       }

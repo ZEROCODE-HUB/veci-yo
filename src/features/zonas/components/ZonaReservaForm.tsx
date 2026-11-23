@@ -18,6 +18,7 @@ import { useZonaReservaForm, type ReservaHecha } from "../hooks";
 import { ZonaBanner } from "./ZonaBanner";
 import { DocumentoDelReglamento } from "./DocumentoDelReglamento";
 import { diaEnLetra } from "../services/tiraDeDias";
+import { textoDelPlazo } from "../helpers/textoDelPlazo";
 
 interface Props {
   zona: ZonaComun;
@@ -76,7 +77,7 @@ function FormularioDeReserva({
     esGuardia,
     comprobante,
     elegirComprobante,
-    plazoAdjuntoHoras,
+    plazoAdjuntoMinutos,
     form,
     nombresDeMiVivienda,
     sumarAsistente,
@@ -399,8 +400,8 @@ function FormularioDeReserva({
         <View className="gap-2 rounded-xl border border-gray-200 p-3">
           <Text className="text-sm font-bold text-gray-900">Comprobante de pago (opcional)</Text>
           <Text className="text-xs leading-4 text-gray-500">
-            {plazoAdjuntoHoras > 0
-              ? `Puedes reservar ahora y adjuntarlo después desde «Mis reservas». Tienes ${plazoAdjuntoHoras} horas; si no llega, la reserva se cancela sola.`
+            {plazoAdjuntoMinutos > 0
+              ? `Puedes reservar ahora y adjuntarlo después desde «Mis reservas». Tienes ${textoDelPlazo(plazoAdjuntoMinutos)}; si no llega, la reserva se cancela sola.`
               : "Puedes reservar ahora y adjuntarlo después desde «Mis reservas»."}
           </Text>
           <Button

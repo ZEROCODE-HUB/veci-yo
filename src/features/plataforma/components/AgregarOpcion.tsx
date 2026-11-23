@@ -21,7 +21,10 @@ export function AgregarOpcion({ lista, onClose }: { lista: ListaDelPanel; onClos
   const [pais, setPais] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
 
-  const falta = etiqueta.trim() === "" || (lista.porPais && !pais);
+  // Lo que falta se dice debajo de su campo al pulsar «Agregar».
+  const [intento, setIntento] = useState(false);
+  const faltaNombre = etiqueta.trim() === "";
+  const faltaPais = lista.porPais && !pais;
 
   const confirmar = async () => {
     try {
@@ -47,18 +50,34 @@ export function AgregarOpcion({ lista, onClose }: { lista: ListaDelPanel; onClos
           />
         ) : (
           <>
-            <Input label="Nombre" value={etiqueta} onChangeText={setEtiqueta} />
+            <Input
+              label="Nombre *"
+              value={etiqueta}
+              onChangeText={setEtiqueta}
+              error={intento && faltaNombre ? "Escribe el nombre de la opción" : undefined}
+            />
             {lista.porPais ? (
               <Select
-                label="País"
+                label="País *"
+                explicacion="Esta lista cambia según el país: la opción solo aparece en los edificios de ese país."
                 value={pais}
                 options={paisesDondeOpera.map((c) => ({ value: c, label: c }))}
                 onChange={(v) => setPais(String(v))}
                 placeholder="Elige el país"
+                error={intento && faltaPais ? "Elige el país" : undefined}
               />
             ) : null}
             <Text className="text-xs text-gray-500">Sale encendida y al final de la lista.</Text>
-            <Button fullWidth onPress={() => setConfirmando(true)} disabled={falta}>
+            <Button
+              fullWidth
+              onPress={() => {
+                if (faltaNombre || faltaPais) {
+                  setIntento(true);
+                  return;
+                }
+                setConfirmando(true);
+              }}
+            >
               Agregar
             </Button>
           </>

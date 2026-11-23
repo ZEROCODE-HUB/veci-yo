@@ -43,6 +43,9 @@ export function ContactoForm({
   const [correo, setCorreo] = useState(inicial?.correo ?? "");
   // El correo es opcional, pero si se escribe tiene que ser uno de verdad: se
   // guardaba cualquier texto (Para Claude, 20/10/2026). La base lo exige igual.
+  // Sin nombre no se guarda: el error sale debajo del campo al intentar.
+  const [intento, setIntento] = useState(false);
+  const faltaNombre = !nombre.trim();
   const correoMalo =
     correo.trim() !== "" && !z.string().email().safeParse(correo.trim()).success;
 
@@ -53,10 +56,11 @@ export function ContactoForm({
         value={nombre}
         onChangeText={setNombre}
         placeholder={esEquipo ? "Nombre completo" : "Ej: Seguridad Total S.A."}
+        error={intento && faltaNombre ? (esEquipo ? "Escribe el nombre" : "Escribe el nombre de la empresa") : ""}
       />
       {esEquipo ? (
         <Select
-          label="Cargo"
+          label="Cargo (opcional)"
           value={cargo || null}
           options={opcionesDeCargo}
           onChange={(v) => setCargo(String(v))}
@@ -64,14 +68,14 @@ export function ContactoForm({
         />
       ) : null}
       <CampoTelefono
-        label="Teléfono"
+        label="Teléfono (opcional)"
         codigoPais={codigoPais}
         onCodigoPaisChange={setCodigoPais}
         telefono={telefono}
         onTelefonoChange={setTelefono}
       />
       <Input
-        label="Correo"
+        label="Correo (opcional)"
         value={correo}
         onChangeText={setCorreo}
         placeholder={esEquipo ? "correo@ejemplo.com" : "correo@empresa.com"}
@@ -82,8 +86,12 @@ export function ContactoForm({
         <View className="flex-1">
           <Button
             fullWidth
-            disabled={guardando || !nombre.trim() || correoMalo}
-            onPress={() =>
+            disabled={guardando || correoMalo}
+            onPress={() => {
+              if (faltaNombre) {
+                setIntento(true);
+                return;
+              }
               onGuardar({
                 id: inicial?.id,
                 tipo,
@@ -92,8 +100,8 @@ export function ContactoForm({
                 telefono,
                 codigoPais,
                 correo: correo.trim(),
-              })
-            }
+              });
+            }}
           >
             {guardando ? "Guardando…" : "Guardar"}
           </Button>

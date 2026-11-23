@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { CampoFecha, Input, SegunLaCarga } from "@/shared/components";
+import { CampoFecha, EtiquetaDelCampo, Input, SegunLaCarga } from "@/shared/components";
 import { formatDateIso } from "@/shared/utils";
 import { ConexionTra } from "../../ConexionTra";
 import { SeccionDeConfiguracion } from "./SeccionDeConfiguracion";
@@ -13,9 +13,10 @@ export function CumplimientoLegal({ renta: r, esDueno }: { renta: RentaCorta; es
   return (
     <SeccionDeConfiguracion titulo="Cumplimiento legal">
       <View>
-        <Text className="text-sm mb-1.5 font-medium" style={{ color: theme.colors.textSecondary }}>
-          RNT (Registro Nacional de Turismo)
-        </Text>
+        <EtiquetaDelCampo
+          label={esDueno ? "RNT, Registro Nacional de Turismo (opcional)" : "RNT, Registro Nacional de Turismo"}
+          explicacion="El número de registro que la ley pide para alquilar por días."
+        />
         {/*
           Solo el dueño lo carga o lo cambia (KT 0.6 y 4.1; lo exige la base
           desde el 15/10/2026). Los demás lo ven.
@@ -28,7 +29,7 @@ export function CumplimientoLegal({ renta: r, esDueno }: { renta: RentaCorta; es
               placeholder="Ej: RNT-12345"
             />
             <CampoFecha
-              label="Vence el"
+              label="Vence el (opcional)"
               value={legal.venceEn}
               onChange={(fecha) => setLegal((p) => ({ ...p, venceEn: fecha }))}
               placeholder="Sin fecha de vencimiento"

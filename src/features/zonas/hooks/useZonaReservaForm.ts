@@ -62,7 +62,7 @@ export interface ReservaHecha {
   /** Zona de pago sin el comprobante todavía: hay que adjuntarlo. */
   faltaComprobante: boolean;
   /** Horas para adjuntarlo. 0 = sin plazo. */
-  plazoAdjuntoHoras: number;
+  plazoAdjuntoMinutos: number;
 }
 
 interface UseZonaReservaFormParams {
@@ -490,7 +490,7 @@ export function useZonaReservaForm({
           fecha: formatDate(data.fecha ?? ahora()),
           personas: 1 + cuentaDeAcompanantes(data.asistentes),
           faltaComprobante: pideComprobante && !comprobante,
-          plazoAdjuntoHoras: zona.plazoAdjuntoHoras ?? 0,
+          plazoAdjuntoMinutos: zona.plazoAdjuntoMinutos ?? 0,
         });
       },
     });
@@ -558,7 +558,7 @@ export function useZonaReservaForm({
     /** Solo para un huésped: los nombres que puede elegir. `null` si escribe libre. */
     genteDeMiEstancia: esHuesped ? genteDeMiEstancia : null,
     /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
-    plazoAdjuntoHoras: zona.plazoAdjuntoHoras ?? 0,
+    plazoAdjuntoMinutos: zona.plazoAdjuntoMinutos ?? 0,
     /** Los nombres de quienes viven conmigo, para sumarlos (18/11/2026). */
     nombresDeMiVivienda: ofreceMiVivienda
       ? personasDeMiVivienda.map((p) => p.nombre.trim()).filter(Boolean)

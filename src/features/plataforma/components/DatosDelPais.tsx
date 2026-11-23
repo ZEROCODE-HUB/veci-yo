@@ -47,6 +47,13 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
   if (alta !== pais.altaDeEdificio) cambios.alta_de_edificio = alta;
   if (activo !== pais.activo) cambios.activo = activo;
   const hayCambios = Object.keys(cambios).length > 0;
+  // Lo mismo que exige la base (panel_cambiar_pais), dicho debajo de cada campo.
+  const errorNombre = nombre.trim() === "" ? "Escribe el nombre del país" : undefined;
+  const errorPrefijo = /^[0-9]{1,4}$/.test(prefijo.trim()) ? undefined : "De 1 a 4 cifras, sin el +";
+  const edad = Number(mayoria);
+  const errorMayoria =
+    mayoria.trim() !== "" && edad >= 14 && edad <= 25 ? undefined : "Entre 14 y 25 años";
+  const hayErrores = Boolean(errorNombre || errorPrefijo || errorMayoria);
   const [confirmando, setConfirmando] = useState(false);
 
   // Lo que se enseña al confirmar (28/10/2026): de qué a qué cambia cada dato.
@@ -79,28 +86,58 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
   return (
     <Card className="gap-3 p-4">
       <Text className="text-base font-semibold text-gray-900">Datos del país</Text>
-      <Input label="Nombre" value={nombre} onChangeText={setNombre} editable={esDueno} />
+      <Input label="Nombre *" value={nombre} onChangeText={setNombre} editable={esDueno} error={errorNombre} />
       <FilaDeCampos gap={12}>
-        <Input label="Prefijo telefónico" value={prefijo} onChangeText={setPrefijo} soloCifras editable={esDueno} />
-        <Input label="Mayoría de edad (años)" value={mayoria} onChangeText={setMayoria} soloCifras editable={esDueno} />
+        <Input
+          label="Prefijo telefónico *"
+          explicacion="El código para llamar a este país desde fuera, sin el +. Por ejemplo, 57 para Colombia."
+          value={prefijo}
+          onChangeText={setPrefijo}
+          soloCifras
+          editable={esDueno}
+          error={errorPrefijo}
+        />
+        <Input
+          label="Mayoría de edad (años) *"
+          explicacion="La edad desde la que una persona es adulta en este país. La app la usa para saber quién es menor de edad."
+          value={mayoria}
+          onChangeText={setMayoria}
+          soloCifras
+          editable={esDueno}
+          error={errorMayoria}
+        />
       </FilaDeCampos>
       <Select
-        label="Moneda"
+        label="Moneda (opcional)"
         value={moneda}
         options={monedas.map((m) => ({ value: m.codigo, label: `${m.codigo} · ${m.nombre}` }))}
         onChange={(v) => setMoneda(String(v))}
         placeholder="Sin moneda"
       />
       <Input
-        label="Zona horaria"
+        label="Zona horaria (opcional)"
+        explicacion="La hora oficial del país, escrita como America/Bogota. Los edificios nuevos del país usan esa hora."
         value={zona}
         onChangeText={setZona}
         placeholder="America/Bogota"
         editable={esDueno}
       />
       <FilaDeCampos gap={12}>
-        <Input label="Emergencias (policía)" value={policia} onChangeText={setPolicia} editable={esDueno} />
-        <Input label="Identificación fiscal" value={fiscal} onChangeText={setFiscal} placeholder="NIT" editable={esDueno} />
+        <Input
+          label="Emergencias, policía (opcional)"
+          explicacion="El número al que la portería llama en una emergencia en los edificios de este país."
+          value={policia}
+          onChangeText={setPolicia}
+          editable={esDueno}
+        />
+        <Input
+          label="Identificación fiscal (opcional)"
+          explicacion="Cómo se llama en este país el número fiscal del edificio, por ejemplo NIT o RUC."
+          value={fiscal}
+          onChangeText={setFiscal}
+          placeholder="NIT"
+          editable={esDueno}
+        />
       </FilaDeCampos>
       <FilaConInterruptor
         texto="Se pueden dar de alta edificios"
@@ -129,7 +166,7 @@ export function DatosDelPais({ pais, monedas, esDueno, guardando, guardar }: Pro
         />
       ) : esDueno ? (
         <View>
-          <Button onPress={() => setConfirmando(true)} disabled={!hayCambios} fullWidth>
+          <Button onPress={() => setConfirmando(true)} disabled={!hayCambios || hayErrores} fullWidth>
             Guardar datos
           </Button>
         </View>

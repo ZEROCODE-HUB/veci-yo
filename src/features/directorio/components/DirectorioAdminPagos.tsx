@@ -367,7 +367,7 @@ export function DirectorioAdminPagos({
             suma de todo.
           </Text>
           <Input
-            label={moneda ? `Importe mensual (${moneda})` : "Importe mensual"}
+            label={moneda ? `Importe mensual en ${moneda} (opcional)` : "Importe mensual (opcional)"}
             value={importe}
             onChangeText={(texto) => {
               setImporte(texto);
