@@ -2,6 +2,7 @@
   {
     "fecha": "2026-11-23",
     "puntos": [
+      "Invitar a alguien: la lista ahora se llama «Profesionales permanentes» y cada uno con cuenta tiene «Editar permisos» (crear visitas y contestar el citófono). Para agregar uno nuevo, el botón lleva a Visitas.",
       "Quien tiene roles en varios edificios ya no ve las viviendas, torres y zonas comunes de los otros edificios mezcladas: cada rol ve solo las de su edificio. Arregla los varios «101» al llamar desde portería, el índice de votación que no se guardaba y el «No puedes llamar a ese destino»."
     ]
   },
