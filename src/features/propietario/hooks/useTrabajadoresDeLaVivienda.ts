@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUIStore, useUbicacionStore } from "@/stores";
 import { estadoDe } from "@/shared/components";
 import { mensajeDeError } from "@/shared/utils/error.util";
-import { darDeBajaTrabajador, obtenerTrabajadores } from "../services/trabajadores.repo";
+import {
+  cambiarPermisosDeTrabajador,
+  darDeBajaTrabajador,
+  obtenerPermisosDeTrabajadores,
+  obtenerTrabajadores,
+  type PermisosDeTrabajador,
+} from "../services/trabajadores.repo";
 
 /**
  * Los profesionales permanentes de la vivienda activa (17/11/2026): la lista
@@ -23,6 +29,14 @@ export function useTrabajadoresDeLaVivienda() {
     enabled: Boolean(unidadId),
   });
 
+  // Sus permisos, para editarlos (23/11/2026). Si no los gestiona, la base no los da.
+  const permisos = useQuery({
+    queryKey: [...clave, "permisos"],
+    queryFn: () => obtenerPermisosDeTrabajadores(unidadId),
+    enabled: Boolean(unidadId),
+    retry: false,
+  });
+
   const refrescar = () => {
     void client.invalidateQueries({ queryKey: ["unidad", "trabajadores"] });
     // El directorio de la vivienda los enseña también.
@@ -38,8 +52,22 @@ export function useTrabajadoresDeLaVivienda() {
     onError: (e) => addToast(mensajeDeError(e, "No se pudo dar de baja"), "error"),
   });
 
+  const cambiarPermisos = useMutation({
+    mutationFn: ({ id, permisos: nuevos }: { id: string; permisos: PermisosDeTrabajador }) =>
+      cambiarPermisosDeTrabajador(id, nuevos),
+    onSuccess: () => {
+      refrescar();
+      addToast("Permisos guardados", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudieron guardar los permisos"), "error"),
+  });
+
   return {
     puede: Boolean(unidadId),
+    permisos: permisos.data ?? {},
+    cambiarPermisos: (id: string, nuevos: PermisosDeTrabajador) =>
+      cambiarPermisos.mutateAsync({ id, permisos: nuevos }),
+    guardandoPermisos: cambiarPermisos.isPending,
     trabajadores: lista.data ?? [],
     carga: estadoDe(lista),
     darDeBaja: (id: string) => darDeBaja.mutate(id),

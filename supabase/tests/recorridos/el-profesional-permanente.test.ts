@@ -2,7 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { entrarComo, salir, servicio, supabase } from "./cliente";
 import { agregarTrabajador } from "@/features/propietario/services/trabajadores.repo";
 import {
+  cambiarPermisosDeTrabajador,
   obtenerMisInvitacionesDeTrabajador,
+  obtenerPermisosDeTrabajadores,
   responderInvitacionDeTrabajador,
 } from "@/features/propietario/services/trabajadores.repo";
 import { crearVisita, obtenerVisitas } from "@/features/visitas/services/visitas.repo";
@@ -136,6 +138,46 @@ describe("el profesional permanente con cuenta, de principio a fin", () => {
     expect(id).toBeTruthy();
     const visitas = await obtenerVisitas({ ambito: "unidad", unidadIds: [U102] });
     expect(visitas.map((v) => v.uuid)).toEqual([id]);
+  });
+
+  it("Sofía le quita el permiso de crear visitas, y él lo pierde (23/11/2026)", async () => {
+    await salir();
+    await entrarComo(SOFIA);
+    const permisos = await obtenerPermisosDeTrabajadores(U102);
+    const [id] = Object.keys(permisos).filter((k) => permisos[k].puedeCrearVisitas);
+    expect(id).toBeTruthy();
+    await cambiarPermisosDeTrabajador(id, { puedeCrearVisitas: false, puedeContestarCitofono: true });
+    expect((await obtenerPermisosDeTrabajadores(U102))[id].puedeCrearVisitas).toBe(false);
+    await salir();
+
+    await entrarComo(correo);
+    const { data } = await supabase.rpc("mis_viviendas_de_trabajador");
+    expect(data?.[0]?.puede_crear_visitas).toBe(false);
+    await expect(
+      crearVisita({
+        condominioId: CONDOMINIO,
+        unidadId: U102,
+        tipo: "temporal",
+        estado: "programada",
+        fechaDesde: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
+        profesion: MARCA,
+        invitados: [{ nombre: `${MARCA} sin permiso` }],
+      }),
+    ).rejects.toThrow(/row-level security|permission|permiso/i);
+  });
+
+  it("alguien de otra vivienda no puede cambiarle los permisos", async () => {
+    await salir();
+    await entrarComo(SOFIA);
+    const [id] = Object.keys(await obtenerPermisosDeTrabajadores(U102));
+    await salir();
+    await entrarComo("propietario@veciyo.test");
+    await expect(
+      cambiarPermisosDeTrabajador(id, { puedeCrearVisitas: true, puedeContestarCitofono: true }),
+    ).rejects.toThrow(/No tienes permiso/);
+    await expect(obtenerPermisosDeTrabajadores(U102)).rejects.toThrow(/Solo quien gestiona/);
+    await salir();
+    await entrarComo(correo);
   });
 
   it("ve el anuncio de los profesionales permanentes, y no el de los propietarios", async () => {
