@@ -13,7 +13,8 @@ import { useListasEnVivo } from "@/app/useListasEnVivo";
 import { useVisitasEnVivo } from "@/app/useVisitasEnVivo";
 import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
-import { invitacionPendiente } from '@/shared/services/invitacionPendiente';
+import { invitacionPendiente, recordarInvitacion } from '@/shared/services/invitacionPendiente';
+import { tokenDeInvitacion } from '@/shared/services/tokenDeInvitacion';
 import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
@@ -34,7 +35,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * la version web. Sin esto el enlace no lleva a ningun lado.
  */
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.createURL('/'), 'https://veciyo-web-seven.vercel.app'],
+  // `veciyo://` también a mano: `createURL('/')` da `veciyo:///` en la app instalada, y
+  // el enlace de la web llega con dos barras (23/11/2026).
+  prefixes: [Linking.createURL('/'), 'veciyo://', 'veciyo:///', 'https://veciyo-web-seven.vercel.app'],
   config: {
     screens: {
       Auth: {
@@ -91,6 +94,36 @@ export function RootNavigator() {
     entró, vuelve a ella para aceptarla con un toque (16/11/2026). Sin esto
     caía en un Inicio sin edificio y tenía que encontrar la invitación solo.
   */
+  /*
+    Y por si la navegación no reconoce el enlace (23/11/2026): el código de la
+    invitación se saca de cualquier enlace que la abra --al arrancar o con la
+    app ya abierta-- y se lleva a su pantalla. Sin esto, «Abrir Veciyo» desde
+    la web dejaba la app en el login y el registro salía vacío.
+  */
+  useEffect(() => {
+    const abrir = (enlace: string | null) => {
+      const token = tokenDeInvitacion(enlace);
+      if (!token) return;
+      recordarInvitacion(token);
+      const ir = () => {
+        if (!navegacionGlobal.isReady()) return false;
+        const actual = navegacionGlobal.getCurrentRoute();
+        if (actual?.name !== 'AceptarInvitacion') navegacionGlobal.navigate('AceptarInvitacion', { token });
+        return true;
+      };
+      if (ir()) return;
+      // Al arrancar, la navegación todavía no está lista: se reintenta un rato.
+      let intentos = 0;
+      const reintento = setInterval(() => {
+        intentos += 1;
+        if (ir() || intentos > 40) clearInterval(reintento);
+      }, 250);
+    };
+    void Linking.getInitialURL().then(abrir).catch(() => undefined);
+    const suscripcion = Linking.addEventListener('url', ({ url }) => abrir(url));
+    return () => suscripcion.remove();
+  }, []);
+
   const estabaDentro = useRef(autenticado);
   useEffect(() => {
     const acabaDeEntrar = autenticado && !estabaDentro.current;

@@ -123,7 +123,7 @@ export function PropietarioInvitarScreen() {
             trabajadores={trabajadores.trabajadores}
             onDarDeBaja={trabajadores.darDeBaja}
             dandoDeBajaId={trabajadores.dandoDeBajaId}
-            permisos={trabajadores.permisos}
+            situacion={trabajadores.situacion}
             onCambiarPermisos={trabajadores.cambiarPermisos}
             guardandoPermisos={trabajadores.guardandoPermisos}
             onReenviar={trabajadores.reenviarInvitacion}

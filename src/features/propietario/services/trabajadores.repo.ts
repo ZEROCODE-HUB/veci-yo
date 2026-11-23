@@ -61,6 +61,37 @@ export interface PermisosDeTrabajador {
   puedeContestarCitofono: boolean;
 }
 
+/**
+ * En qué va el profesional (23/11/2026): sin app, invitación enviada, ya creó
+ * su cuenta pero no aceptó, o activo.
+ */
+export type EstadoDelProfesional = "sin_app" | "invitado" | "cuenta_creada" | "activo";
+
+export interface SituacionDelProfesional extends PermisosDeTrabajador {
+  /** La visita permanente con que se registró, si la tiene. */
+  visitaId: string | null;
+  estado: EstadoDelProfesional;
+}
+
+/** Su visita, sus permisos y en qué va, por id. Solo quien gestiona la vivienda. */
+export async function obtenerSituacionDeTrabajadores(
+  unidadId: string,
+): Promise<Record<string, SituacionDelProfesional>> {
+  const { data, error } = await supabase.rpc("estado_de_trabajadores", { p_unidad_id: unidadId });
+  if (error) throw error;
+  return Object.fromEntries(
+    (data ?? []).map((f) => [
+      f.id,
+      {
+        visitaId: f.visita_id ?? null,
+        estado: f.estado as EstadoDelProfesional,
+        puedeCrearVisitas: f.puede_crear_visitas,
+        puedeContestarCitofono: f.puede_contestar_citofono,
+      },
+    ]),
+  );
+}
+
 /** Los permisos de cada profesional de la vivienda, por id. Solo quien la gestiona. */
 export async function obtenerPermisosDeTrabajadores(
   unidadId: string,
