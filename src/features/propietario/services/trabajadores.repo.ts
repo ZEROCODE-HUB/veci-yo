@@ -54,6 +54,35 @@ export async function agregarTrabajador(datos: NuevoTrabajador): Promise<string>
   return data;
 }
 
+/** Lo que el profesional permanente puede hacer con su cuenta (23/11/2026). */
+export interface PermisosDeTrabajador {
+  puedeCrearVisitas: boolean;
+  puedeContestarCitofono: boolean;
+}
+
+/** Los permisos de cada profesional de la vivienda, por id. Solo quien la gestiona. */
+export async function obtenerPermisosDeTrabajadores(
+  unidadId: string,
+): Promise<Record<string, PermisosDeTrabajador>> {
+  const { data, error } = await supabase.rpc("permisos_de_trabajadores", { p_unidad_id: unidadId });
+  if (error) throw error;
+  return Object.fromEntries(
+    (data ?? []).map((f) => [
+      f.id,
+      { puedeCrearVisitas: f.puede_crear_visitas, puedeContestarCitofono: f.puede_contestar_citofono },
+    ]),
+  );
+}
+
+export async function cambiarPermisosDeTrabajador(id: string, permisos: PermisosDeTrabajador): Promise<void> {
+  const { error } = await supabase.rpc("cambiar_permisos_de_trabajador", {
+    p_id: id,
+    p_puede_crear_visitas: permisos.puedeCrearVisitas,
+    p_puede_contestar_citofono: permisos.puedeContestarCitofono,
+  });
+  if (error) throw error;
+}
+
 export async function darDeBajaTrabajador(id: string): Promise<void> {
   const { error } = await supabase.rpc("dar_de_baja_trabajador_de_la_vivienda", { p_id: id });
   if (error) throw error;

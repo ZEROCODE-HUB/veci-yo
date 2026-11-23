@@ -110,7 +110,7 @@ export function PropietarioInvitarScreen() {
 
         <SegunLaCarga
           estado={trabajadores.carga}
-          texto="los trabajadores de la vivienda"
+          texto="los profesionales permanentes de la vivienda"
           forma="filas"
           cuantos={1}
           enLinea
@@ -119,6 +119,9 @@ export function PropietarioInvitarScreen() {
             trabajadores={trabajadores.trabajadores}
             onDarDeBaja={trabajadores.darDeBaja}
             dandoDeBajaId={trabajadores.dandoDeBajaId}
+            permisos={trabajadores.permisos}
+            onCambiarPermisos={trabajadores.cambiarPermisos}
+            guardandoPermisos={trabajadores.guardandoPermisos}
           />
         </SegunLaCarga>
         {/*

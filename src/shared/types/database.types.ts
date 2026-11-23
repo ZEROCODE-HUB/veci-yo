@@ -6197,6 +6197,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      cambiar_permisos_de_trabajador: {
+        Args: {
+          p_id: string
+          p_puede_contestar_citofono: boolean
+          p_puede_crear_visitas: boolean
+        }
+        Returns: undefined
+      }
       cambiar_placa: {
         Args: { p_placa: string; p_vehiculo_id: string }
         Returns: undefined
@@ -8121,6 +8129,14 @@ export type Database = {
           accion: Database["public"]["Enums"]["accion_de_rol"]
           permitido: boolean
           rol: Database["public"]["Enums"]["rol_con_permisos"]
+        }[]
+      }
+      permisos_de_trabajadores: {
+        Args: { p_unidad_id: string }
+        Returns: {
+          id: string
+          puede_contestar_citofono: boolean
+          puede_crear_visitas: boolean
         }[]
       }
       permisos_de_unidad: {
