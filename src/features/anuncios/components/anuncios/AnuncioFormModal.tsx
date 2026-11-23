@@ -8,6 +8,7 @@ import {
   Cargando,
   CampoFecha,
   Checkbox,
+  EtiquetaDelCampo,
   Input,
   Modal,
   Select,
@@ -144,6 +145,7 @@ export function AnuncioFormModal({
           name="categoria"
           render={({ field, fieldState }) => (
             <Select
+              label="Categoría *"
               value={field.value}
               options={categorias}
               onChange={(value) => field.onChange(String(value))}
@@ -153,9 +155,10 @@ export function AnuncioFormModal({
           )}
         />
         <View>
-          <Text className="text-sm text-gray-500 mb-2 font-medium">
-            Dirigido a:
-          </Text>
+          <EtiquetaDelCampo
+            label="Dirigido a *"
+            explicacion="Quién verá esta publicación en la aplicación. Marca al menos un grupo."
+          />
           <View className="gap-2">
             {(
               [
@@ -216,13 +219,18 @@ export function AnuncioFormModal({
               />
             ))}
           </View>
+          {errors.paraPropietarios?.message ? (
+            <Text className="mt-1 text-xs text-red-600">
+              {errors.paraPropietarios.message}
+            </Text>
+          ) : null}
         </View>
         <Controller
           control={control}
           name="titulo"
           render={({ field, fieldState }) => (
             <Input
-              label="Título*"
+              label="Título *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Título del anuncio"
@@ -236,7 +244,7 @@ export function AnuncioFormModal({
           name="descripcion"
           render={({ field, fieldState }) => (
             <Input
-              label="Descripción*"
+              label="Descripción *"
               value={field.value}
               onChangeText={field.onChange}
               placeholder="Descríbelo con el mayor detalle posible"
@@ -248,7 +256,7 @@ export function AnuncioFormModal({
         {tipo === "Anuncio" ? (
           <View className="gap-2">
             <DateField
-              label="Fecha de publicación*"
+              label="Fecha de publicación (opcional)"
               value={fechaPublicada}
               onChange={(fecha) =>
                 setValue("fechaPublicada", fecha, { shouldValidate: true })
@@ -376,7 +384,7 @@ function DateField({
       label={label}
       value={value ? formatDateInput(value) : ""}
       onChange={(iso) => onChange(parseFechaIso(iso))}
-      placeholder="Elegir fecha"
+      placeholder="Hoy, si no eliges otra"
     />
   );
 }

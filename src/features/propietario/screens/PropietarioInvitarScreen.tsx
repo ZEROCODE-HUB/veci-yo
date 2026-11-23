@@ -43,6 +43,8 @@ export function PropietarioInvitarScreen() {
     sinApp,
     documentosOfrecidos,
     error,
+    campoConError,
+    pistaDelDocumento,
     enlace,
     cerrarEnlace,
     invitar,
@@ -102,6 +104,8 @@ export function PropietarioInvitarScreen() {
           sinApp={sinApp}
           documentosOfrecidos={documentosOfrecidos}
           error={error}
+          campoConError={campoConError}
+          pistaDelDocumento={pistaDelDocumento}
           invitando={invitando}
           onChange={setForm}
           onEnviar={invitar}

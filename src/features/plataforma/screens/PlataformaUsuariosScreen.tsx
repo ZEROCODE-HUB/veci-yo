@@ -102,6 +102,8 @@ export function PlataformaUsuariosScreen() {
   const [porConfirmar, setPorConfirmar] = useState<string | null>(null);
   /** El motivo de la suspensión que se está escribiendo. */
   const [motivo, setMotivo] = useState("");
+  // Sin motivo no se suspende: el error sale debajo del campo.
+  const [faltaMotivo, setFaltaMotivo] = useState(false);
 
   useEffect(() => {
     const espera = setTimeout(() => {
@@ -120,7 +122,7 @@ export function PlataformaUsuariosScreen() {
       return;
     }
     if (accion === "suspender" && motivo.trim().length < 3) {
-      addToast("Escribe el motivo: se lo mandamos por correo", "error");
+      setFaltaMotivo(true);
       return;
     }
     setPorConfirmar(null);
@@ -265,9 +267,18 @@ export function PlataformaUsuariosScreen() {
                             <View key={accion} className="gap-2">
                               {pendiente && accion === "suspender" ? (
                                 <Input
-                                  label="Motivo (le llega por correo)"
+                                  label="Motivo *"
+                                  explicacion="Le llega por correo a la persona y lo ve al intentar entrar a la app."
                                   value={motivo}
-                                  onChangeText={setMotivo}
+                                  onChangeText={(texto) => {
+                                    setMotivo(texto);
+                                    setFaltaMotivo(false);
+                                  }}
+                                  error={
+                                    faltaMotivo
+                                      ? "Escribe el motivo, de al menos 3 letras: se lo mandamos por correo"
+                                      : undefined
+                                  }
                                   placeholder="Por ejemplo: uso indebido de la portería"
                                   multiline
                                 />

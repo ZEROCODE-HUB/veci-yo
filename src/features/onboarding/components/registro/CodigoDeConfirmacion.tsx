@@ -75,7 +75,7 @@ export function CodigoDeConfirmacion({
         {`Te enviamos un código de ${CIFRAS} cifras a ${correo}. Escríbelo aquí para entrar.`}
       </Text>
       <Input
-        label="Código"
+        label="Código *"
         value={codigo}
         onChangeText={(texto) => setCodigo(texto.replace(/\D/g, "").slice(0, CIFRAS))}
         placeholder="123456"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Input, Modal } from "@/shared/components";
 import { useUIStore } from "@/stores/ui-store";
@@ -18,13 +18,20 @@ export function IncidenciaDeReserva({ zona: z, nombreDeLaZona }: { zona: Detalle
   const { crear: crearPqrs } = useReclamos();
   const addToast = useUIStore((s) => s.addToast);
   const item = z.incidenciaItem;
+  // Pulsó «Enviar» sin escribir nada: se dice debajo del campo.
+  const [intento, setIntento] = useState(false);
   const cerrar = () => {
     z.setIncidenciaItem(null);
     z.setIncidenciaTexto("");
+    setIntento(false);
   };
 
   const enviar = () => {
     if (!item) return;
+    if (!z.incidenciaTexto.trim()) {
+      setIntento(true);
+      return;
+    }
     crearPqrs
       .mutateAsync({
         datos: {
@@ -69,8 +76,10 @@ export function IncidenciaDeReserva({ zona: z, nombreDeLaZona }: { zona: Detalle
             </Text>
           </View>
           <Input
+            label="Comentario o incidencia *"
             value={z.incidenciaTexto}
             onChangeText={z.setIncidenciaTexto}
+            error={intento && !z.incidenciaTexto.trim() ? "Escribe qué pasó" : undefined}
             placeholder="Describe el comentario o la incidencia…"
             multiline
             rows={5}
@@ -78,7 +87,6 @@ export function IncidenciaDeReserva({ zona: z, nombreDeLaZona }: { zona: Detalle
           />
           <Button
             fullWidth
-            disabled={!z.incidenciaTexto.trim()}
             loading={crearPqrs.isPending}
             onPress={enviar}
           >

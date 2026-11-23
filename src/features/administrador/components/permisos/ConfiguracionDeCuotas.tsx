@@ -127,7 +127,7 @@ export function ConfiguracionDeCuotas({
       <View className="flex-row gap-2.5">
         <View className="flex-1">
           <Input
-            label="Importe mensual"
+            label={automatica ? "Importe mensual *" : "Importe mensual (opcional)"}
             value={monto}
             onChangeText={(texto) => {
               setMonto(texto);
@@ -141,7 +141,7 @@ export function ConfiguracionDeCuotas({
         </View>
         <View style={{ width: 110 }}>
           <Select
-            label="Moneda"
+            label="Moneda *"
             value={moneda}
             options={monedasCuota}
             onChange={(valor) => setMoneda(String(valor))}
@@ -151,7 +151,8 @@ export function ConfiguracionDeCuotas({
 
       {dias ? (
         <Select
-          label="Día de vencimiento"
+          label="Día de vencimiento (opcional)"
+          explicacion="El día de cada mes hasta el que se puede pagar la cuota. Pasado ese día, la cuota queda vencida."
           value={dia}
           options={[{ value: SIN_VENCIMIENTO, label: "Sin vencimiento" }, ...dias]}
           onChange={(valor) => setDia(String(valor))}

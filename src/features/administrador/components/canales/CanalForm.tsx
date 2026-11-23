@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { theme } from "@/config";
-import { Button, Input } from "@/shared/components";
+import { Button, EtiquetaDelCampo, Input } from "@/shared/components";
 import {
   ROLES_DE_EDIFICIO,
   ROLES_DE_VIVIENDA,
@@ -49,22 +49,27 @@ export function CanalForm({
     setNombre(editando?.nombre ?? "");
     setVivienda(editando?.rolesVivienda ?? []);
     setEdificio(editando?.rolesEdificio ?? []);
+    setIntento(false);
   }, [editando]);
 
   const sinRoles = vivienda.length === 0 && edificio.length === 0;
+  // Sin nombre no se guarda: el error sale debajo del campo al intentarlo.
+  const [intento, setIntento] = useState(false);
+  const sinNombre = nombre.trim() === "";
 
   return (
     <View className="gap-4">
       <Input
-        label="Nombre del canal"
+        label="Nombre del canal *"
         value={nombre}
         onChangeText={setNombre}
         placeholder="Residentes, Obras, Asamblea…"
+        error={intento && sinNombre ? "Escribe el nombre del canal" : ""}
       />
 
       <View>
-        <Text className="text-sm font-medium text-gray-500">Quién entra</Text>
-        <Text className="mt-1 text-xs leading-5 text-gray-400">
+        <EtiquetaDelCampo label="Quién entra *" />
+        <Text className="text-xs leading-5 text-gray-400">
           Se entra por el rol, no uno a uno: quien llega al edificio con ese rol
           aparece en el canal, y quien se va deja de aparecer.
         </Text>
@@ -122,15 +127,19 @@ export function CanalForm({
           <Button
             variant="primary"
             fullWidth
-            disabled={guardando || sinRoles || nombre.trim() === ""}
-            onPress={() =>
+            disabled={guardando || sinRoles}
+            onPress={() => {
+              if (sinNombre) {
+                setIntento(true);
+                return;
+              }
               onGuardar({
                 nombre: nombre.trim(),
                 rolesVivienda: vivienda,
                 rolesEdificio: edificio,
                 canalId: editando?.id,
-              })
-            }
+              });
+            }}
           >
             {guardando ? "Guardando…" : editando ? "Guardar" : "Crear canal"}
           </Button>

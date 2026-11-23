@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { errorDeDocumento } from "@/features/visitas/helpers/validarVisita";
+import { errorDeDocumento } from "@/shared/utils/documento.util";
 import type { ReglaDeDocumento } from "@/shared/services/documentos.repo";
 
 /**

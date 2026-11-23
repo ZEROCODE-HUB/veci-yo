@@ -136,6 +136,8 @@ export function ReservasDePorteriaScreen() {
 
   const [porRechazar, setPorRechazar] = useState<ReservaZona | null>(null);
   const [motivo, setMotivo] = useState("");
+  // Pulsó «Rechazar» sin motivo: se dice debajo del campo.
+  const [faltaMotivo, setFaltaMotivo] = useState(false);
 
   if (reservas.isLoading) return <Cargando texto="las reservas" />;
 
@@ -235,6 +237,7 @@ export function ReservasDePorteriaScreen() {
                   disabled={resolver.isPending && resolver.variables?.id === r.uuid}
                   onPress={() => {
                     setMotivo("");
+                    setFaltaMotivo(false);
                     setPorRechazar(r);
                   }}
                 >
@@ -248,14 +251,23 @@ export function ReservasDePorteriaScreen() {
 
       <Modal visible={Boolean(porRechazar)} onClose={() => setPorRechazar(null)} title="Rechazar reserva">
         <View className="gap-3">
-          <Input label="Motivo *" value={motivo} onChangeText={setMotivo} placeholder="Ej: el comprobante no corresponde" />
+          <Input
+            label="Motivo *"
+            value={motivo}
+            onChangeText={setMotivo}
+            placeholder="Ej: el comprobante no corresponde"
+            error={faltaMotivo && !motivo.trim() ? "Escribe por qué la rechazas" : undefined}
+          />
           <Button
             variant="danger"
             fullWidth
-            disabled={!motivo.trim()}
             loading={resolver.isPending}
             onPress={() => {
               if (!porRechazar?.uuid) return;
+              if (!motivo.trim()) {
+                setFaltaMotivo(true);
+                return;
+              }
               /*
                 Se espera a la base: antes se cerraba al pulsar y, si fallaba,
                 el motivo escrito se perdía (13/11/2026). El fallo lo dice el

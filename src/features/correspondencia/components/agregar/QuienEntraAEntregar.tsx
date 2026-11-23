@@ -1,7 +1,7 @@
 import React from "react";
 import { theme } from "@/config";
 import { Text, View } from "react-native";
-import { Input } from "@/shared/components";
+import { EtiquetaDelCampo, Input } from "@/shared/components";
 import type { ArchivoElegido } from "@/shared/services/archivos";
 import { FotosDelEnvio } from "./FotosDelEnvio";
 
@@ -14,11 +14,15 @@ export function QuienEntraAEntregar({
   onNombre,
   fotos,
   onFotos,
+  errorNombre,
+  errorFoto,
 }: {
   nombre: string;
   onNombre: (nombre: string) => void;
   fotos: ArchivoElegido[];
   onFotos: (actualizar: (previas: ArchivoElegido[]) => ArchivoElegido[]) => void;
+  errorNombre?: string;
+  errorFoto?: string;
 }) {
   return (
     <View className="gap-3 rounded-2xl p-3" style={{ borderWidth: 1, borderColor: theme.colors.border }}>
@@ -29,13 +33,15 @@ export function QuienEntraAEntregar({
         value={nombre}
         onChangeText={onNombre}
         placeholder="Como aparece en su documento"
+        error={errorNombre}
       />
-      <Text className="text-xs text-gray-500">Foto del documento de identidad *</Text>
+      <EtiquetaDelCampo label="Foto del documento de identidad *" />
       {/* Una sola: si se elige otra, reemplaza a la anterior. */}
       <FotosDelEnvio
         fotos={fotos}
         onCambiar={(actualizar) => onFotos((previas) => actualizar(previas).slice(-1))}
       />
+      {errorFoto ? <Text className="-mt-2 text-xs text-red-600">{errorFoto}</Text> : null}
     </View>
   );
 }

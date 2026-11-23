@@ -34,6 +34,8 @@ export function PlataformaEquipoScreen() {
     useStaffPlataforma();
 
   const [correo, setCorreo] = useState("");
+  // «Buscar» sin correo: se dice debajo del campo en vez de no hacer nada.
+  const [faltaCorreo, setFaltaCorreo] = useState(false);
   /** A quién se está a punto de quitar el rol: el segundo toque lo confirma. */
   const [porQuitar, setPorQuitar] = useState<string | null>(null);
   const [rol, setRol] = useState("soporte");
@@ -44,7 +46,10 @@ export function PlataformaEquipoScreen() {
   } | null>(null);
 
   const buscarCuenta = async () => {
-    if (!correo.trim()) return;
+    if (!correo.trim()) {
+      setFaltaCorreo(true);
+      return;
+    }
     setEncontrada(null);
     try {
       const resultado = await buscar.mutateAsync(correo.trim());
@@ -171,16 +176,18 @@ export function PlataformaEquipoScreen() {
           </Text>
 
           <Input
-            label="Correo de la cuenta"
+            label="Correo de la cuenta *"
             value={correo}
             onChangeText={(texto) => {
               setCorreo(texto);
+              setFaltaCorreo(false);
               // Si se cambia el correo, lo encontrado antes deja de valer: sin
               // esto se podría dar el rol a una cuenta distinta de la que se ve.
               setEncontrada(null);
             }}
             type="email"
             placeholder="alguien@correo.com"
+            error={faltaCorreo ? "Escribe el correo de la cuenta" : undefined}
           />
           <Button
             variant="secondary"
@@ -205,7 +212,7 @@ export function PlataformaEquipoScreen() {
                 ) : null}
               </View>
               <Select
-                label="Con qué alcance"
+                label="Con qué alcance *"
                 value={rol}
                 options={ROLES}
                 onChange={(valor) => setRol(String(valor))}

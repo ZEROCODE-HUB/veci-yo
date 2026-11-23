@@ -25,6 +25,8 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
   const cliente = useContext(QueryClientContext);
   const [editando, setEditando] = useState<{ uuid: string; placa: string } | null>(null);
   const [nuevo, setNuevo] = useState<{ placa: string; tipo: string } | null>(null);
+  // Pulsó «Agregar» sin placa: se dice debajo del campo, no solo un botón apagado.
+  const [intentoNuevo, setIntentoNuevo] = useState(false);
   // La misma regla de placa que el resto de la app, con el largo de la base;
   // aquí no se miraba nada (Parametrización, 25/10/2026).
   const parametros = useParametrosDeLaBase();
@@ -83,7 +85,10 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
         </View>
       ))}
       <View className="flex-row">
-        <Button size="sm" variant="secondary" onPress={() => setNuevo({ placa: "", tipo: tiposDeVehiculo[0]?.codigo ?? "" })}>
+        <Button size="sm" variant="secondary" onPress={() => {
+            setIntentoNuevo(false);
+            setNuevo({ placa: "", tipo: tiposDeVehiculo[0]?.codigo ?? "" });
+          }}>
           Agregar vehículo
         </Button>
       </View>
@@ -91,10 +96,10 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
       <Modal visible={!!editando} onClose={() => setEditando(null)} title="Editar placa">
         <View className="gap-4">
           <Input
-            label="Placa"
+            label="Placa *"
             value={editando?.placa ?? ""}
             onChangeText={(t) => setEditando((e) => (e ? { ...e, placa: t } : e))}
-            error={errorPlaca(editando?.placa)}
+            error={editando && !editando.placa.trim() ? "Escribe la placa" : errorPlaca(editando?.placa)}
             showEditIcon={false}
           />
           <Button
@@ -116,15 +121,15 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
       <Modal visible={!!nuevo} onClose={() => setNuevo(null)} title="Agregar vehículo">
         <View className="gap-4">
           <Input
-            label="Placa"
+            label="Placa *"
             value={nuevo?.placa ?? ""}
             onChangeText={(t) => setNuevo((n) => (n ? { ...n, placa: t } : n))}
             placeholder="ABC123"
-            error={errorPlaca(nuevo?.placa)}
+            error={intentoNuevo && !nuevo?.placa.trim() ? "Escribe la placa" : errorPlaca(nuevo?.placa)}
             showEditIcon={false}
           />
           <Select
-            label="Tipo"
+            label="Tipo *"
             value={nuevo?.tipo ?? null}
             options={tipos}
             onChange={(t) => setNuevo((n) => (n ? { ...n, tipo: String(t) } : n))}
@@ -132,15 +137,18 @@ export function VehiculosEnPorteria({ visita }: { visita: VisitaItem }) {
           <Button
             fullWidth
             loading={guardando}
-            disabled={!nuevo?.placa.trim() || Boolean(errorPlaca(nuevo?.placa))}
-            onPress={() =>
-              nuevo &&
-              guardar(
+            disabled={Boolean(errorPlaca(nuevo?.placa))}
+            onPress={() => {
+              if (!nuevo?.placa.trim()) {
+                setIntentoNuevo(true);
+                return;
+              }
+              void guardar(
                 () => agregarVehiculoEnPorteria(visita.uuid ?? "", nuevo.placa, nuevo.tipo),
                 "Vehículo apuntado",
                 () => setNuevo(null),
-              )
-            }
+              );
+            }}
           >
             Agregar
           </Button>

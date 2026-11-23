@@ -111,9 +111,11 @@ export function EliminarCuenta() {
           </View>
           {razon === OTRO && (
             <Input
-              label="Cuéntanos la razón"
+              label="Cuéntanos la razón *"
               value={otra}
               onChangeText={setOtra}
+              // El botón sigue apagado sin la razón; esto dice por qué.
+              error={entendido && otra.trim() === "" ? "Escribe la razón para continuar." : ""}
               placeholder="Escribe tu razón"
               multiline
               rows={2}

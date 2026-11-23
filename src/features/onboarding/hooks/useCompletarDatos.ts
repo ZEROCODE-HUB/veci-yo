@@ -7,6 +7,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { paisPorDefecto } from "@/shared/constants";
 import { useDocumentosParaRegistrarse, useParametrosDeLaBase } from "@/shared/hooks";
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
+import { pistaDeDocumento } from "@/shared/utils/documento.util";
 import { completarMisDatos } from "@/shared/services/sesion";
 import { mensajeDeError } from "@/shared/utils/error.util";
 import { crearEsquemaDatosPersonales, type DatosPersonalesFormData } from "../schemas";
@@ -72,6 +73,9 @@ export function useCompletarDatos() {
     correo: usuario?.correo ?? "",
     listo: esquema !== null,
     tiposDocumento: opcionesDeDocumento(documentos.reglas),
+    /** Lo que acepta el tipo elegido («Solo números, entre 5 y 12 cifras»). */
+    pistaDelDocumento: (tipo: string) =>
+      pistaDeDocumento(documentos.reglas.find((d) => d.tipo === tipo)),
     terminosAceptados,
     terminosError,
     setTerminosAceptados,

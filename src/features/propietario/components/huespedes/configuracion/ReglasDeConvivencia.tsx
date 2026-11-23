@@ -17,19 +17,15 @@ export function ReglasDeConvivencia({ renta: r }: { renta: RentaCorta }) {
           <Text className="shrink text-sm text-gray-900">Apta para niños</Text>
           <Toggle value={r.aptoNinos} onChange={r.setAptoNinos} />
         </View>
-        <View>
-          <Text className="text-sm text-gray-900 font-medium mb-1">
-            Descripción del alojamiento
-          </Text>
-          <Input
-            value={r.descripcion}
-            onChangeText={r.setDescripcion}
-            placeholder="N habitaciones, camas, info de aforo..."
-            multiline
-          />
-        </View>
         <Input
-          label="Habitaciones"
+          label="Descripción del alojamiento (opcional)"
+          value={r.descripcion}
+          onChangeText={r.setDescripcion}
+          placeholder="N habitaciones, camas, info de aforo..."
+          multiline
+        />
+        <Input
+          label="Habitaciones (opcional)"
           value={String(r.numHabitaciones)}
           onChangeText={(v) => r.setNumHabitaciones(parseInt(v, 10) || 0)}
           soloCifras

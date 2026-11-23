@@ -20,6 +20,8 @@ interface SelectOption {
 
 interface SelectProps {
   label?: string;
+  /** Una «i» junto a la etiqueta con lo que significa el campo (23/11/2026). */
+  explicacion?: string;
   value: string | number | null;
   options: (string | SelectOption)[];
   onChange: (val: string | number) => void;
@@ -50,6 +52,7 @@ const ALTO_MAXIMO_PEGADA = 320;
 
 export function Select({
   label,
+  explicacion,
   value,
   options,
   onChange,
@@ -103,7 +106,7 @@ export function Select({
 
   return (
     <View className="w-full">
-      {label ? <EtiquetaDelCampo label={label} /> : null}
+      {label ? <EtiquetaDelCampo label={label} explicacion={explicacion} /> : null}
       <Pressable
         ref={campo}
         accessibilityRole="button"

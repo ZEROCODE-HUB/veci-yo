@@ -19,7 +19,7 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
         name={`${name}.nombre`}
         render={({ field, fieldState }) => (
           <Input
-            label="Nombre de la empresa"
+            label="Nombre de la empresa (opcional)"
             value={field.value}
             onChangeText={field.onChange}
             placeholder="Ej: Seguridad Total S.A."
@@ -34,7 +34,7 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
             name={`${name}.telefono`}
             render={({ field, fieldState }) => (
               <Input
-                label="Teléfono"
+                label="Teléfono (opcional)"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="+593 999999999"
@@ -49,7 +49,7 @@ export function EmpresaContactoSection({ control, name, title }: Props) {
             name={`${name}.correo`}
             render={({ field, fieldState }) => (
               <Input
-                label="Correo"
+                label="Correo (opcional)"
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="correo@empresa.com"

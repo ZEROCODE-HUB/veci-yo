@@ -76,7 +76,8 @@ export function AdministradorGestionZonaFormScreen() {
       cupos: parametrosDeLaBase.numero("zona_cupos_por_defecto"),
       moneda: monedaDelEdificio ?? "",
       reservasActivas: parametrosDeLaBase.numero("zona_reservas_activas_por_defecto"),
-      plazoAdjuntoHoras: parametrosDeLaBase.numero("zona_plazo_adjunto_por_defecto"),
+      // El parámetro está en horas; el formulario, en minutos (23/11/2026).
+      plazoAdjuntoMinutos: parametrosDeLaBase.numero("zona_plazo_adjunto_por_defecto") * 60,
     });
     if (!current) return empty;
     return {
@@ -98,7 +99,7 @@ export function AdministradorGestionZonaFormScreen() {
       reservasActivasMaximas: current.reservasActivasMaximas ?? 0,
       limiteReservasPor: current.limiteReservasPor ?? "vivienda",
       anticipacionMinimaHoras: current.anticipacionMinimaHoras ?? 0,
-      plazoAdjuntoHoras: current.plazoAdjuntoHoras ?? 0,
+      plazoAdjuntoMinutos: current.plazoAdjuntoMinutos ?? 0,
       nombresDeZonas: current.nombresDeZonas ?? [],
       horariosDisponibles: [],
       reglamento: current?.reglamento ?? "",
@@ -192,7 +193,7 @@ export function AdministradorGestionZonaFormScreen() {
               reservasActivasMaximas: Number(value.reservasActivasMaximas) || null,
               limiteReservasPor: value.limiteReservasPor,
               anticipacionMinimaHoras: Number(value.anticipacionMinimaHoras) || 0,
-              plazoAdjuntoHoras: Number(value.plazoAdjuntoHoras) || null,
+              plazoAdjuntoMinutos: Number(value.plazoAdjuntoMinutos) || null,
               requiereAprobacion: value.requiereAprobacion,
               montoGarantia: Number(value.montoGarantia) || 0,
               costoLimpieza: Number(value.costoLimpieza) || 0,

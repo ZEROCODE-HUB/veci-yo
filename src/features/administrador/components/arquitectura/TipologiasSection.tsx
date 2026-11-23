@@ -142,12 +142,12 @@ export function TipologiasSection() {
         title={editando ? "Editar tipología" : "Nueva tipología"}
       >
         <View className="gap-3">
-          {campo("nombre", "Nombre de la tipología", "Ej: Estándar, Dúplex, Suite")}
+          {campo("nombre", "Nombre de la tipología *", "Ej: Estándar, Dúplex, Suite")}
           <View className="flex-row gap-2.5">
-            <View className="flex-1">{campo("habitaciones", "Habitaciones", "2")}</View>
-            <View className="flex-1">{campo("banos", "Baños", "1")}</View>
+            <View className="flex-1">{campo("habitaciones", "Habitaciones (opcional)", "2")}</View>
+            <View className="flex-1">{campo("banos", "Baños (opcional)", "1")}</View>
           </View>
-          {campo("metros", "Metros cuadrados", "62")}
+          {campo("metros", "Metros cuadrados (opcional)", "62")}
           <Button
             fullWidth
             loading={guardar.isPending}

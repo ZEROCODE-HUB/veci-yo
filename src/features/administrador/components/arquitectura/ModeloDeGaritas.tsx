@@ -81,8 +81,9 @@ export function ModeloDeGaritas({
           {faltan.map((g) => (
             <Input
               key={g.clave}
-              label={g.tipo === "garita_torre" ? "Garita de torre" : g.tipo === "acceso_vehicular" ? "Garita vehicular" : "Garita principal"}
+              label={`${g.tipo === "garita_torre" ? "Garita de torre" : g.tipo === "acceso_vehicular" ? "Garita vehicular" : "Garita principal"} *`}
               value={nombreDe(g)}
+              error={nombreDe(g).trim() ? "" : "Escribe un nombre para esta garita"}
               onChangeText={(v) => setNombres({ ...nombres, [g.clave]: v })}
             />
           ))}

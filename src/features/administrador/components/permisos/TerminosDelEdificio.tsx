@@ -23,7 +23,8 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
   const [abierto, setAbierto] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
-  const [error, setError] = useState("");
+  // Al intentar publicar sin título o sin texto, el error sale debajo de cada uno.
+  const [intento, setIntento] = useState(false);
 
   const vigentes = useQuery({
     queryKey: ["condominio", "terminos", condominioId],
@@ -47,7 +48,7 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
   const abrir = () => {
     setTitulo(vigentes.data?.titulo ?? "Términos y condiciones del edificio");
     setContenido(vigentes.data?.contenido ?? "");
-    setError("");
+    setIntento(false);
     setAbierto(true);
   };
 
@@ -80,21 +81,19 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
       >
         <View className="gap-3">
           <Input
-            label="Título"
+            label="Título *"
             value={titulo}
             onChangeText={setTitulo}
             showEditIcon={false}
+            error={intento && !titulo.trim() ? "Escribe el título" : undefined}
           />
           <Input
-            label="Texto"
+            label="Texto *"
             value={contenido}
-            onChangeText={(texto) => {
-              setContenido(texto);
-              setError("");
-            }}
+            onChangeText={setContenido}
             multiline
             showEditIcon={false}
-            error={error || undefined}
+            error={intento && !contenido.trim() ? "Escribe el texto de los términos" : undefined}
           />
           <Text className="text-xs leading-5 text-gray-500">
             Se publica como versión nueva. Los huéspedes que ya aceptaron la
@@ -105,7 +104,7 @@ export function TerminosDelEdificio({ condominioId }: { condominioId: string }) 
             loading={publicar.isPending}
             onPress={() => {
               if (!titulo.trim() || !contenido.trim()) {
-                setError("Escribe el título y el texto.");
+                setIntento(true);
                 return;
               }
               publicar.mutate();

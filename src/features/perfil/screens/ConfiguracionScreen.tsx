@@ -35,6 +35,7 @@ export function ConfiguracionScreen() {
     escribir,
     cambiar,
     cambiarContactoAlt,
+    errorDelCampo,
     guardarContacto,
     guardando,
   } = useConfiguracion();
@@ -151,12 +152,13 @@ export function ConfiguracionScreen() {
                 */}
                 <View className="mb-3">
                   <CampoTelefono
-                    label="Teléfono"
+                    label="Teléfono *"
                     codigoPais={preferencias.codigoPais}
                     onCodigoPaisChange={(codigo) => escribir({ codigoPais: codigo })}
                     telefono={preferencias.telefono}
                     onTelefonoChange={(v) => escribir({ telefono: v })}
                     placeholder="300 123 4567"
+                    error={errorDelCampo("telefono")}
                   />
                 </View>
                 {/* El correo es la identidad (regla 3) y se cambia desde la
@@ -169,7 +171,8 @@ export function ConfiguracionScreen() {
                 {/* Es el mismo alias del Perfil, no otro: habia dos campos con
                     dos valores por defecto distintos para el mismo dato. */}
                 <Input
-                  label="Alias"
+                  label="Alias (opcional)"
+                  explicacion="Si pones un alias, es lo que ven los demás en el chat y en las reservas de zonas comunes."
                   value={aliasForm.alias}
                   onChangeText={aliasForm.setAlias}
                 />
@@ -215,17 +218,21 @@ export function ConfiguracionScreen() {
                     }}
                   >
                     <CampoTelefono
-                      label="Teléfono alternativo"
+                      label="Teléfono alternativo (opcional)"
+                      explicacion="Basta con uno de los dos: un teléfono o un correo alternativo."
                       codigoPais={preferencias.codigoPaisAlt}
                       onCodigoPaisChange={(codigo) => escribir({ codigoPaisAlt: codigo })}
                       telefono={preferencias.telefonoAlt}
                       onTelefonoChange={(v) => escribir({ telefonoAlt: v })}
+                      error={errorDelCampo("telefonoAlt")}
                     />
                     <Input
-                      label="Correo alternativo"
+                      label="Correo alternativo (opcional)"
                       value={preferencias.correoAlt}
                       onChangeText={(v) => escribir({ correoAlt: v })}
-                      placeholder="Opcional"
+                      placeholder="tu@correo.com"
+                      type="email"
+                      error={errorDelCampo("correoAlt")}
                     />
                   </View>
                 )}

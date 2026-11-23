@@ -24,6 +24,8 @@ export function MensajeAViviendasModal({
   onEnviado: () => void;
 }) {
   const [texto, setTexto] = useState("");
+  // Pulsó «Enviar» sin mensaje: se dice debajo del campo.
+  const [intento, setIntento] = useState(false);
   const [resultado, setResultado] = useState<ResultadoDelMensaje[] | null>(null);
   const queryClient = useQueryClient();
   const enviar = useMutation({
@@ -41,6 +43,7 @@ export function MensajeAViviendasModal({
   const cerrar = () => {
     const todoSalio = resultado !== null && resultado.every((r) => r.enviado);
     setTexto("");
+    setIntento(false);
     setResultado(null);
     enviar.reset();
     if (todoSalio) onEnviado();
@@ -82,12 +85,13 @@ export function MensajeAViviendasModal({
             {`Le llega a ${cuantas} por su chat con la administración, con un aviso en el celular.`}
           </Text>
           <Input
-            label="Mensaje"
+            label="Mensaje *"
             value={texto}
             onChangeText={setTexto}
             placeholder="Escribe el mensaje"
             multiline
             rows={4}
+            error={intento && !texto.trim() ? "Escribe el mensaje" : undefined}
           />
           {enviar.isError ? (
             <Text className="text-sm text-gray-900">{mensajeDeError(enviar.error, "No se pudo enviar el mensaje")}</Text>
@@ -95,8 +99,13 @@ export function MensajeAViviendasModal({
           <Button
             fullWidth
             loading={enviar.isPending}
-            disabled={!texto.trim()}
-            onPress={() => enviar.mutate()}
+            onPress={() => {
+              if (!texto.trim()) {
+                setIntento(true);
+                return;
+              }
+              enviar.mutate();
+            }}
           >
             <Text>{`Enviar a ${cuantas}`}</Text>
           </Button>

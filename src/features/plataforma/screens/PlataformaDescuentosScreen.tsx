@@ -35,6 +35,8 @@ export function PlataformaDescuentosScreen() {
   const [porcentaje, setPorcentaje] = useState("");
   const [venceEn, setVenceEn] = useState("");
   const [usos, setUsos] = useState("");
+  // «Crear código» con algo mal: el error sale debajo de su campo.
+  const [intento, setIntento] = useState(false);
 
   const crear = useMutation({
     mutationFn: () =>
@@ -50,6 +52,7 @@ export function PlataformaDescuentosScreen() {
       setPorcentaje("");
       setVenceEn("");
       setUsos("");
+      setIntento(false);
       void cliente.invalidateQueries({ queryKey: CLAVE });
     },
     onError: (e) => addToast(mensajeDeError(e, "No se pudo crear el código"), "error"),
@@ -63,7 +66,9 @@ export function PlataformaDescuentosScreen() {
   });
 
   const pct = Number(porcentaje);
-  const valido = codigo.trim().length >= 3 && pct >= 1 && pct <= 100;
+  const errorCodigo = codigo.trim().length >= 3 ? undefined : "Escribe un código de al menos 3 letras o cifras";
+  const errorPorcentaje = pct >= 1 && pct <= 100 ? undefined : "Escribe un número del 1 al 100";
+  const valido = !errorCodigo && !errorPorcentaje;
 
   return (
     <DesplazableConTeclado className="flex-1 bg-bg-app" contentContainerStyle={{ padding: 16, gap: 16 }}>
@@ -79,6 +84,7 @@ export function PlataformaDescuentosScreen() {
             onChangeText={(t) => setCodigo(t.toUpperCase().replace(/\s/g, ""))}
             placeholder="Ej.: BIENVENIDA20"
             showEditIcon={false}
+            error={intento ? errorCodigo : undefined}
           />
           <Input
             label="Porcentaje de descuento *"
@@ -87,6 +93,7 @@ export function PlataformaDescuentosScreen() {
             placeholder="Ej.: 20"
             soloCifras
             showEditIcon={false}
+            error={intento ? errorPorcentaje : undefined}
           />
           <CampoFecha
             label="Último día en que vale (opcional)"
@@ -102,7 +109,16 @@ export function PlataformaDescuentosScreen() {
             soloCifras
             showEditIcon={false}
           />
-          <Button disabled={!valido} loading={crear.isPending} onPress={() => crear.mutate()}>
+          <Button
+            loading={crear.isPending}
+            onPress={() => {
+              if (!valido) {
+                setIntento(true);
+                return;
+              }
+              crear.mutate();
+            }}
+          >
             Crear código
           </Button>
         </View>

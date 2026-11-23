@@ -5,6 +5,7 @@ import { Button, CampoFecha, Checkbox, Input, Select, Tabs } from "@/shared/comp
 import type { Database } from "@/shared/types/database.types";
 import {
   AYUDA_DEL_ROL,
+  type CampoDeInvitacion,
   type FormularioInvitacion as Valores,
 } from "../../hooks/useInvitarAUnidad";
 
@@ -20,6 +21,13 @@ interface Props {
   /** Los tipos de documento del país del edificio. */
   documentosOfrecidos: { value: string; label: string }[];
   error: string | null;
+  /**
+   * De qué campo es `error` (23/11/2026): se dice debajo de ese campo, no al
+   * final del formulario. Sin campo, sale encima del botón como antes.
+   */
+  campoConError?: CampoDeInvitacion | null;
+  /** Lo que acepta el documento elegido, bajo su número. */
+  pistaDelDocumento?: string;
   invitando: boolean;
   onChange: (valores: Valores) => void;
   onEnviar: () => void;
@@ -34,6 +42,8 @@ export function FormularioInvitacion({
   sinApp,
   documentosOfrecidos,
   error,
+  campoConError = null,
+  pistaDelDocumento = "",
   invitando,
   onChange,
   onEnviar,
@@ -41,6 +51,14 @@ export function FormularioInvitacion({
 }: Props) {
   const set = (cambios: Partial<Valores>) => onChange({ ...form, ...cambios });
   const ayuda = AYUDA_DEL_ROL[form.rol];
+  /*
+    Con el formulario vacío --al entrar, o recién enviado-- no se regaña:
+    salía «Falta el nombre de la persona» en rojo antes de escribir nada
+    (17/11/2026). El botón sigue apagado mientras falte algo.
+  */
+  const mostrarError = Boolean(error) && Boolean(form.nombre.trim() || form.correo.trim());
+  const errorDe = (campo: CampoDeInvitacion) =>
+    mostrarError && campoConError === campo ? (error ?? undefined) : undefined;
 
   return (
     <View className="gap-3">
@@ -49,15 +67,16 @@ export function FormularioInvitacion({
       </Text>
 
       <Input
-        label="Nombre y apellido"
+        label="Nombre y apellido *"
         soloLetras
         value={form.nombre}
         onChangeText={(nombre) => set({ nombre })}
         placeholder="Ej. Ana Restrepo"
+        error={errorDe("nombre")}
       />
 
       <Select
-        label="Rol en la vivienda"
+        label="Rol en la vivienda *"
         value={form.rol}
         options={rolesInvitables}
         // «Es menor de edad» solo existe para un residente: al cambiar de rol
@@ -131,11 +150,14 @@ export function FormularioInvitacion({
             value={form.tipoDocumento}
             options={documentosOfrecidos}
             onChange={(tipoDocumento) => set({ tipoDocumento: String(tipoDocumento) })}
+            error={errorDe("tipoDocumento")}
           />
           <Input
             label="Número de documento (opcional)"
             value={form.documento}
             onChangeText={(documento) => set({ documento })}
+            placeholder={pistaDelDocumento || undefined}
+            error={errorDe("documento")}
           />
           <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
             {form.esMenor
@@ -145,11 +167,13 @@ export function FormularioInvitacion({
         </View>
       ) : (
         <Input
-          label="Correo"
+          label="Correo *"
+          explicacion="Le llega ahí la invitación para crear su cuenta y entrar a la vivienda."
           type="email"
           value={form.correo}
           onChangeText={(correo) => set({ correo })}
           placeholder="ana@correo.com"
+          error={errorDe("correo")}
         />
       )}
 
@@ -158,16 +182,18 @@ export function FormularioInvitacion({
       {esHuesped && (
         <View className="gap-3">
           <CampoFecha
-            label="Llega el"
+            label="Llega el (opcional)"
             value={form.vigenteDesde}
             onChange={(vigenteDesde) => set({ vigenteDesde })}
             placeholder="Sin fecha de llegada"
+            error={errorDe("vigenteDesde")}
           />
           <CampoFecha
-            label="Se va el"
+            label="Se va el *"
             value={form.vigenteHasta}
             onChange={(vigenteHasta) => set({ vigenteHasta })}
             placeholder="Elegir el último día"
+            error={errorDe("vigenteHasta")}
           />
           <Text className="text-xs" style={{ color: theme.colors.textSecondary }}>
             Verá el alojamiento desde que acepte la invitación. El wifi y las
@@ -176,12 +202,7 @@ export function FormularioInvitacion({
         </View>
       )}
 
-      {/*
-        Con el formulario vacío --al entrar, o recién enviado-- no se regaña:
-        salía «Falta el nombre de la persona» en rojo antes de escribir nada
-        (17/11/2026). El botón sigue apagado mientras falte algo.
-      */}
-      {error && (form.nombre.trim() || form.correo.trim()) ? (
+      {mostrarError && !campoConError ? (
         <Text className="text-xs" style={{ color: theme.colors.danger }}>
           {error}
         </Text>

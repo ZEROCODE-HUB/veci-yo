@@ -9,6 +9,7 @@ import { ZonaReservaForm } from "@/features/zonas/components";
 import { useNavegacion, useParametros, usePermisosEnLaVivienda } from "@/shared/hooks";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReservaHecha } from "../hooks/useZonaReservaForm";
+import { textoDelPlazo } from "../helpers/textoDelPlazo";
 
 type SuccessReservation = ReservaHecha;
 
@@ -156,8 +157,8 @@ export function ZonaReservarScreen() {
           {successReservation?.faltaComprobante ? (
             <View className="rounded-xl p-3" style={{ backgroundColor: theme.colors.warningLight }}>
               <Text className="text-xs leading-4 text-gray-800">
-                {successReservation.plazoAdjuntoHoras > 0
-                  ? `Falta el comprobante de pago. Adjúntalo desde «Mis reservas» en las próximas ${successReservation.plazoAdjuntoHoras} horas; si no, la reserva se cancela sola.`
+                {successReservation.plazoAdjuntoMinutos > 0
+                  ? `Falta el comprobante de pago. Adjúntalo desde «Mis reservas» en las próximas ${textoDelPlazo(successReservation.plazoAdjuntoMinutos)}; si no, la reserva se cancela sola.`
                   : "Falta el comprobante de pago. Adjúntalo desde «Mis reservas»."}
               </Text>
             </View>

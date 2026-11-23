@@ -12,7 +12,7 @@ export interface ZonaComun {
   /** Personas en una reserva, contando a quien reserva (18/11/2026). 0 = lo que deje la capacidad. */
   personasPorReserva?: number;
   /** Horas para adjuntar el comprobante (18/11/2026). 0 = sin plazo. */
-  plazoAdjuntoHoras?: number;
+  plazoAdjuntoMinutos?: number;
   duracionMaximaMin: number;
   /**
    * La zona se puede usar en una estancia corta, es decir por un huesped

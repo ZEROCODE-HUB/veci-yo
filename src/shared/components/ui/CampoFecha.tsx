@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { Calendar } from "./Calendar";
 import { Modal } from "./Modal";
 import { formatDateInput, formatDateIso, parseFechaIso } from "@/shared/utils";
@@ -69,7 +70,7 @@ export function CampoFecha({
   return (
     <View className="w-full">
       {Boolean(label) && (
-        <Text className="text-sm text-gray-500 mb-1.5 font-medium">{label}</Text>
+        <EtiquetaDelCampo label={label ?? ""} />
       )}
 
       <Pressable
@@ -98,7 +99,7 @@ export function CampoFecha({
         <Modal
           visible={abierto}
           onClose={() => setAbierto(false)}
-          title={label ?? "Elegir fecha"}
+          title={label ? label.replace(/\s*\*\s*$/, "") : "Elegir fecha"}
         >
           {calendario}
         </Modal>

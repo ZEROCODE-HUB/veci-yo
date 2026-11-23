@@ -38,7 +38,10 @@ export function ChatNewForm({
           búsqueda, todo contra listas fijas, para acabar abriendo un chat
           identificado por un nombre. Con el modelo real solo hay dos casos:
           un residente escribe a un área, y el personal escribe a una vivienda. */}
-      <Text className="text-base font-semibold text-gray-900">{titulo}</Text>
+      <Text className="text-base font-semibold text-gray-900">
+        {titulo}
+        <Text style={{ color: theme.colors.danger }}> *</Text>
+      </Text>
 
       <Select
         label=""

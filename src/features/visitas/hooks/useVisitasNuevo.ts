@@ -2,6 +2,7 @@ import { obtenerLimitesRentaCorta } from "@/features/administrador/services/cond
 import { useRentaCortaPermitida } from "@/features/propietario/hooks/useRentaCortaPermitida";
 import { useQueryClient } from "@tanstack/react-query";
 import { VISITAS_QUERY_KEY } from "./useVisitas";
+import { useErroresDeCampo } from "./useErroresDeCampo";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { estadoDe } from "@/shared/components";
@@ -318,6 +319,21 @@ export function useVisitasNuevo() {
   const [showAvisoMenores, setShowAvisoMenores] = useState(false);
   const [fotosIngreso, setFotosIngreso] = useState<string[]>([]);
   const [estacionamientosSel, setEstacionamientosSel] = useState<string[]>([]);
+  const { errores, marcarError, limpiarErrores } = useErroresDeCampo({
+    nombre,
+    documento: identificacion,
+    correo: email,
+    telefono,
+    profesion: `${profesion}|${profesionOtro}`,
+    horaInicio,
+    aprobadoPor,
+    depto,
+  });
+  /** El aviso de arriba y, además, el error debajo del campo que falta. */
+  const fallar = (campo: keyof typeof errores, mensaje: string) => {
+    marcarError(campo, mensaje);
+    addToast(mensaje, "error");
+  };
   /*
     Un profesional temporal puede venir sin torre ni departamento (Para Claude
     150, 29/10/2026): es trabajo del edificio, como una visita a la
@@ -517,6 +533,7 @@ export function useVisitasNuevo() {
 
   const handleGuardar = async () => {
     if (creando || enviando.current) return;
+    limpiarErrores();
     if (!tipoSeleccionado) {
       addToast("Selecciona un tipo de visita", "error");
       return;
@@ -534,7 +551,7 @@ export function useVisitasNuevo() {
       exige, y el dia que falto, el preregistro entero fallo con un 409.
     */
     if (!esHuespedTemporal && !nombre.trim()) {
-      addToast("El nombre es obligatorio", "error");
+      fallar("nombre", "El nombre es obligatorio");
       return;
     }
     /*
@@ -544,7 +561,7 @@ export function useVisitasNuevo() {
       en la puerta que es quien dice ser. El huésped sigue con su preregistro.
     */
     if (!esHuespedTemporal && pideDocumento && !identificacion.trim()) {
-      addToast("El número de documento es obligatorio", "error");
+      fallar("documento", "El número de documento es obligatorio");
       return;
     }
     /*
@@ -556,17 +573,29 @@ export function useVisitasNuevo() {
         ? profesionOtro.trim()
         : profesion;
     if (esProfesional && !profesionEscrita) {
-      addToast("Indica la profesión", "error");
+      fallar("profesion", "Indica la profesión");
+      return;
+    }
+    const errorDelDocumento = errorDeDocumento(identificacion, documentos.reglaDe(tipoId));
+    if (errorDelDocumento) {
+      fallar("documento", errorDelDocumento);
+      return;
+    }
+    const errorDelCorreo = errorDeCorreo(email);
+    const errorDelTelefono = errorDeTelefono(telefono, {
+      minimo: parametrosDeLaBase.numero("telefono_largo_minimo"),
+      maximo: parametrosDeLaBase.numero("telefono_largo_maximo"),
+    });
+    if (errorDelCorreo) {
+      fallar("correo", errorDelCorreo);
+      return;
+    }
+    if (errorDelTelefono) {
+      fallar("telefono", errorDelTelefono);
       return;
     }
     const errorDeDatos =
-      errorDeDocumento(identificacion, documentos.reglaDe(tipoId)) ||
       acompanantes.map((a) => errorDeDocumento(a.ci)).find(Boolean) ||
-      errorDeCorreo(email) ||
-      errorDeTelefono(telefono, {
-        minimo: parametrosDeLaBase.numero("telefono_largo_minimo"),
-        maximo: parametrosDeLaBase.numero("telefono_largo_maximo"),
-      }) ||
       (tieneVehiculo
         ? errorDeVehiculos(vehiculos.map((v) => v.placa), {
             minimo: parametrosDeLaBase.numero("placa_largo_minimo"),
@@ -585,7 +614,7 @@ export function useVisitasNuevo() {
     */
     const sinVivienda = esParaAdministracion || (torreYDeptoOpcionales && !depto);
     if (esGuardiaOAdmin && !sinVivienda && !depto) {
-      addToast("Elige la torre y el departamento de la visita", "error");
+      fallar("depto", "Elige la torre y el departamento de la visita");
       return;
     }
     /*
@@ -631,15 +660,15 @@ export function useVisitasNuevo() {
       return;
     }
     if (esGuardia && !horaInicio) {
-      addToast("La hora de ingreso es obligatoria", "error");
+      fallar("horaInicio", "La hora de ingreso es obligatoria");
       return;
     }
     if (esGuardia && !aprobadoPor.trim()) {
-      addToast("Indica quién aprobó el ingreso", "error");
+      fallar("aprobadoPor", "Indica quién aprobó el ingreso");
       return;
     }
     if (esGuardia && tipoSeleccionado === "temporal" && !telefono.trim()) {
-      addToast("El teléfono es obligatorio para profesional temporal", "error");
+      fallar("telefono", "El teléfono es obligatorio para profesional temporal");
       return;
     }
     const fechaStr = formatDate(selectedDate);
@@ -1143,6 +1172,8 @@ export function useVisitasNuevo() {
     torreYDeptoOpcionales,
 
     handleGuardar,
+    /** Lo que falta o está mal, por campo, para pintarlo debajo de cada uno. */
+    errores,
     tipoPreseleccionado,
     salidaComoFecha,
     alElegirRango,

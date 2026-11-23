@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Text } from "react-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Input, Select } from "@/shared/components";
 import { useLista } from "@/shared/hooks/useLista";
@@ -26,13 +25,14 @@ export function DatosDelEnvio({ control, errors, categorias }: Props) {
   const texto = (
     name: "logistica" | "nombre" | "ci" | "instrucciones",
     placeholder: string,
-    extra: { multiline?: boolean; showEditIcon?: boolean } = {},
+    extra: { multiline?: boolean; showEditIcon?: boolean; label?: string } = {},
   ) => (
     <Controller
       control={control}
       name={name}
       render={({ field: { onChange, onBlur, value }, fieldState }) => (
         <Input
+          label={extra.label}
           value={value || ""}
           onChangeText={onChange}
           onBlur={onBlur}
@@ -56,18 +56,22 @@ export function DatosDelEnvio({ control, errors, categorias }: Props) {
             value={value || null}
             options={categorias}
             onChange={(v) => onChange(String(v))}
+            error={errors.categoria?.message}
           />
         )}
       />
-      {errors.categoria && (
-        <Text className="text-xs text-danger -mt-2 font-medium">{errors.categoria.message}</Text>
-      )}
 
       <EmpresaDeMensajeria control={control} campoLibre={texto("logistica", "Escribe la empresa")} />
-      {texto("nombre", "Destinatario (opcional)")}
+      {texto("nombre", "Nombre de quien lo recibe", { label: "Destinatario (opcional)" })}
 
-      {texto("ci", "Identificación (opcional)")}
-      {texto("instrucciones", "Instrucciones adicionales", { multiline: true, showEditIcon: true })}
+      {texto("ci", "Número de documento", {
+        label: "Identificación del destinatario (opcional)",
+      })}
+      {texto("instrucciones", "Ej.: frágil, entregar en mano", {
+        label: "Instrucciones adicionales (opcional)",
+        multiline: true,
+        showEditIcon: true,
+      })}
     </>
   );
 }
@@ -99,7 +103,8 @@ function EmpresaDeMensajeria({
         return (
           <>
             <Select
-              label="Logística (empresa)"
+              label="Logística (opcional)"
+              explicacion="La empresa que trae el envío. Si no está en la lista, elige «Otro» y escríbela."
               value={libre ? (otro?.etiqueta ?? null) : value || null}
               options={opciones.map((o) => o.etiqueta)}
               placeholder="Elige la empresa"

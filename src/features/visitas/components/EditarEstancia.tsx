@@ -270,14 +270,14 @@ export function EditarEstancia({
         <View className="gap-4">
           {!alguienDentro ? (
             <CampoFecha
-              label="Llegada"
+              label="Llegada *"
               value={fechas?.desde ?? ""}
               minima={limites.llegadaMinima}
               onChange={(v) => setFechas((f) => (f ? { ...f, desde: v } : f))}
             />
           ) : null}
           <CampoFecha
-            label="Salida"
+            label="Salida *"
             value={fechas?.hasta ?? ""}
             minima={limites.salidaMinima}
             error={limites.error ?? undefined}

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ahora, formatDateInput } from "@/shared/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { opcionesDeDocumento } from "@/shared/services/documentos.repo";
+import { errorDeDocumento, pistaDeDocumento } from "@/shared/utils/documento.util";
 import { RESIDENTES_UNIDAD_KEY } from "./usePropietarioConfiguracion";
 import { useAuthStore, useUIStore, useUbicacionStore, useAdminStore } from "@/stores";
 import { useCondominioActivo, useDocumentosDelEdificio, useUnidadActiva } from "@/shared/hooks";
@@ -106,6 +107,15 @@ export function rolesQuePuedeInvitar(quien: { esDueno: boolean; esAdministracion
   }));
 }
 
+/** El campo al que se refiere lo que falta, para decirlo debajo de él. */
+export type CampoDeInvitacion =
+  | "nombre"
+  | "correo"
+  | "tipoDocumento"
+  | "documento"
+  | "vigenteDesde"
+  | "vigenteHasta";
+
 export interface FormularioInvitacion {
   nombre: string;
   correo: string;
@@ -203,33 +213,32 @@ export function useInvitarAUnidad() {
    * La validación vive aquí para poder decir qué falta antes de llamar a la
    * base. La base la repite de todos modos: es el límite, no el formulario.
    */
-  const error = useMemo(() => {
-    if (!form.nombre.trim()) return "Falta el nombre de la persona";
+  const falta = useMemo((): { campo: CampoDeInvitacion; mensaje: string } | null => {
+    const en = (campo: CampoDeInvitacion, mensaje: string) => ({ campo, mensaje });
+    if (!form.nombre.trim()) return en("nombre", "Falta el nombre de la persona");
     if (sinApp) {
       const numero = form.documento.trim();
       if (!numero) return null;
-      if (!form.tipoDocumento) return "Elige el tipo de documento";
-      const regla = documentos.reglaDe(form.tipoDocumento);
-      if (regla?.soloCifras && !/^\d+$/.test(numero))
-        return "El número de documento lleva solo cifras";
-      if (regla && (numero.length < regla.largoMinimo || numero.length > regla.largoMaximo))
-        return `El documento tiene entre ${regla.largoMinimo} y ${regla.largoMaximo} caracteres`;
-      return null;
+      if (!form.tipoDocumento) return en("tipoDocumento", "Elige el tipo de documento");
+      // La misma regla y el mismo aviso que el registro (23/11/2026).
+      const mensaje = errorDeDocumento(numero, documentos.reglaDe(form.tipoDocumento));
+      return mensaje ? en("documento", mensaje) : null;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.correo.trim()))
-      return "El correo no parece válido";
+      return en("correo", form.correo.trim() ? "El correo no parece válido" : "Escribe su correo");
     if (esHuesped) {
       if (!ES_FECHA.test(form.vigenteHasta))
-        return "Un huésped temporal necesita la fecha de fin de la estancia";
+        return en("vigenteHasta", "Un huésped temporal necesita la fecha de fin de la estancia");
       if (form.vigenteDesde && !ES_FECHA.test(form.vigenteDesde))
-        return "La fecha de inicio tiene que ser aaaa-mm-dd";
+        return en("vigenteDesde", "La fecha de inicio tiene que ser aaaa-mm-dd");
       if (form.vigenteDesde && form.vigenteDesde > form.vigenteHasta)
-        return "La estancia termina antes de empezar";
+        return en("vigenteHasta", "La estancia termina antes de empezar");
       const hoy = formatDateInput(ahora());
-      if (form.vigenteHasta < hoy) return "Esa estancia ya terminó";
+      if (form.vigenteHasta < hoy) return en("vigenteHasta", "Esa estancia ya terminó");
     }
     return null;
   }, [form, esHuesped, sinApp, documentos]);
+  const error = falta?.mensaje ?? null;
 
   const invitar = useMutation({
     mutationFn: async () => {
@@ -315,6 +324,10 @@ export function useInvitarAUnidad() {
     setForm,
     esHuesped,
     error,
+    /** De qué campo es `error`, para pintarlo bajo ese campo. */
+    campoConError: falta?.campo ?? null,
+    /** Lo que acepta el documento elegido («Solo números, entre 5 y 12 cifras»). */
+    pistaDelDocumento: pistaDeDocumento(documentos.reglaDe(form.tipoDocumento)),
     enlace,
     cerrarEnlace: () => setEnlace(null),
     sinApp,

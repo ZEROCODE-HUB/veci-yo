@@ -50,8 +50,8 @@ export function crearEsquemaReclamo({
         }
       };
 
-      requerido("titulo");
-      requerido("descripcion");
+      requerido("titulo", "Escribe un título");
+      requerido("descripcion", "Describe el problema");
       requerido("area", "Selecciona una categoría");
 
       if (data.area && areaPideTipo(data.area) && !data.tipo) {
@@ -65,7 +65,7 @@ export function crearEsquemaReclamo({
       // Por código y no por nombre: el nombre lo cambia el administrador, y la
       // restricción `reclamo_modelo_solo_para_app` habla del código.
       if (data.area === "aplicacion") {
-        requerido("modelo");
+        requerido("modelo", "Escribe el modelo de tu teléfono");
       }
 
       /*

@@ -8,6 +8,8 @@ import { SelectorDePais } from "./SelectorDePais";
 
 interface Props {
   label?: string;
+  /** Una «i» junto a la etiqueta con lo que significa el campo (23/11/2026). */
+  explicacion?: string;
   /** ISO 3166-1 alfa-2. Es lo que se guarda, no el prefijo. */
   codigoPais: string;
   onCodigoPaisChange: (codigo: string) => void;
@@ -71,6 +73,7 @@ interface Props {
  */
 export function CampoTelefono({
   label,
+  explicacion,
   codigoPais,
   onCodigoPaisChange,
   telefono,
@@ -89,7 +92,7 @@ export function CampoTelefono({
 
   return (
     <View className="w-full">
-      {label ? <EtiquetaDelCampo label={label} /> : null}
+      {label ? <EtiquetaDelCampo label={label} explicacion={explicacion} /> : null}
 
       <View className="flex-row gap-2">
         {/*

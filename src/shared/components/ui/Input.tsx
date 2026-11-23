@@ -6,6 +6,8 @@ import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 
 interface InputProps {
   label?: string;
+  /** Una «i» junto a la etiqueta con lo que significa el campo (23/11/2026). */
+  explicacion?: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
@@ -46,6 +48,7 @@ const filtrarNombre = (texto: string) => texto.replace(/[^\p{L}\p{M}\s'’.\-]/g
 
 export function Input({
   label,
+  explicacion,
   value,
   onChangeText,
   placeholder,
@@ -78,7 +81,7 @@ export function Input({
 
   return (
     <View style={style}>
-      {label ? <EtiquetaDelCampo label={label} /> : null}
+      {label ? <EtiquetaDelCampo label={label} explicacion={explicacion} /> : null}
       <View className="relative">
         <TextInput
           ref={ref}

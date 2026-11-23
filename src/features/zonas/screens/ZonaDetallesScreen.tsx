@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Button, Input, Modal, Select, Cargando, ErrorAlCargar } from "@/shared/components";
 import { PageHeader, DesplazableConTeclado } from "@/shared/layouts";
@@ -18,6 +18,8 @@ import { DocumentoDelReglamento } from "../components/DocumentoDelReglamento";
  */
 export function ZonaDetallesScreen() {
   const z = useZonaDetalles();
+  // Pulsó «Continuar» sin departamento: se dice debajo del campo.
+  const [faltaDepto, setFaltaDepto] = useState(false);
   const {
     navigation,
     zonaId,
@@ -151,11 +153,12 @@ export function ZonaDetallesScreen() {
       >
         <View className="gap-4">
           <Select
-            label="Departamento"
+            label="Departamento *"
             value={deptoReserva || null}
             options={codigosDe()}
             onChange={(value) => setDeptoReserva(String(value))}
             placeholder="Elige el departamento"
+            error={faltaDepto && !deptoReserva ? "Elige el departamento" : undefined}
           />
           {/* Correcciones fila 12: lo que quiera dejar anotado la portería. */}
           <Input
@@ -169,8 +172,12 @@ export function ZonaDetallesScreen() {
           />
           <Button
             fullWidth
-            disabled={!deptoReserva}
             onPress={() => {
+              if (!deptoReserva) {
+                setFaltaDepto(true);
+                return;
+              }
+              setFaltaDepto(false);
               setDeptoReservaOpen(false);
               navigation.navigate("ZonaReservar", {
                 zonaId,

@@ -58,15 +58,13 @@ export function DarAccesoALaApp({ persona, onClose }: Props) {
             {`Le mandamos a ${persona?.nombre ?? ""} una invitación a su correo. Cuando la acepte, entra a la app como residente de esta vivienda.`}
           </Text>
           <Input
-            label="Su correo"
+            label="Su correo *"
             type="email"
             value={correo}
             onChangeText={setCorreo}
             placeholder="ana@correo.com"
+            error={correo.trim() && !correoValido ? "El correo no parece válido" : undefined}
           />
-          {correo.trim() && !correoValido ? (
-            <Text className="text-xs text-red-600">El correo no parece válido</Text>
-          ) : null}
           <Button
             variant="primary"
             loading={dar.isPending}

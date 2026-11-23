@@ -16,6 +16,8 @@ interface Props {
   setEstacionamientosSel: React.Dispatch<React.SetStateAction<string[]>>;
   aprobadoPor: string;
   setAprobadoPor: (v: string) => void;
+  /** Si falta quién aprobó al guardar: se dice debajo del campo. */
+  errorAprobadoPor?: string;
   anotacionesGuardia: string;
   setAnotacionesGuardia: (v: string) => void;
   fotosIngreso: string[];
@@ -37,6 +39,7 @@ export function RegistroGuardia({
   setEstacionamientosSel,
   aprobadoPor,
   setAprobadoPor,
+  errorAprobadoPor,
   anotacionesGuardia,
   setAnotacionesGuardia,
   fotosIngreso,
@@ -136,9 +139,10 @@ export function RegistroGuardia({
             value={aprobadoPor}
             onChangeText={setAprobadoPor}
             placeholder="Nombre de quien aprobó"
+            error={errorAprobadoPor}
           />
           <Input
-            label="Anotaciones adicionales"
+            label="Anotaciones adicionales (opcional)"
             value={anotacionesGuardia}
             onChangeText={setAnotacionesGuardia}
             placeholder="Ej.: ingresó con una maleta, acompañado de..."

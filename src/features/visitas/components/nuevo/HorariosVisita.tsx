@@ -8,6 +8,8 @@ interface Props {
   /** La hora a la que la portería registra el ingreso, en `HH:mm`. */
   horaInicio: string;
   setHoraInicio: (v: string) => void;
+  /** Si falta la hora al guardar: se dice debajo del campo. */
+  error?: string;
 }
 
 /**
@@ -40,6 +42,7 @@ export function HorariosVisita({
   esGuardia,
   horaInicio,
   setHoraInicio,
+  error,
 }: Props) {
   if (!esGuardia) return null;
 
@@ -58,6 +61,7 @@ export function HorariosVisita({
         placeholder="Seleccionar hora"
         paso={5}
       />
+      {error ? <Text className="-mt-2 text-xs text-red-600">{error}</Text> : null}
       <Text className="text-xs text-gray-400">
         La salida se registra posteriormente desde el detalle del ingreso.
       </Text>

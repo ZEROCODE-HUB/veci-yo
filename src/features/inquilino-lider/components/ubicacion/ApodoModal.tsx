@@ -62,7 +62,7 @@ export function ApodoModal({
         </Text>
 
         <Input
-          label="Nombre"
+          label="Nombre (opcional)"
           value={texto}
           onChangeText={(valor) => setTexto(valor.slice(0, tope))}
           placeholder="La playa"

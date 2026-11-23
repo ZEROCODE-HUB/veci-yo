@@ -1,6 +1,6 @@
 import { theme } from "@/config";
 import { useEffect } from "react";
-import { Controller, useFieldArray, useWatch, type Control, type UseFormSetValue } from "react-hook-form";
+import { Controller, useFieldArray, useFormState, useWatch, type Control, type UseFormSetValue } from "react-hook-form";
 import { Pressable, Text, View } from "react-native";
 import { CampoFecha, Input, Toggle } from "@/shared/components";
 import { formatDateInput, parseFechaIso } from "@/shared/utils";
@@ -47,6 +47,11 @@ export function SeccionesDeEncuesta({
       ],
     });
 
+  const { errors } = useFormState({ control, name: ["opcionesVotacion", "fechaFinalizacion"] });
+  const errorDeFinalizacion = errors.fechaFinalizacion?.message;
+  const errorDeOpciones =
+    errors.opcionesVotacion?.message ?? errors.opcionesVotacion?.root?.message;
+
   const porIndice = opcionPorIndice(indiceDelEdificio);
   // Si el valor propuesto era «según el índice» y el edificio no suma 100 %,
   // se vuelve a «voto igual»: no se puede publicar así (18/11/2026).
@@ -57,7 +62,12 @@ export function SeccionesDeEncuesta({
 
   return (
     <View className="gap-3">
-      <SeccionDelFormulario titulo="Opciones" ayuda="Lo que se puede votar. Para aprobar o rechazar algo, «Sí» y «No».">
+      <SeccionDelFormulario
+        titulo="Opciones"
+        obligatorio
+        ayuda={`Lo que se puede votar, al menos ${opcionesMin}. Para aprobar o rechazar algo, «Sí» y «No».`}
+        error={errorDeOpciones}
+      >
         {fields.map((field, index) => (
           <View key={field.id} className="flex-row gap-2 items-center">
             <View className="flex-1">
@@ -155,7 +165,7 @@ export function SeccionesDeEncuesta({
             render={({ field, fieldState }) => (
               <View className="gap-1">
                 <Input
-                  label="Umbral para aprobar, en %"
+                  label="Umbral para aprobar, en % *"
                   soloCifras
                   value={field.value}
                   onChangeText={(texto) => field.onChange(texto.replace(/[^0-9]/g, ""))}
@@ -181,17 +191,18 @@ export function SeccionesDeEncuesta({
         />
         <CampoFecha
           enLinea
-          label="Fecha de publicación*"
+          label="Fecha de publicación (opcional)"
           value={fechaPublicada ? formatDateInput(fechaPublicada) : ""}
           onChange={(iso) => setValue("fechaPublicada", parseFechaIso(iso), { shouldValidate: true })}
-          placeholder="Elegir fecha"
+          placeholder="Hoy, si no eliges otra"
         />
         <CampoFecha
           enLinea
-          label="Fecha de finalización"
+          label="Fecha de finalización (opcional)"
           value={fechaFinalizacion ? formatDateInput(fechaFinalizacion) : ""}
           onChange={(iso) => setValue("fechaFinalizacion", parseFechaIso(iso), { shouldValidate: true })}
           placeholder="Elegir fecha"
+          error={errorDeFinalizacion}
         />
       </SeccionDelFormulario>
     </View>

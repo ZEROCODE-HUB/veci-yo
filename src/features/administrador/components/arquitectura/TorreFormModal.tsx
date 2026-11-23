@@ -157,6 +157,7 @@ export function TorreFormModal({
               render={({ field }) => (
                 <Select
                   label="Numeración"
+                  explicacion="Cómo se llaman los departamentos que se crean: con el piso y un número, o con el piso y una letra."
                   value={field.value}
                   options={NUMERACIONES}
                   onChange={(valor) => field.onChange(String(valor))}
@@ -179,7 +180,7 @@ export function TorreFormModal({
           fullWidth
           loading={isSubmitting}
           onPress={() => void handleSubmit(guardar)()}
-          disabled={!watch("nombre").trim() || Boolean(plan?.motivo)}
+          disabled={Boolean(plan?.motivo)}
         >
           {editing ? "Guardar cambios" : "Crear torre"}
         </Button>

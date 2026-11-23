@@ -74,7 +74,7 @@ export function LlamadaSelector({
     return (
       <SegunLaCarga estado={cargaDestinos} texto="a quién llamar" forma="formulario" cuantos={1} enLinea>
         <Select
-          label="¿A quién quieres llamar?"
+          label="¿A quién quieres llamar? *"
           value={destino || null}
           options={destinos}
           onChange={(valor) => onDestinoChange(String(valor))}
@@ -89,7 +89,7 @@ export function LlamadaSelector({
     <>
       {opcionesDelPersonal.length > 1 ? (
         <Select
-          label="¿A quién quieres llamar?"
+          label="¿A quién quieres llamar? *"
           value={destino || null}
           options={opcionesDelPersonal}
           onChange={(valor) => onDestinoChange(String(valor))}
@@ -98,14 +98,15 @@ export function LlamadaSelector({
       {aUnaVivienda ? (
         <>
           <Select
-            label="Torre"
+            label="Torre (opcional)"
+            explicacion="Solo acorta la lista de viviendas de abajo."
             value={torre || null}
             options={[{ value: "", label: "Todas" }, ...torres.map((t) => ({ value: t, label: t }))]}
             onChange={(valor) => onTorreChange(String(valor))}
             placeholder="Todas"
           />
           <Select
-            label="Vivienda"
+            label="Vivienda *"
             value={unidadId || null}
             options={viviendas}
             onChange={(valor) => onViviendaChange(String(valor))}
@@ -113,7 +114,8 @@ export function LlamadaSelector({
           />
           {unidadId && opcionesDeLaVivienda.length > 0 && onAQuienDeLaViviendaChange ? (
             <Select
-              label="¿A quién de la vivienda?"
+              label="¿A quién de la vivienda? *"
+              explicacion="Una persona de la vivienda que recibe llamadas por la app, o «Todos»: suena en todos y contesta el primero."
               value={aQuienDeLaVivienda}
               options={opcionesDeLaVivienda}
               onChange={(valor) => onAQuienDeLaViviendaChange(String(valor))}

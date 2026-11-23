@@ -93,7 +93,8 @@ export function DestinosDeCorrespondencia({
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Select
-            label="Torre:"
+            label="Torre (opcional)"
+            explicacion="La torre y el piso solo acortan la lista de departamentos de abajo."
             value={torre || null}
             placeholder="Todas"
             options={[TODAS, ...torres]}
@@ -102,7 +103,7 @@ export function DestinosDeCorrespondencia({
         </View>
         <View className="flex-1">
           <Select
-            label="Piso:"
+            label="Piso (opcional)"
             value={piso || null}
             placeholder="Todos"
             options={[TODOS, ...pisos]}

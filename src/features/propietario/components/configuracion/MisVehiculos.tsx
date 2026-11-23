@@ -29,12 +29,15 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
   const [mostrarAlta, setMostrarAlta] = useState(false);
   const tipos = useLista("tipos_de_vehiculo");
   const [form, setForm] = useState({ placa: "", tipo: "" });
+  // Lo que falta se dice bajo el campo, además del aviso (23/11/2026).
+  const [errores, setErrores] = useState<{ placa?: string; tipo?: string }>({});
   // Sin elegir, el primero que ofrezca la lista: es el orden que puso el
   // administrador, no uno escrito aquí.
   const tipoElegido = form.tipo || tipos.opciones[0]?.codigo || "";
 
   const agregarVehiculo = () => {
     if (!form.placa.trim()) {
+      setErrores({ placa: "Escribe la placa del vehículo." });
       addToast("Ingresa la placa del vehículo", "error");
       return;
     }
@@ -51,10 +54,12 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
         })
       : "";
     if (errorPlaca) {
+      setErrores({ placa: errorPlaca });
       addToast(errorPlaca, "error");
       return;
     }
     if (!tipoElegido) {
+      setErrores({ tipo: "Elige el tipo de vehículo." });
       addToast("Elige el tipo de vehículo", "error");
       return;
     }
@@ -133,7 +138,11 @@ export function MisVehiculos({ unidadId }: { unidadId: string }) {
         setShowAgregarVehiculo={setMostrarAlta}
         formVehiculo={{ ...form, tipo: tipoElegido }}
         tiposDeVehiculo={tipos.opciones.map((o) => ({ label: o.etiqueta, value: o.codigo }))}
-        setFormVehiculo={setForm}
+        setFormVehiculo={(cambio) => {
+          setForm(cambio);
+          setErrores({});
+        }}
+        erroresVehiculo={errores}
         handleAgregarVehiculo={agregarVehiculo}
         cantidadVehiculos={vehiculos.length}
         maxEstacionamientos={cocheras}

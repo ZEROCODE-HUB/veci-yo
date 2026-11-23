@@ -5692,6 +5692,7 @@ export type Database = {
           permite_estancia_larga: boolean
           personas_por_reserva: number | null
           plazo_adjunto_horas: number | null
+          plazo_adjunto_minutos: number | null
           reglamento: string | null
           reglamento_archivo_nombre: string | null
           reglamento_archivo_path: string | null
@@ -5731,6 +5732,7 @@ export type Database = {
           permite_estancia_larga?: boolean
           personas_por_reserva?: number | null
           plazo_adjunto_horas?: number | null
+          plazo_adjunto_minutos?: number | null
           reglamento?: string | null
           reglamento_archivo_nombre?: string | null
           reglamento_archivo_path?: string | null
@@ -5770,6 +5772,7 @@ export type Database = {
           permite_estancia_larga?: boolean
           personas_por_reserva?: number | null
           plazo_adjunto_horas?: number | null
+          plazo_adjunto_minutos?: number | null
           reglamento?: string | null
           reglamento_archivo_nombre?: string | null
           reglamento_archivo_path?: string | null

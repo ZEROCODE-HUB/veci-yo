@@ -82,12 +82,12 @@ export function InformacionDeConstructora() {
       <Text className="text-base font-bold text-gray-900">Información de Constructora</Text>
       <Text className="text-xs text-gray-500">Todo es opcional.</Text>
       <Input
-        label="Nombre de la constructora"
+        label="Nombre de la constructora (opcional)"
         value={datos.nombre}
         onChangeText={(nombre) => set({ nombre })}
       />
       <Input
-        label="Año de entrega"
+        label="Año de entrega (opcional)"
         value={datos.anioEntrega}
         onChangeText={(anioEntrega) => set({ anioEntrega: anioEntrega.replace(/\D/g, "").slice(0, 4) })}
         placeholder="2024"
@@ -95,19 +95,21 @@ export function InformacionDeConstructora() {
         error={errorAnio}
       />
       <Input
-        label="Fin de la garantía (año y mes)"
+        label="Fin de la garantía (opcional)"
+        explicacion="El año y el mes en que termina la garantía que dio la constructora. Escríbelo así: 2028-06."
         value={datos.garantiaHasta}
         onChangeText={(garantiaHasta) => set({ garantiaHasta })}
         placeholder="2028-06"
         error={errorGarantia}
       />
       <Input
-        label="Responsable de postventa"
+        label="Responsable de postventa (opcional)"
         value={datos.responsablePostventa}
         onChangeText={(responsablePostventa) => set({ responsablePostventa })}
       />
       <Input
-        label="Correo de reclamaciones de postventa"
+        label="Correo de reclamaciones de postventa (opcional)"
+        explicacion="Si lo pones, los vecinos pueden mandar sus PQRS a la constructora y cada una le llega a este correo."
         type="email"
         value={datos.correoPostventa}
         onChangeText={(correoPostventa) => set({ correoPostventa })}
@@ -115,7 +117,7 @@ export function InformacionDeConstructora() {
         error={errorCorreo}
       />
       <CampoTelefono
-        label="Teléfono de respaldo"
+        label="Teléfono de respaldo (opcional)"
         codigoPais={datos.codigoPais}
         onCodigoPaisChange={(codigoPais) => set({ codigoPais })}
         telefono={datos.telefono}

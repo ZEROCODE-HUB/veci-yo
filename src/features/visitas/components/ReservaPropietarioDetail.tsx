@@ -343,9 +343,10 @@ export function ReservaPropietarioDetail({
             ) : correccion ? (
               <View className="gap-3">
                 <Input
-                  label="Nombre completo"
+                  label="Nombre completo *"
                   soloLetras
                   value={correccion.nombre}
+                  error={correccion.nombre.trim() ? undefined : "Escribe el nombre completo"}
                   onChangeText={(valor) =>
                     setCorreccion((previo) =>
                       previo ? { ...previo, nombre: valor } : previo,
@@ -353,7 +354,7 @@ export function ReservaPropietarioDetail({
                   }
                 />
                 <Input
-                  label="Número de documento"
+                  label="Número de documento (opcional)"
                   value={correccion.documento}
                   onChangeText={(valor) =>
                     setCorreccion((previo) =>

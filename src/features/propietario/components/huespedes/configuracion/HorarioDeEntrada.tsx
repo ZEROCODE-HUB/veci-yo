@@ -36,7 +36,7 @@ export function HorarioDeEntrada({ renta: r }: { renta: RentaCorta }) {
         <View className="mt-4 flex-row gap-2.5">
           <View className="flex-1">
             <CampoHora
-              label="Desde"
+              label="Desde (opcional)"
               value={checkin.desde}
               onChange={(hora) => setCheckin((previo) => ({ ...previo, desde: hora }))}
               placeholder="15:00"
@@ -44,13 +44,18 @@ export function HorarioDeEntrada({ renta: r }: { renta: RentaCorta }) {
           </View>
           <View className="flex-1">
             <CampoHora
-              label="Hasta"
+              label="Hasta (opcional)"
               value={checkin.hasta}
               onChange={(hora) => setCheckin((previo) => ({ ...previo, hasta: hora }))}
               /* La base rechaza una franja que termina antes de empezar. */
               minima={checkin.desde || undefined}
               placeholder="22:00"
             />
+            {r.erroresConfig.checkinHasta ? (
+              <Text className="text-xs text-danger mt-1.5 font-medium">
+                {r.erroresConfig.checkinHasta}
+              </Text>
+            ) : null}
           </View>
         </View>
       )}

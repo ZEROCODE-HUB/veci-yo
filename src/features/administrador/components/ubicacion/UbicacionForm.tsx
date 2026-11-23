@@ -58,7 +58,7 @@ export function UbicacionForm({
           alta el edificio, y la base completa la moneda y la zona horaria a
           partir del país (`condominio_completar_segun_su_pais`).
         */}
-        {field("ruc", "RUC / Identificación fiscal")}
+        {field("ruc", "RUC / Identificación fiscal (opcional)")}
         {/*
           Teléfono, correo y horario de atención salieron de aquí (13/11/2026,
           decidido con el cliente): el contacto que ven los vecinos es el de la
