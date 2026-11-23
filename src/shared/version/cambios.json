@@ -2,6 +2,8 @@
   {
     "fecha": "2026-11-23",
     "puntos": [
+      "Profesional permanente: en su visita (Visitas › tocar su tarjeta) ves en qué va y puedes «Editar privilegios», «Reenviar invitación» y «Dar de baja». También dice si la invitación está enviada, si ya creó su cuenta o si está activo; «Reenviar» desaparece en cuanto crea su cuenta.",
+      "Invitaciones: al tocar «Abrir Veciyo» desde la invitación, la app abre la invitación (antes podía quedarse en el inicio de sesión) y al crear la cuenta salen los datos ya llenos.",
       "Formularios de toda la app: cada campo dice si es obligatorio (asterisco rojo) u «(opcional)», y si falta algo el error sale debajo del campo. Donde un campo no se entiende solo, hay una «i» que lo explica.",
       "Zonas comunes: el plazo para adjuntar el comprobante se elige en horas y minutos.",
       "Número de documento: el error ahora dice «Revisa el número de documento» y cuántas cifras lleva, para no confundirlo con el teléfono.",

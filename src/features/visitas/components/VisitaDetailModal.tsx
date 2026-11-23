@@ -7,6 +7,7 @@ import type { VisitaItem } from "@/shared/types";
 import { isPastVisit } from "../helpers/visitas.helpers";
 import { TIPO_VISITA_ASSETS } from "./tipoVisitaAssets";
 import { AsistenciaDelPermanente } from "./AsistenciaDelPermanente";
+import { ProfesionalDeLaVisita } from "./ProfesionalDeLaVisita";
 
 interface VisitaDetailModalProps {
   item: VisitaItem;
@@ -174,6 +175,10 @@ export function VisitaDetailModal({
               onCambiarDias={onCambiarDias}
             />
           )}
+          {/* Y lo que se hace con él, en su propia visita (23/11/2026). */}
+          {item.tipo === "permanente" && item.uuid && item.unidadId ? (
+            <ProfesionalDeLaVisita visitaId={item.uuid} unidadId={item.unidadId} />
+          ) : null}
           {people.map((person, index) => (
             <View
               key={`${person.nombre}-${index}`}
