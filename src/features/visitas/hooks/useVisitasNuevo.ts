@@ -52,7 +52,7 @@ import { useEstacionamientosVisita } from "./useEstacionamientosVisita";
 import { entraAlRegistrar } from "../helpers/entraAlRegistrar";
 import { useOficios } from "./useOficios";
 import { useDocumentoDeAmigos } from "./useDocumentoDeAmigos";
-import { agregarTrabajador } from "@/features/propietario/services/trabajadores.repo";
+import { agregarTrabajador, invitarTrabajador } from "@/features/propietario/services/trabajadores.repo";
 import { paisPorDefecto } from "@/shared/constants";
 
 /**
@@ -1034,8 +1034,15 @@ export function useVisitasNuevo() {
             puedeCrearVisitas,
             visitaId,
           })
-            .then(() => {
-              if (conCuenta) addToast("Le enviamos el acceso a la app a su correo", "success");
+            .then(async (trabajadorId) => {
+              if (!conCuenta) return;
+              // La invitación de siempre, con su código (23/11/2026).
+              await invitarTrabajador({
+                id: trabajadorId,
+                correo: email.trim().toLowerCase(),
+                nombre: nombre.trim(),
+              });
+              addToast("Le enviamos la invitación a la app a su correo", "success");
             })
             .catch((e) => {
               if (conCuenta) {

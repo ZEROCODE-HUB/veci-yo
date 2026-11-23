@@ -1805,6 +1805,7 @@ export type Database = {
           rol_unidad: Database["public"]["Enums"]["rol_unidad"] | null
           telefono: string | null
           token_hash: string
+          trabajador_id: string | null
           unidad_id: string | null
           updated_at: string
           vigente_desde: string | null
@@ -1836,6 +1837,7 @@ export type Database = {
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
           telefono?: string | null
           token_hash: string
+          trabajador_id?: string | null
           unidad_id?: string | null
           updated_at?: string
           vigente_desde?: string | null
@@ -1867,6 +1869,7 @@ export type Database = {
           rol_unidad?: Database["public"]["Enums"]["rol_unidad"] | null
           telefono?: string | null
           token_hash?: string
+          trabajador_id?: string | null
           unidad_id?: string | null
           updated_at?: string
           vigente_desde?: string | null
@@ -1899,6 +1902,13 @@ export type Database = {
             columns: ["porteria_id"]
             isOneToOne: false
             referencedRelation: "porteria"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitacion_trabajador_id_fkey"
+            columns: ["trabajador_id"]
+            isOneToOne: false
+            referencedRelation: "trabajador_de_la_vivienda"
             referencedColumns: ["id"]
           },
           {
@@ -7332,6 +7342,13 @@ export type Database = {
           token: string
         }[]
       }
+      invitar_trabajador: {
+        Args: { p_trabajador_id: string }
+        Returns: {
+          invitacion_id: string
+          token: string
+        }[]
+      }
       la_estancia_termina: {
         Args: { p_dentro: number; p_visita_id: string }
         Returns: boolean
@@ -8918,7 +8935,7 @@ export type Database = {
         | "adjunto"
         | "terminada"
       ambito_grupo: "residentes" | "propietarios"
-      ambito_invitacion: "condominio" | "unidad"
+      ambito_invitacion: "condominio" | "unidad" | "trabajador"
       ambito_parametro: "plataforma" | "edificio" | "pais"
       area_conversacion: "seguridad" | "administracion"
       area_reclamo:
@@ -9332,7 +9349,7 @@ export const Constants = {
         "terminada",
       ],
       ambito_grupo: ["residentes", "propietarios"],
-      ambito_invitacion: ["condominio", "unidad"],
+      ambito_invitacion: ["condominio", "unidad", "trabajador"],
       ambito_parametro: ["plataforma", "edificio", "pais"],
       area_conversacion: ["seguridad", "administracion"],
       area_reclamo: [

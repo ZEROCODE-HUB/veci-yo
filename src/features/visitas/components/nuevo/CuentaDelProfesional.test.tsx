@@ -30,7 +30,7 @@ describe("la cuenta del profesional permanente", () => {
     const v = alta();
     render(<CuentaDelProfesional alta={v} />);
     screen.getByText("¿Tendrá cuenta en la app?");
-    expect(screen.queryByText("Puede crear visitas")).toBeNull();
+    expect(screen.queryByText("Registrar visitas")).toBeNull();
     await userEvent.click(screen.getByText("Sí"));
     expect(v.setConCuenta).toHaveBeenCalledWith(true);
   });
@@ -39,8 +39,8 @@ describe("la cuenta del profesional permanente", () => {
     const v = alta({ conCuenta: true });
     render(<CuentaDelProfesional alta={v} />);
     screen.getByText("Le enviaremos el acceso a rosa@correo.com. Tiene que entrar con ese mismo correo.");
-    screen.getByText("Puede contestar el citófono");
-    screen.getByText("Puede crear visitas");
+    screen.getByText("Contestar el citófono");
+    screen.getByText("Registrar visitas");
   });
 
   it("con cuenta y sin correo, lo pide", () => {

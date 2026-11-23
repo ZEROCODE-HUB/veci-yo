@@ -5,6 +5,7 @@ import { mensajeDeError } from "@/shared/utils/error.util";
 import {
   cambiarPermisosDeTrabajador,
   darDeBajaTrabajador,
+  invitarTrabajador,
   obtenerPermisosDeTrabajadores,
   obtenerTrabajadores,
   type PermisosDeTrabajador,
@@ -62,8 +63,20 @@ export function useTrabajadoresDeLaVivienda() {
     onError: (e) => addToast(mensajeDeError(e, "No se pudieron guardar los permisos"), "error"),
   });
 
+  // Otra vez la invitación, a quien todavía no la aceptó (23/11/2026).
+  const reenviar = useMutation({
+    mutationFn: (t: { id: string; correo: string; nombre: string }) => invitarTrabajador(t),
+    onSuccess: (r) => {
+      refrescar();
+      addToast(r.correoEnviado ? "Invitación reenviada a su correo" : "Invitación lista", "success");
+    },
+    onError: (e) => addToast(mensajeDeError(e, "No se pudo reenviar la invitación"), "error"),
+  });
+
   return {
     puede: Boolean(unidadId),
+    reenviarInvitacion: (t: { id: string; correo: string; nombre: string }) => reenviar.mutate(t),
+    reenviandoId: reenviar.isPending ? reenviar.variables?.id : undefined,
     permisos: permisos.data ?? {},
     cambiarPermisos: (id: string, nuevos: PermisosDeTrabajador) =>
       cambiarPermisos.mutateAsync({ id, permisos: nuevos }),

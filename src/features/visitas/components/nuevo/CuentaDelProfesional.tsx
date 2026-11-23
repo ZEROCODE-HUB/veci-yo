@@ -44,7 +44,7 @@ export function CuentaDelProfesional({ alta: v }: { alta: AltaDeVisita }) {
           </Text>
           <View className="flex-row items-center justify-between gap-3">
             <View className="flex-1 gap-0.5">
-              <Text className="text-sm text-gray-900">Puede contestar el citófono</Text>
+              <Text className="text-sm text-gray-900">Contestar el citófono</Text>
               <Text className="text-xs leading-4 text-gray-500">
                 Le suena cuando la portería llama a tu vivienda.
               </Text>
@@ -52,20 +52,20 @@ export function CuentaDelProfesional({ alta: v }: { alta: AltaDeVisita }) {
             <Toggle
               value={v.puedeContestarCitofono}
               onChange={v.setPuedeContestarCitofono}
-              accessibilityLabel="Puede contestar el citófono"
+              accessibilityLabel="Contestar el citófono"
             />
           </View>
           <View className="flex-row items-center justify-between gap-3">
             <View className="flex-1 gap-0.5">
-              <Text className="text-sm text-gray-900">Puede crear visitas</Text>
+              <Text className="text-sm text-gray-900">Registrar visitas</Text>
               <Text className="text-xs leading-4 text-gray-500">
-                Anuncia amigos o profesionales que vienen a tu vivienda. Solo ve las visitas que él registró.
+                Anunciar a amigos o profesionales que vienen. Solo ve las que registra él.
               </Text>
             </View>
             <Toggle
               value={v.puedeCrearVisitas}
               onChange={v.setPuedeCrearVisitas}
-              accessibilityLabel="Puede crear visitas"
+              accessibilityLabel="Registrar visitas"
             />
           </View>
         </View>

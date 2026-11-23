@@ -19,13 +19,16 @@ interface Props {
     permisos: PermisosDeTrabajador,
   ) => Promise<void>;
   guardandoPermisos?: boolean;
+  /** Otra vez la invitación, a quien tiene cuenta ofrecida y no la aceptó. */
+  onReenviar?: (t: { id: string; correo: string; nombre: string }) => void;
+  reenviandoId?: string;
 }
 
 /**
  * Los profesionales permanentes de la vivienda (17/11/2026), con «Dar de baja».
  * Dar de baja pide confirmar: con app, deja de sonarle el intercomunicador.
  *
- * Y «Editar permisos» para los que tienen cuenta (23/11/2026, el cliente al
+ * Y «Editar privilegios» para los que tienen cuenta (23/11/2026, el cliente al
  * probar la 142: solo se podían elegir al registrarlo).
  */
 export function ListaDeTrabajadores({
@@ -35,6 +38,8 @@ export function ListaDeTrabajadores({
   permisos = {},
   onCambiarPermisos,
   guardandoPermisos = false,
+  onReenviar,
+  reenviandoId,
 }: Props) {
   const [aConfirmar, setAConfirmar] = useState<TrabajadorDeLaVivienda | null>(
     null,
@@ -77,13 +82,26 @@ export function ListaDeTrabajadores({
             ) : null}
           </View>
           <View className="items-end gap-1">
+            {t.conApp && !t.tieneCuenta && t.correoInvitado && onReenviar ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={reenviandoId === t.id}
+                disabled={Boolean(reenviandoId)}
+                onPress={() =>
+                  onReenviar({ id: t.id, correo: t.correoInvitado ?? "", nombre: t.nombre })
+                }
+              >
+                Reenviar invitación
+              </Button>
+            ) : null}
             {t.conApp && permisos[t.id] && onCambiarPermisos ? (
               <Button
                 size="sm"
                 variant="ghost"
                 onPress={() => abrirPermisos(t)}
               >
-                Editar permisos
+                Editar privilegios
               </Button>
             ) : null}
             <Button
@@ -102,14 +120,15 @@ export function ListaDeTrabajadores({
       <Modal
         visible={Boolean(aEditar)}
         onClose={() => setAEditar(null)}
-        title={aEditar ? `Permisos de ${aEditar.nombre}` : "Permisos"}
+        title="Editar privilegios"
       >
         <View className="gap-4">
+          <Text className="text-sm text-gray-500">
+            {aEditar ? `Qué puede hacer ${aEditar.nombre} en la vivienda.` : ""}
+          </Text>
           <View className="flex-row items-center justify-between gap-3">
             <View className="flex-1 gap-0.5">
-              <Text className="text-sm text-gray-900">
-                Puede contestar el citófono
-              </Text>
+              <Text className="text-sm text-gray-900">Contestar el citófono</Text>
               <Text className="text-xs leading-4 text-gray-500">
                 Le suena cuando la portería llama a tu vivienda.
               </Text>
@@ -119,15 +138,15 @@ export function ListaDeTrabajadores({
               onChange={(v) =>
                 setBorrador((b) => ({ ...b, puedeContestarCitofono: v }))
               }
-              accessibilityLabel="Puede contestar el citófono"
+              accessibilityLabel="Contestar el citófono"
             />
           </View>
           <View className="flex-row items-center justify-between gap-3">
             <View className="flex-1 gap-0.5">
-              <Text className="text-sm text-gray-900">Puede crear visitas</Text>
+              <Text className="text-sm text-gray-900">Registrar visitas</Text>
               <Text className="text-xs leading-4 text-gray-500">
-                Anuncia amigos o profesionales que vienen a tu vivienda. Solo ve
-                las visitas que él registró.
+                Anunciar a amigos o profesionales que vienen. Solo ve las que
+                registra él.
               </Text>
             </View>
             <Toggle
@@ -135,7 +154,7 @@ export function ListaDeTrabajadores({
               onChange={(v) =>
                 setBorrador((b) => ({ ...b, puedeCrearVisitas: v }))
               }
-              accessibilityLabel="Puede crear visitas"
+              accessibilityLabel="Registrar visitas"
             />
           </View>
           <Button
@@ -151,7 +170,7 @@ export function ListaDeTrabajadores({
               }
             }}
           >
-            Guardar permisos
+            Guardar
           </Button>
           <Button variant="ghost" onPress={() => setAEditar(null)}>
             Cancelar

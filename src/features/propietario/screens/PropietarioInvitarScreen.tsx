@@ -122,6 +122,8 @@ export function PropietarioInvitarScreen() {
             permisos={trabajadores.permisos}
             onCambiarPermisos={trabajadores.cambiarPermisos}
             guardandoPermisos={trabajadores.guardandoPermisos}
+            onReenviar={trabajadores.reenviarInvitacion}
+            reenviandoId={trabajadores.reenviandoId}
           />
         </SegunLaCarga>
         {/*

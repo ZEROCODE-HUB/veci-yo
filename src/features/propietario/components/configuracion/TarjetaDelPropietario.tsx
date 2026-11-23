@@ -106,7 +106,7 @@ export function TarjetaDelPropietario({
             ) : (
               <View className="flex-row items-center gap-2 mt-1">
                 <Text className="shrink text-xs" style={{ color: theme.colors.textSecondary }}>
-                  Residente:
+                  Vive aquí:
                 </Text>
                 <Toggle
                   value={esResidente}
@@ -144,8 +144,8 @@ export function TarjetaDelPropietario({
             ) : null}
           </View>
           <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
-            Por defecto el propietario es anfitrión y administrador primario.
-            Puedes reasignarlo.
+            Si no marcas a otra persona, el propietario hace de anfitrión y
+            de administrador primario.
           </Text>
         </View>
       </View>
