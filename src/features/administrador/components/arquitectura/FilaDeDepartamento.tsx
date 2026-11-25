@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/config";
-import { Badge, Button, Modal } from "@/shared/components";
+import { Badge, BottomSheet, BottomSheetOption, Button, Modal } from "@/shared/components";
 
 /**
  * Un departamento en la lista de su torre (29/10/2026).
@@ -60,40 +60,31 @@ export function FilaDeDepartamento({
         </Pressable>
       </Pressable>
 
-      <Modal visible={menu} onClose={() => setMenu(false)} title={titulo}>
-        <View className="gap-3">
-          <Button
-            variant="secondary"
-            fullWidth
-            onPress={() => {
-              setMenu(false);
-              onEditar();
-            }}
-          >
-            <Text>Editar</Text>
-          </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onPress={() => {
-              setMenu(false);
-              onVerDetalle();
-            }}
-          >
-            <Text>Ver detalle</Text>
-          </Button>
-          <Button
-            variant="danger"
-            fullWidth
-            onPress={() => {
-              setMenu(false);
-              setConfirmando(true);
-            }}
-          >
-            <Text>Eliminar</Text>
-          </Button>
-        </View>
-      </Modal>
+      {/* Pegado al «⋮», como un menú (25/11/2026). */}
+      <BottomSheet visible={menu} onClose={() => setMenu(false)}>
+        <BottomSheetOption
+          label="Editar"
+          onPress={() => {
+            setMenu(false);
+            onEditar();
+          }}
+        />
+        <BottomSheetOption
+          label="Ver detalle"
+          onPress={() => {
+            setMenu(false);
+            onVerDetalle();
+          }}
+        />
+        <BottomSheetOption
+          label="Eliminar"
+          variant="danger"
+          onPress={() => {
+            setMenu(false);
+            setConfirmando(true);
+          }}
+        />
+      </BottomSheet>
 
       <Modal visible={confirmando} onClose={() => setConfirmando(false)} title="Eliminar">
         <View className="gap-4">

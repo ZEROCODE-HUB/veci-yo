@@ -15,6 +15,7 @@ import { supabase } from '@/shared/services/supabase';
 import { tomarMotivoDeSalida } from '@/shared/services/sesionViva';
 import { invitacionPendiente, recordarInvitacion } from '@/shared/services/invitacionPendiente';
 import { tokenDeInvitacion } from '@/shared/services/tokenDeInvitacion';
+import { registrarToque } from '@/shared/services/ultimoToque';
 import { useUIStore } from '@/stores/ui-store';
 import { SeleccionRolScreen } from '@/features/onboarding/screens/SeleccionRolScreen';
 import { AceptarInvitacionScreen } from '@/features/onboarding/screens/AceptarInvitacionScreen';
@@ -191,6 +192,16 @@ export function RootNavigator() {
   }
 
   return (
+    /*
+      Cada toque queda apuntado: el menú «⋮» que se abra justo después sale
+      pegado a ese punto (25/11/2026, `ultimoToque`). En el teléfono es
+      `onTouchStart`; en el navegador, el puntero.
+    */
+    <View
+      style={{ flex: 1 }}
+      onTouchStart={(e) => registrarToque(e.nativeEvent.pageX, e.nativeEvent.pageY)}
+      onPointerDown={(e) => registrarToque(e.nativeEvent.pageX, e.nativeEvent.pageY)}
+    >
     <NavigationContainer linking={linking} ref={navegacionGlobal}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Suspendida desde el panel: antes que nada, su pantalla (24/10/2026). */}
@@ -219,5 +230,6 @@ export function RootNavigator() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </View>
   );
 }
