@@ -1,5 +1,12 @@
 [
   {
+    "fecha": "2026-11-25",
+    "puntos": [
+      "Todos los desplegables (listas para elegir, horas y país del teléfono) se abren pegados al campo, justo debajo o encima si abajo no cabe, en vez de subir desde abajo de la pantalla. Abren en la opción elegida.",
+      "La invitación del profesional permanente ya no sale repetida en «Invitaciones sin aceptar»: se maneja en su sección, con su estado."
+    ]
+  },
+  {
     "fecha": "2026-11-23",
     "puntos": [
       "Profesional permanente: en su visita (Visitas › tocar su tarjeta) ves en qué va y puedes «Editar privilegios», «Reenviar invitación» y «Dar de baja». También dice si la invitación está enviada, si ya creó su cuenta o si está activo; «Reenviar» desaparece en cuanto crea su cuenta.",

@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
-import { Modal } from "./Modal";
+import { DesplegablePegado, medirAncla, type Ancla } from "./DesplegablePegado";
+
+/** Lo que ocupa cada hora de la lista (alto + separación), para abrir en la elegida. */
+const ALTO_DE_HORA = 48;
 
 interface ListaProps {
   /** La hora elegida, en `HH:mm`. */
@@ -29,9 +32,18 @@ interface ListaProps {
 export function ListaDeHoras({ value, onChange, paso = 15, minima, horas: dadas }: ListaProps) {
   const delDia = useMemo(() => horasDelDia(paso), [paso]);
   const horas = dadas ?? delDia;
+  const lista = useRef<ScrollView>(null);
+  // Abre en la elegida (25/11/2026): con 96 horas no hay que bajar a buscarla.
+  const indice = Math.max(0, horas.indexOf(value));
 
   return (
-    <ScrollView nestedScrollEnabled style={{ maxHeight: 320 }} contentContainerClassName="gap-1 pb-2">
+    <ScrollView
+      ref={lista}
+      nestedScrollEnabled
+      style={{ maxHeight: 320 }}
+      contentContainerClassName="gap-1 pb-2"
+      onLayout={() => lista.current?.scrollTo({ y: Math.max(0, indice * ALTO_DE_HORA - ALTO_DE_HORA * 2), animated: false })}
+    >
       {horas.map((hora) => {
         const elegida = hora === value;
         /*
@@ -130,6 +142,19 @@ export function CampoHora({
   enLinea = false,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
+  const campo = useRef<View>(null);
+  const [ancla, setAncla] = useState<Ancla | null>(null);
+  // Pegada al campo, como todos los desplegables (25/11/2026).
+  const alternar = () => {
+    if (abierto || enLinea) {
+      setAbierto((previo) => !previo);
+      return;
+    }
+    medirAncla(campo, (medida) => {
+      setAncla(medida ?? { x: 16, y: 120, ancho: 320, alto: 0 });
+      setAbierto(true);
+    });
+  };
 
   const lista = (
     <ListaDeHoras
@@ -150,7 +175,8 @@ export function CampoHora({
       )}
 
       <Pressable
-        onPress={() => setAbierto((previo) => !previo)}
+        ref={campo}
+        onPress={alternar}
         accessibilityRole="button"
         accessibilityLabel={label ?? placeholder}
         className={`rounded-xl border bg-white px-4 py-3 active:opacity-70 ${error ? "border-danger" : "border-gray-200"}`}
@@ -177,13 +203,9 @@ export function CampoHora({
             </View>
           )
         : (
-            <Modal
-              visible={abierto}
-              onClose={() => setAbierto(false)}
-              title={label ? label.replace(/\s*\*\s*$/, "") : "Elegir hora"}
-            >
-              {lista}
-            </Modal>
+            <DesplegablePegado visible={abierto} ancla={ancla} onClose={() => setAbierto(false)} anchoMinimo={160} altoMaximo={340}>
+              <View className="p-2">{lista}</View>
+            </DesplegablePegado>
           )}
     </View>
   );

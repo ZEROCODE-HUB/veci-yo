@@ -157,7 +157,6 @@ export function DirectorioAdminPagos({
               label: nombreDelMes(p.periodo),
             }))}
             placeholder="Elige el periodo"
-            debajo
             onChange={(value) => cuotas.setCuotaId(String(value))}
           />
         ) : cuotas.periodosLeidos ? (

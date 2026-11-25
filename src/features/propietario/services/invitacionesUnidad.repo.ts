@@ -75,6 +75,8 @@ export async function obtenerInvitacionesPendientes(
     .from("invitacion")
     .select("id, nombre, correo, rol_unidad, vigente_desde, vigente_hasta, expira_en")
     .eq("unidad_id", unidadId)
+    // La del profesional permanente va en su sección, con su estado (23/11/2026).
+    .eq("ambito", "unidad")
     .eq("estado", "pendiente");
 
   if (error) throw error;
