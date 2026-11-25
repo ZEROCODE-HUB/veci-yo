@@ -9,6 +9,7 @@ import {
 } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { BottomSheet } from "./BottomSheet";
+import { DesplegablePegado, type Ancla } from "./DesplegablePegado";
 import { SearchBar } from "./SearchBar";
 
 /**
@@ -38,6 +39,8 @@ export function SelectorDePais({
   conPrefijo = false,
   /** Si se da, solo se ofrecen estos países. */
   codigos,
+  /** Dónde está el campo: la lista sale pegada a él (25/11/2026). Sin él, desde abajo. */
+  ancla,
 }: {
   visible: boolean;
   codigo: string;
@@ -46,6 +49,7 @@ export function SelectorDePais({
   onClose: () => void;
   conPrefijo?: boolean;
   codigos?: string[];
+  ancla?: Ancla | null;
 }) {
   const [busqueda, setBusqueda] = useState("");
   /*
@@ -62,10 +66,10 @@ export function SelectorDePais({
   );
   const elegido = paisPorCodigo(codigo) ?? paisPorCodigo(paisPorDefecto());
 
-  return (
-    <BottomSheet visible={visible} onClose={cerrar}>
-      <View className="gap-3 px-4 pb-4" style={{ flexShrink: 1 }}>
-        <Text className="text-base font-semibold text-gray-900">{titulo}</Text>
+  const pegado = ancla !== undefined;
+  const contenido = (
+      <View className={pegado ? "gap-2 p-3" : "gap-3 px-4 pb-4"} style={{ flexShrink: 1 }}>
+        {pegado ? null : <Text className="text-base font-semibold text-gray-900">{titulo}</Text>}
 
         <SearchBar
           value={busqueda}
@@ -81,7 +85,7 @@ export function SelectorDePais({
           nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
           initialNumToRender={15}
-          style={{ maxHeight: 360, flexShrink: 1 }}
+          style={{ maxHeight: pegado ? 260 : 360, flexShrink: 1 }}
           contentContainerClassName="gap-1"
           renderItem={({ item: pais }) => {
             const esElegido = pais.codigo === elegido?.codigo;
@@ -137,10 +141,21 @@ export function SelectorDePais({
           }
         />
 
-        <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
-          {codigos ? codigos.length : PAISES.length} países.
-        </Text>
+        {pegado ? null : (
+          <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
+            {codigos ? codigos.length : PAISES.length} países.
+          </Text>
+        )}
       </View>
+  );
+
+  return pegado ? (
+    <DesplegablePegado visible={visible} ancla={ancla ?? null} onClose={cerrar} altoMaximo={360} anchoMinimo={280}>
+      {contenido}
+    </DesplegablePegado>
+  ) : (
+    <BottomSheet visible={visible} onClose={cerrar}>
+      {contenido}
     </BottomSheet>
   );
 }

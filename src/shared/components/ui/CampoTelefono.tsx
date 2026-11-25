@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, Text, View, type ReturnKeyTypeOptions, type TextInput } from "react-native";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { Input } from "./Input";
 import { SelectorDePais } from "./SelectorDePais";
+import { medirAncla, type Ancla } from "./DesplegablePegado";
 
 interface Props {
   label?: string;
@@ -87,6 +88,14 @@ export function CampoTelefono({
   onSubmitEditing,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
+  // La lista de países, pegada al campo (25/11/2026).
+  const campo = useRef<View>(null);
+  const [ancla, setAncla] = useState<Ancla | null>(null);
+  const abrir = () =>
+    medirAncla(campo, (medida) => {
+      setAncla(medida ?? { x: 16, y: 120, ancho: 320, alto: 0 });
+      setAbierto(true);
+    });
   const elegido = paisPorCodigo(codigoPais) ?? paisPorCodigo(paisPorDefecto());
 
 
@@ -94,14 +103,14 @@ export function CampoTelefono({
     <View className="w-full">
       {label ? <EtiquetaDelCampo label={label} explicacion={explicacion} /> : null}
 
-      <View className="flex-row gap-2">
+      <View ref={campo} className="flex-row gap-2">
         {/*
           El prefijo es un botón, no un campo de texto: tecleándolo se puede
           escribir cualquier cosa, y de ahí venían los «+57», «57» y «Colombia»
           conviviendo en la misma columna.
         */}
         <Pressable
-          onPress={() => setAbierto(true)}
+          onPress={abrir}
           accessibilityRole="button"
           accessibilityLabel={`País del teléfono: ${elegido?.nombre ?? "sin elegir"}`}
           className="flex-row items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-3 active:opacity-70"
@@ -137,6 +146,7 @@ export function CampoTelefono({
 
       <SelectorDePais
         visible={abierto}
+        ancla={ancla}
         codigo={elegido?.codigo ?? paisPorDefecto()}
         titulo="¿De qué país es el número?"
         conPrefijo

@@ -68,7 +68,6 @@ export function DirectorioFiltros({
         ]}
         onChange={(value) => onTorre(String(value))}
         placeholder="Filtrar por torre"
-        debajo
       />
       <View
         style={{
@@ -125,7 +124,6 @@ export function DirectorioFiltros({
               ]}
               onChange={(value) => onPiso(String(value))}
               placeholder="Filtrar por piso"
-              debajo
             />
           ) : null}
           <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
@@ -151,7 +149,6 @@ export function DirectorioFiltros({
           ]}
           onChange={(value) => onNivel(String(value))}
           placeholder="Filtrar por nivel"
-          debajo
         />
       ) : null}
       <Text className="text-xs text-gray-400 text-center">
