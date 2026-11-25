@@ -188,6 +188,14 @@ export function GestionZonaForm({
   const nombresDeZonas = watch("nombresDeZonas") ?? [];
   const hayCosto =
     Number(watch("costoReserva")) > 0 || Number(watch("montoGarantia")) > 0 || Number(watch("costoLimpieza")) > 0;
+  /*
+    Con algún costo, la aprobación se enciende sola y no se puede apagar
+    (26/11/2026, pedido del cliente): hay un pago que revisar. La base hace lo
+    mismo (`zona_con_costo_requiere_aprobacion`).
+  */
+  React.useEffect(() => {
+    if (hayCosto && !watch("requiereAprobacion")) setValue("requiereAprobacion", true);
+  }, [hayCosto, watch, setValue]);
   // Las de la base, con el código solo: el campo va a media columna.
   const monedasDeLaZona = useMonedas(watch("moneda")).monedas.map((m) => m.codigo);
   const fechasEspeciales = watch("fechasEspeciales");
@@ -726,13 +734,20 @@ export function GestionZonaForm({
             name="requiereAprobacion"
             render={({ field }) => (
               <Toggle
-                value={field.value}
+                // Con costo, siempre encendida y sin poder apagarla (26/11/2026).
+                value={hayCosto ? true : field.value}
                 onChange={field.onChange}
+                disabled={hayCosto}
                 labelRight="Las reservas requieren aprobación del administrador"
                 labelRightClassName="flex-1"
               />
             )}
           />
+          {hayCosto ? (
+            <Text className="text-xs leading-4 text-gray-500">
+              Esta zona tiene costo, así que la administración siempre aprueba cada reserva (para revisar el pago).
+            </Text>
+          ) : null}
           <Text className="text-xs leading-4 text-gray-400">
             {watch("requiereAprobacion")
               ? "Las reservas quedarán en estado Pendiente y deberán ser aprobadas por el administrador. El usuario podrá subir comprobante de pago."
