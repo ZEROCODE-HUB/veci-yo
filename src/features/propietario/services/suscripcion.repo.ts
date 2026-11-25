@@ -530,6 +530,12 @@ export async function obtenerCalendarios(
   const { data, error } = await supabase.rpc("calendarios_de_unidad", {
     p_unidad_id: unidadId,
   });
+  /*
+    Quien no configura el alojamiento (el huésped, un residente) no tiene
+    calendarios que ver: la base responde «Esa vivienda no es tuya». No es un
+    fallo que enseñar --salía en rojo en Visitas, 25/11/2026--: no hay nada.
+  */
+  if (error && /no es tuya/i.test(error.message ?? "")) return [];
   if (error) throw error;
 
   return (data ?? [])
