@@ -1,7 +1,7 @@
 import { theme } from "@/config";
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Modal } from "@/shared/components";
+import { BottomSheet, BottomSheetOption, Button, Modal } from "@/shared/components";
 import { Pressable, Text, View } from "react-native";
 import type { Torre } from "@/stores/admin-store";
 import { towerToForm, type TowerFormValues } from "../../types";
@@ -156,34 +156,25 @@ export function TorresTab({
           </View>
         </Pressable>
       ))}
-      <Modal
-        visible={!!menu}
-        onClose={() => setMenu(null)}
-        title="Opciones de torre"
-      >
-        <View className="gap-3">
-          <Button
-            fullWidth
-            onPress={() => {
-              setEditing(menu);
-              setMenu(null);
-              setFormOpen(true);
-            }}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="danger"
-            fullWidth
-            onPress={() => {
-              setDeleting(menu);
-              setMenu(null);
-            }}
-          >
-            Eliminar
-          </Button>
-        </View>
-      </Modal>
+      {/* Pegado al «⋮», como un menú (25/11/2026). */}
+      <BottomSheet visible={!!menu} onClose={() => setMenu(null)}>
+        <BottomSheetOption
+          label="Editar"
+          onPress={() => {
+            setEditing(menu);
+            setMenu(null);
+            setFormOpen(true);
+          }}
+        />
+        <BottomSheetOption
+          label="Eliminar"
+          variant="danger"
+          onPress={() => {
+            setDeleting(menu);
+            setMenu(null);
+          }}
+        />
+      </BottomSheet>
       <TorreFormModal
         visible={formOpen}
         editing={editing}
