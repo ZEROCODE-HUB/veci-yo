@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { Button, Modal } from "@/shared/components";
+import { BottomSheet, Button } from "@/shared/components";
 import type { DepartamentoRentaCorta } from "../../types/reglas";
 
 export function ReglaAccionesModal({
@@ -16,7 +16,9 @@ export function ReglaAccionesModal({
   onReport: () => void;
 }) {
   return (
-    <Modal visible={!!departamento} onClose={onClose}>
+    // Pegado al «⋮», como un menú (25/11/2026).
+    <BottomSheet visible={!!departamento} onClose={onClose}>
+      <View className="p-3">
       {puedeLlamar ? (
         <View className="gap-2.5">
           {/*
@@ -66,6 +68,7 @@ export function ReglaAccionesModal({
           </Text>
         </Button>
       )}
-    </Modal>
+      </View>
+    </BottomSheet>
   );
 }

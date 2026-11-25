@@ -1,5 +1,7 @@
 import React from "react";
-import { Text, Pressable, Modal as RNModal } from "react-native";
+import { Text, Pressable, Modal as RNModal, ScrollView } from "react-native";
+import { tomarToqueReciente } from "@/shared/services/ultimoToque";
+import { DesplegablePegado, type Ancla } from "./DesplegablePegado";
 import { EvitarTeclado } from "@/shared/layouts/EvitarTeclado";
 import Animated, {
   Easing,
@@ -32,6 +34,23 @@ const HojaAnimada = Animated.View;
  * (auditoría de responsividad, 24/10/2026).
  */
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
+  /*
+    Abierta justo después de un toque --un «⋮», «Más…»--, sale pegada a ese
+    punto como un menú, no desde abajo (25/11/2026, pedido del cliente). Sin
+    toque reciente, la hoja de siempre.
+  */
+  const [ancla, setAncla] = React.useState<Ancla | null>(null);
+  const [anclaLista, setAnclaLista] = React.useState(false);
+  React.useEffect(() => {
+    if (!visible) {
+      setAnclaLista(false);
+      return;
+    }
+    const toque = tomarToqueReciente();
+    setAncla(toque ? { x: toque.x, y: toque.y - 14, ancho: 0, alto: 28 } : null);
+    setAnclaLista(true);
+  }, [visible]);
+
   const progreso = useSharedValue(0);
   // La barra de botones del teléfono se dibuja encima: se suma su alto.
   const insets = useSafeAreaInsets();
@@ -48,9 +67,19 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
     transform: [{ translateY: (1 - progreso.value) * 24 }],
   }));
 
+  if (visible && anclaLista && ancla) {
+    return (
+      <DesplegablePegado visible ancla={ancla} onClose={onClose} anchoMinimo={240} altoMaximo={420}>
+        <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
+          {children}
+        </ScrollView>
+      </DesplegablePegado>
+    );
+  }
+
   return (
     <RNModal
-      visible={visible}
+      visible={visible && anclaLista}
       transparent
       animationType="none"
       onRequestClose={onClose}
