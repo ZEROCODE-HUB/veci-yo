@@ -2,6 +2,8 @@
   {
     "fecha": "2026-11-25",
     "puntos": [
+      "Configuración de la vivienda, más sencilla: cada persona es una tarjeta con su nombre, su rol y el «⋮»; «+ Invitar» va junto a la gente; los profesionales permanentes también están ahí; «Contactos de la vivienda» reemplaza a las casillas de «anfitrión/administrador primario»; y lo demás (renta corta, contratos, servicios) es una lista con flechas.",
+      "Invitar a alguien: solo el formulario. «Ver qué podrá hacer» se abre si se quiere ver, y hay un atajo para registrar a un profesional permanente.",
       "Con varios roles: al salir a otra app y volver, la vivienda elegida ya no cambia sola a la de otro rol (arriba decía un rol, el menú no marcaba nada y la pestaña Viviendas enseñaba solo Anuncios).",
       "Los menús «⋮» (de visitas, reservas, residentes, guardias, torres, departamentos, correspondencia…) se abren pegados al botón que los abre, como un menú, en vez de subir desde abajo.",
       "Todos los desplegables (listas para elegir, horas y país del teléfono) se abren pegados al campo, justo debajo o encima si abajo no cabe, en vez de subir desde abajo de la pantalla. Abren en la opción elegida.",

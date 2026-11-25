@@ -62,10 +62,7 @@ export function FormularioInvitacion({
 
   return (
     <View className="gap-3">
-      <Text className="text-base font-bold text-gray-900">
-        Invitar a alguien
-      </Text>
-
+      {/* Sin título: la pantalla ya se llama «Invitar a alguien» (25/11/2026). */}
       <Input
         label="Nombre y apellido *"
         soloLetras

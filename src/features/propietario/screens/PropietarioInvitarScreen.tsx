@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { theme } from "@/config";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { SharedStackParamList } from "@/shared/types";
@@ -8,12 +9,9 @@ import {
   DarAccesoALaApp,
   FormularioInvitacion,
   InvitacionesPendientes,
-  ListaDeTrabajadores,
-  PersonasDeLaUnidad,
   ResumenDelRol,
 } from "../components/invitar";
 import { useInvitarAUnidad } from "../hooks/useInvitarAUnidad";
-import { useTrabajadoresDeLaVivienda } from "../hooks/useTrabajadoresDeLaVivienda";
 import { rolQueSeCreaDe } from "@/shared/services/capacidadesDelRol";
 
 /**
@@ -28,12 +26,11 @@ import { rolQueSeCreaDe } from "@/shared/services/capacidadesDelRol";
  * comprueba; si alguien llegara sin permiso, la llamada falla y se dice.
  */
 export function PropietarioInvitarScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<SharedStackParamList>>();
   const {
     ubicacionActiva,
     puedeInvitar,
-    personas,
     pendientes,
-    cargaDePersonas,
     cargaDePendientes,
     revocandoId,
     form,
@@ -50,12 +47,9 @@ export function PropietarioInvitarScreen() {
     invitar,
     invitando,
     revocar,
-  } = useInvitarAUnidad();
+  } = useInvitarAUnidad(() => navigation.goBack());
   /** A quién se le está dando acceso a la app (17/11/2026). */
   const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
-  /** La empleada, el chofer (17/11/2026): van aparte, no son un rol de la vivienda. */
-  const trabajadores = useTrabajadoresDeLaVivienda();
-  const navigation = useNavigation<NativeStackNavigationProp<SharedStackParamList>>();
 
   if (!puedeInvitar) {
     return (
@@ -74,15 +68,11 @@ export function PropietarioInvitarScreen() {
           {ubicacionActiva?.alias}
         </Text>
 
-        <SegunLaCarga
-          estado={cargaDePersonas}
-          texto="la gente de la vivienda"
-          forma="filas"
-          cuantos={3}
-          enLinea
-        >
-          <PersonasDeLaUnidad personas={personas} onDarAcceso={setDarAccesoA} />
-        </SegunLaCarga>
+        {/*
+          Aquí iba «En la vivienda», la misma lista que Configuración: se quitó
+          (25/11/2026, «hazlo sencillo»). Darle la app a alguien está en el «⋮»
+          de su tarjeta, allá.
+        */}
         <SegunLaCarga
           estado={cargaDePendientes}
           texto="las invitaciones"
@@ -112,42 +102,23 @@ export function PropietarioInvitarScreen() {
           resumenDelRol={(rol) => <ResumenDelRol rol={rolQueSeCreaDe(rol)} />}
         />
 
-        <SegunLaCarga
-          estado={trabajadores.carga}
-          texto="los profesionales permanentes de la vivienda"
-          forma="filas"
-          cuantos={1}
-          enLinea
-        >
-          <ListaDeTrabajadores
-            trabajadores={trabajadores.trabajadores}
-            onDarDeBaja={trabajadores.darDeBaja}
-            dandoDeBajaId={trabajadores.dandoDeBajaId}
-            situacion={trabajadores.situacion}
-            onCambiarPermisos={trabajadores.cambiarPermisos}
-            guardandoPermisos={trabajadores.guardandoPermisos}
-            onReenviar={trabajadores.reenviarInvitacion}
-            reenviandoId={trabajadores.reenviandoId}
-          />
-        </SegunLaCarga>
         {/*
-          Un solo registro (18/11/2026, pedido del cliente): el profesional
-          permanente se agrega desde Visitas, con sus días y «¿Tendrá cuenta
-          en la app?». Aquí queda la lista de los que ya hay.
+          Los profesionales permanentes se ven y se manejan en Configuración,
+          con la gente de la vivienda (25/11/2026). Aquí, solo el atajo.
         */}
-        <View className="gap-2">
-          <Text className="text-base font-bold text-gray-900">Agregar profesional permanente</Text>
-          <Text className="text-xs text-gray-500">
-            La empleada, el chofer, la niñera, el profesor: quien viene los mismos días cada semana. Se registra
-            en Visitas, con sus días y si tendrá cuenta en la app.
+        <Pressable
+          onPress={() => navigation.navigate("VisitasNuevo", { tipoPreseleccionado: "permanente" })}
+          accessibilityRole="button"
+          className="rounded-xl p-3 active:opacity-70"
+          style={{ backgroundColor: theme.colors.bgMuted }}
+        >
+          <Text className="text-sm text-gray-700">
+            ¿Es la empleada, el chofer, la niñera o el profesor?{" "}
+            <Text className="font-semibold" style={{ color: theme.colors.secondary }}>
+              Regístralo como profesional permanente ›
+            </Text>
           </Text>
-          <Button
-            variant="secondary"
-            onPress={() => navigation.navigate("VisitasNuevo", { tipoPreseleccionado: "permanente" })}
-          >
-            Registrar profesional permanente
-          </Button>
-        </View>
+        </Pressable>
       </ScrollView>
 
       <DarAccesoALaApp persona={darAccesoA} onClose={() => setDarAccesoA(null)} />
