@@ -8,7 +8,8 @@ interface Props {
   /** Quien puede invitar a la vivienda puede darle la app a quien no la tiene. */
   puedeDarAcceso?: boolean;
   onClose: () => void;
-  onEditar: (r: ResidenteDeUnidad) => void;
+  /** Ver su ficha, sin editar (25/11/2026: «Editar» pasó a «Ver»). */
+  onVer: (r: ResidenteDeUnidad) => void;
   onDarDeBaja: (r: ResidenteDeUnidad) => void;
   onDenunciar: (r: ResidenteDeUnidad) => void;
   onDarAcceso?: (r: ResidenteDeUnidad) => void;
@@ -30,7 +31,7 @@ export function MenuDeResidente({
   puedeGestionar,
   puedeDarAcceso = false,
   onClose,
-  onEditar,
+  onVer,
   onDarDeBaja,
   onDenunciar,
   onDarAcceso,
@@ -70,7 +71,7 @@ export function MenuDeResidente({
         ofrecían las dos, y «Eliminar» le respondía «eliminado» sin eliminar a
         nadie: la base no le deja.
       */}
-      {puedeGestionar && <BottomSheetOption label="Editar" onPress={y(onEditar)} />}
+      <BottomSheetOption label="Ver" onPress={y(onVer)} />
       {ofrecerPrivilegios && onPrivilegios ? (
         <BottomSheetOption label="Editar privilegios" onPress={y(onPrivilegios)} />
       ) : null}

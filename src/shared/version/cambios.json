@@ -1,5 +1,11 @@
 [
   {
+    "fecha": "2026-11-26",
+    "puntos": [
+      "Personas de la vivienda: en el «⋮», «Editar» pasó a «Ver»: una ficha simple con rol, teléfono, desde cuándo está y si usa la app. Sin contacto de emergencia ni permisos de lo que ven los vecinos. «Editar privilegios» sigue igual."
+    ]
+  },
+  {
     "fecha": "2026-11-25",
     "puntos": [
       "Configuración de la vivienda, más sencilla: cada persona es una tarjeta con su nombre, su rol y el «⋮»; «+ Invitar» va junto a la gente; los profesionales permanentes también están ahí; «Contactos de la vivienda» reemplaza a las casillas de «anfitrión/administrador primario»; y lo demás (renta corta, contratos, servicios) es una lista con flechas.",
