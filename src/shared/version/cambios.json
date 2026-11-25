@@ -2,6 +2,7 @@
   {
     "fecha": "2026-11-25",
     "puntos": [
+      "Con varios roles: al salir a otra app y volver, la vivienda elegida ya no cambia sola a la de otro rol (arriba decía un rol, el menú no marcaba nada y la pestaña Viviendas enseñaba solo Anuncios).",
       "Los menús «⋮» (de visitas, reservas, residentes, guardias, torres, departamentos, correspondencia…) se abren pegados al botón que los abre, como un menú, en vez de subir desde abajo.",
       "Todos los desplegables (listas para elegir, horas y país del teléfono) se abren pegados al campo, justo debajo o encima si abajo no cabe, en vez de subir desde abajo de la pantalla. Abren en la opción elegida.",
       "La invitación del profesional permanente ya no sale repetida en «Invitaciones sin aceptar»: se maneja en su sección, con su estado."
