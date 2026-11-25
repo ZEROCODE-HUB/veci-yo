@@ -2,6 +2,7 @@
   {
     "fecha": "2026-11-26",
     "puntos": [
+      "Zonas comunes: si la zona tiene algún costo (reserva, garantía o limpieza), «Aprobación del administrador» se activa sola y no se puede desactivar: hay un pago que revisar.",
       "Personas de la vivienda: en el «⋮», «Editar» pasó a «Ver»: una ficha simple con rol, teléfono, desde cuándo está y si usa la app. Sin contacto de emergencia ni permisos de lo que ven los vecinos. «Editar privilegios» sigue igual."
     ]
   },
