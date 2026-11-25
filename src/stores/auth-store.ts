@@ -198,7 +198,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   refrescarContexto: async () => {
     const contexto = await cargarContextoUsuario();
     if (!contexto) return;
-    useUbicacionStore.getState().setUbicaciones(contexto.ubicaciones);
+    /*
+      La vivienda que estaba elegida se conserva (25/11/2026). Al volver a la
+      app la lista se recarga con la favorita de la base, y con varios roles
+      quedaba elegida la de otro rol: arriba decía «Propietario · Cedro 101»
+      mientras el rol seguía siendo el de profesional, el menú no marcaba nada
+      y la pestaña Viviendas enseñaba lo de un rol en la casa de otro.
+    */
+    const anterior = useUbicacionStore.getState().ubicaciones.find((u) => u.favorito);
+    const misma = anterior
+      ? contexto.ubicaciones.find((u) => u.unidadId === anterior.unidadId && u.rol === anterior.rol)
+      : undefined;
+    useUbicacionStore
+      .getState()
+      .setUbicaciones(
+        misma ? contexto.ubicaciones.map((u) => ({ ...u, favorito: u === misma })) : contexto.ubicaciones,
+      );
     const rolActual = get().rolActivo;
     const rolQueSigue = rolQueSigueTras(rolActual, contexto.rolesDisponibles);
     set({
@@ -208,8 +223,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       condominios: contexto.condominios,
       unidades: contexto.unidades,
     });
-    // Por `setRolActivo` para que quede recordado y con su vivienda activa.
-    if (rolQueSigue !== rolActual) get().setRolActivo(rolQueSigue);
+    // Por `setRolActivo` para que quede recordado y con su vivienda activa,
+    // también si el rol no cambió: así la vivienda elegida es siempre de ese rol.
+    get().setRolActivo(rolQueSigue);
   },
 
   restaurarSesion: async () => {
