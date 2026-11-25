@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { theme } from "@/config";
-import { Cargando, Checkbox, Toggle } from "@/shared/components";
+import { Toggle } from "@/shared/components";
 import { Etiqueta } from "./Etiqueta";
 import { ESTILO_DE_TARJETA, ROL_COLORES } from "./gruposDeResidentes";
 import { porQueNoPuedeSerResidente } from "../../helpers/porQueNoPuedeSerResidente";
@@ -9,6 +9,7 @@ import { porQueNoPuedeSerResidente } from "../../helpers/porQueNoPuedeSerResiden
 interface Props {
   nombre: string;
   anfitrionPrimario: boolean;
+  /** Es el contacto principal de la vivienda (antes «administrador primario»). */
   administradorPrimario: boolean;
   esResidente: boolean;
   /** Si la vivienda se alquila por noches ahora: solo entonces el anfitrión no puede ser residente. */
@@ -19,12 +20,6 @@ interface Props {
   hayInquilinoLider?: boolean;
   /** Pide confirmar el cambio de residente a no residente, o al revés. */
   onCambiarResidencia: () => void;
-  onMarcarAnfitrion: () => void;
-  onMarcarAdministrador: () => void;
-  /** La casilla que se está guardando: gira y ninguna se pulsa mientras tanto. */
-  pendiente?: "anfitrion" | "administrador" | null;
-  /** Hay otro guardado de la lista en curso: las casillas esperan. */
-  ocupado?: boolean;
   /** Se está guardando la declaración de residencia. */
   cambiandoResidencia?: boolean;
 }
@@ -39,13 +34,8 @@ export function TarjetaDelPropietario({
   viviendaEnAlquiler = false,
   hayInquilinoLider = false,
   onCambiarResidencia,
-  onMarcarAnfitrion,
-  onMarcarAdministrador,
-  pendiente = null,
-  ocupado = false,
   cambiandoResidencia = false,
 }: Props) {
-  const bloqueadas = ocupado || pendiente !== null;
   const rolResidencia = esResidente ? "Residente" : "Corresidente";
   const motivo = porQueNoPuedeSerResidente({
     esResidente,
@@ -56,7 +46,6 @@ export function TarjetaDelPropietario({
   });
   return (
     <>
-      <Text className="text-sm font-bold text-gray-900 mt-1">Propietario</Text>
       <View className="rounded-2xl p-4" style={ESTILO_DE_TARJETA}>
         <View className="flex-row items-start justify-between">
           <View className="flex-1" style={{ minWidth: 0 }}>
@@ -69,14 +58,14 @@ export function TarjetaDelPropietario({
             <View className="flex-row flex-wrap items-center gap-1.5 mb-2">
               {anfitrionPrimario ? (
                 <Etiqueta
-                  texto="Anfitrión primario"
+                  texto="Contacto de huéspedes"
                   fondo={theme.colors.primaryLight}
                   color={theme.colors.primary}
                 />
               ) : null}
               {administradorPrimario ? (
                 <Etiqueta
-                  texto="Admin primario"
+                  texto="Contacto principal"
                   fondo={theme.colors.accentPink}
                   color={theme.colors.accentPinkText}
                 />
@@ -116,37 +105,6 @@ export function TarjetaDelPropietario({
               </View>
             )}
           </View>
-        </View>
-        <View
-          className="flex-col gap-1.5 mt-3 pt-3"
-          style={{ borderTopWidth: 1, borderTopColor: theme.colors.borderLight }}
-        >
-          <View className="flex-row items-center gap-2">
-            <Checkbox
-              checked={anfitrionPrimario}
-              onChange={onMarcarAnfitrion}
-              label="Anfitrión primario"
-              disabled={bloqueadas}
-            />
-            {pendiente === "anfitrion" ? (
-              <Cargando variante="control" texto="el anfitrión primario" />
-            ) : null}
-          </View>
-          <View className="flex-row items-center gap-2">
-            <Checkbox
-              checked={administradorPrimario}
-              onChange={onMarcarAdministrador}
-              label="Administrador primario"
-              disabled={bloqueadas}
-            />
-            {pendiente === "administrador" ? (
-              <Cargando variante="control" texto="el administrador primario" />
-            ) : null}
-          </View>
-          <Text className="text-xs" style={{ color: theme.colors.textMuted }}>
-            Si no marcas a otra persona, el propietario hace de anfitrión y
-            de administrador primario.
-          </Text>
         </View>
       </View>
     </>

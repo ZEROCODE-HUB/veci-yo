@@ -1,82 +1,88 @@
 import React from "react";
-import { Text, View, useWindowDimensions } from "react-native";
-import { Button } from "@/shared/components";
-
-/** Lo que se configura desde el botón de funcionalidades de la vivienda. */
-const FUNCIONALIDADES = ["Huéspedes Temporales"];
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "@/config";
+import { ESTILO_DE_TARJETA } from "./gruposDeResidentes";
 
 interface Props {
-  puedeInvitar: boolean;
   puedeConfigurarElAlojamiento: boolean;
   puedeGestionarLaVivienda: boolean;
-  onInvitar: () => void;
   onFuncionalidades: () => void;
   onContratos: () => void;
   onServicios: () => void;
 }
 
-/** Los botones del final de la configuración de la vivienda. */
+/**
+ * Lo demás de la vivienda, como una lista de filas con su flecha (25/11/2026,
+ * el cliente: «hazlo sencillo»). Eran cuatro botones grandes, dos amarillos y
+ * dos blancos, uno de ellos con «Configuración de funcionalidad: Huéspedes
+ * Temporales» apretado en una línea. «Invitar» ya no está aquí: va junto a la
+ * gente de la vivienda, que es donde se busca.
+ */
 export function AccionesDeLaVivienda({
-  puedeInvitar,
   puedeConfigurarElAlojamiento,
   puedeGestionarLaVivienda,
-  onInvitar,
   onFuncionalidades,
   onContratos,
   onServicios,
 }: Props) {
-  const { width, fontScale } = useWindowDimensions();
+  const filas: { texto: string; detalle: string; icono: keyof typeof Ionicons.glyphMap; ir: () => void }[] = [
+    ...(puedeConfigurarElAlojamiento
+      ? [
+          {
+            texto: "Renta corta (huéspedes)",
+            detalle: "Alquilar por noches: reglas, aforo, wifi y llegada",
+            icono: "bed-outline" as const,
+            ir: onFuncionalidades,
+          },
+        ]
+      : []),
+    /*
+      El historial de contratos y los servicios contratados --luz, agua,
+      internet-- tenían su pantalla terminada y **no se podían alcanzar**. El
+      KT los lista entre lo que hace el propietario.
+    */
+    ...(puedeGestionarLaVivienda
+      ? [
+          {
+            texto: "Contratos de arrendamiento",
+            detalle: "Los contratos de quien alquila la vivienda",
+            icono: "document-text-outline" as const,
+            ir: onContratos,
+          },
+          {
+            texto: "Servicios contratados",
+            detalle: "Luz, agua, internet y sus recordatorios",
+            icono: "flash-outline" as const,
+            ir: onServicios,
+          },
+        ]
+      : []),
+  ];
+  if (filas.length === 0) return null;
+
   return (
-    <>
-      {puedeInvitar && (
-        <>
-          <View className="h-4" />
-          <Button variant="primary" onPress={onInvitar}>
-            <Text>Invitar a alguien a la vivienda</Text>
-          </Button>
-        </>
-      )}
-
-      <View className="h-2" />
-
-      {puedeConfigurarElAlojamiento && (
-        <Button variant="primary" onPress={onFuncionalidades}>
-          {/*
-            En una sola fila: llevaba un salto de línea puesto a mano (Para
-            Claude, 21/10/2026). Si se suman funcionalidades, van en la misma
-            lista, separadas por coma. Y que de verdad quepa: en el ancho de un
-            celular se partía en dos (T-244, 23/10/2026). Letra algo menor y, en
-            el teléfono, se ajusta sola si no cabe.
-          */}
-          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={{ fontSize: 13 }}>
-            {/*
-              En 320 de ancho o con la letra grande, ni achicándose cabía y salía
-              cortado (auditoría de responsividad, 25/10/2026). Ahí va la forma
-              corta, para seguir en una línea como pidió el cliente.
-            */}
-            {`${width < 360 || fontScale > 1.15 ? "Funcionalidad" : "Configuración de funcionalidad"}: ${FUNCIONALIDADES.join(", ")}`}
-          </Text>
-        </Button>
-      )}
-
-      <View className="h-2" />
-
-      {/*
-        El historial de contratos y los servicios contratados --luz, agua,
-        internet-- tenían su pantalla terminada y **no se podían alcanzar**. El
-        KT los lista entre lo que hace el propietario, y este es el sitio donde
-        ya están las otras cosas que hace con su vivienda.
-      */}
-      {puedeGestionarLaVivienda && (
-        <Button variant="secondary" onPress={onContratos}>
-          <Text>Contratos de arrendamiento</Text>
-        </Button>
-      )}
-      {puedeGestionarLaVivienda && (
-        <Button variant="secondary" onPress={onServicios}>
-          <Text>Servicios contratados</Text>
-        </Button>
-      )}
-    </>
+    <View className="gap-2">
+      <Text className="text-base font-bold text-gray-900 mt-2">Más de tu vivienda</Text>
+      <View className="rounded-2xl overflow-hidden" style={ESTILO_DE_TARJETA}>
+        {filas.map((f, i) => (
+          <Pressable
+            key={f.texto}
+            onPress={f.ir}
+            accessibilityRole="button"
+            accessibilityLabel={f.texto}
+            className="flex-row items-center gap-3 px-4 py-3.5 active:opacity-70"
+            style={i > 0 ? { borderTopWidth: 1, borderTopColor: theme.colors.borderLight } : undefined}
+          >
+            <Ionicons name={f.icono} size={22} color={theme.colors.primaryDark} />
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-gray-900">{f.texto}</Text>
+              <Text className="text-xs text-gray-500">{f.detalle}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} />
+          </Pressable>
+        ))}
+      </View>
+    </View>
   );
 }

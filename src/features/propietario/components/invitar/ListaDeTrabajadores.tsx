@@ -1,7 +1,9 @@
 import { theme } from "@/config";
 import { useState } from "react";
-import { Text, View } from "react-native";
-import { Button, Modal, Toggle } from "@/shared/components";
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { BottomSheet, BottomSheetOption, Button, Modal, Toggle } from "@/shared/components";
+import { ESTILO_DE_TARJETA } from "../configuracion/gruposDeResidentes";
 import type {
   EstadoDelProfesional,
   PermisosDeTrabajador,
@@ -70,6 +72,7 @@ export function ListaDeTrabajadores({
     null,
   );
   const [aEditar, setAEditar] = useState<TrabajadorDeLaVivienda | null>(null);
+  const [aMenu, setAMenu] = useState<TrabajadorDeLaVivienda | null>(null);
   const [borrador, setBorrador] = useState<PermisosDeTrabajador>({
     puedeCrearVisitas: false,
     puedeContestarCitofono: true,
@@ -89,61 +92,81 @@ export function ListaDeTrabajadores({
   return (
     <View className="gap-2">
       {titulo ? <Text className="text-base font-bold text-gray-900">{titulo}</Text> : null}
-      {trabajadores.map((t) => (
-        <View
-          key={t.id}
-          className="flex-row items-center justify-between rounded-xl p-3"
-          style={{ backgroundColor: theme.colors.bgMuted }}
-        >
-          <View className="flex-1 pr-2">
-            <Text className="text-sm font-bold text-gray-900">{t.nombre}</Text>
-            <Text className="text-xs text-gray-500">
-              {detalleDelTrabajador(t)}
-            </Text>
-            {situacion[t.id] ? (
-              <Text className="text-xs font-medium" style={{ color: colorDelEstado(situacion[t.id].estado) }}>
-                {textoDelEstado(situacion[t.id].estado, t.correoInvitado)}
+      {/*
+        Como las demás personas de la vivienda (25/11/2026, «hazlo sencillo»):
+        tarjeta blanca, su oficio, en qué va y el «⋮» con lo que se hace con
+        él. Antes eran tres botones de texto apilados a la derecha.
+      */}
+      {trabajadores.map((t) => {
+        const estado = situacion[t.id]?.estado;
+        return (
+          <View key={t.id} className="flex-row items-center gap-2 rounded-2xl px-4 py-3" style={ESTILO_DE_TARJETA}>
+            <View className="flex-1 gap-0.5" style={{ minWidth: 0 }}>
+              <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
+                {t.nombre}
               </Text>
-            ) : t.correoInvitado && !t.tieneCuenta ? (
-              <Text className="text-xs text-gray-500">{`Invitado: ${t.correoInvitado}`}</Text>
-            ) : null}
-          </View>
-          <View className="items-end gap-1">
-            {t.conApp && !t.tieneCuenta && t.correoInvitado && onReenviar &&
-            (situacion[t.id]?.estado ?? "invitado") === "invitado" ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                loading={reenviandoId === t.id}
-                disabled={Boolean(reenviandoId)}
-                onPress={() =>
-                  onReenviar({ id: t.id, correo: t.correoInvitado ?? "", nombre: t.nombre })
-                }
+              <Text className="text-xs text-gray-500">{t.oficio?.trim() || "Profesional permanente"}</Text>
+              <Text
+                className="text-xs font-medium"
+                style={{ color: estado ? colorDelEstado(estado) : theme.colors.textSecondary }}
               >
-                Reenviar invitación
-              </Button>
-            ) : null}
-            {t.conApp && situacion[t.id] && onCambiarPermisos ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                onPress={() => abrirPermisos(t)}
-              >
-                Editar privilegios
-              </Button>
-            ) : null}
-            <Button
-              size="sm"
-              variant="ghost"
-              loading={dandoDeBajaId === t.id}
-              disabled={Boolean(dandoDeBajaId)}
-              onPress={() => setAConfirmar(t)}
+                {estado
+                  ? textoDelEstado(estado, t.correoInvitado)
+                  : detalleDelTrabajador(t).split(" · ")[1] ?? ""}
+              </Text>
+            </View>
+            <Pressable
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={`Opciones de ${t.nombre}`}
+              onPress={() => setAMenu(t)}
+              className="h-10 w-10 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.colors.bgMuted }}
             >
-              Dar de baja
-            </Button>
+              <Ionicons name="ellipsis-vertical" size={18} color={theme.colors.textSecondary} />
+            </Pressable>
           </View>
-        </View>
-      ))}
+        );
+      })}
+
+      <BottomSheet visible={Boolean(aMenu)} onClose={() => setAMenu(null)}>
+        {aMenu && aMenu.conApp && situacion[aMenu.id] && onCambiarPermisos ? (
+          <BottomSheetOption
+            label="Editar privilegios"
+            onPress={() => {
+              const t = aMenu;
+              setAMenu(null);
+              abrirPermisos(t);
+            }}
+          />
+        ) : null}
+        {aMenu &&
+        aMenu.conApp &&
+        !aMenu.tieneCuenta &&
+        aMenu.correoInvitado &&
+        onReenviar &&
+        (situacion[aMenu.id]?.estado ?? "invitado") === "invitado" ? (
+          <BottomSheetOption
+            label={reenviandoId === aMenu.id ? "Reenviando…" : "Reenviar invitación"}
+            disabled={Boolean(reenviandoId)}
+            onPress={() => {
+              const t = aMenu;
+              setAMenu(null);
+              onReenviar({ id: t.id, correo: t.correoInvitado ?? "", nombre: t.nombre });
+            }}
+          />
+        ) : null}
+        <BottomSheetOption
+          label={aMenu && dandoDeBajaId === aMenu.id ? "Dando de baja…" : "Dar de baja"}
+          variant="danger"
+          disabled={Boolean(dandoDeBajaId)}
+          onPress={() => {
+            const t = aMenu;
+            setAMenu(null);
+            if (t) setAConfirmar(t);
+          }}
+        />
+      </BottomSheet>
 
       <Modal
         visible={Boolean(aEditar)}

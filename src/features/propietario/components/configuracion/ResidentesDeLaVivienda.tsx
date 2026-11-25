@@ -1,6 +1,5 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { theme } from "@/config";
 import type { ResidenteDeUnidad } from "../../services/residentes.repo";
 import { GRUPOS_JERARQUIA } from "./gruposDeResidentes";
 import { TarjetaDeResidente } from "./TarjetaDeResidente";
@@ -9,29 +8,21 @@ interface Props {
   /** Los que viven hoy (y los huéspedes de hoy), ya filtrados por fecha. */
   deHoy: ResidenteDeUnidad[];
   mostrarPermisoDeVisitas: boolean;
-  /** Un residente mira la lista sin las casillas de quien gestiona (17/11/2026). */
-  soloLectura?: boolean;
-  onMarcarAnfitrion: (r: ResidenteDeUnidad) => void;
-  onMarcarAdministrador: (r: ResidenteDeUnidad) => void;
   onCambiarPermisoDeVisitas: (r: ResidenteDeUnidad) => void;
   onMenu: (r: ResidenteDeUnidad) => void;
-  /** «anfitrion:<membresía>»… lo que se está guardando, o null. */
+  /** «visitas:<membresía>»… lo que se está guardando, o null. */
   pendiente?: string | null;
 }
 
 /**
- * La gente de la vivienda por grupos: inquilino líder, residentes,
- * coadministrador, propietario y, aparte, los huéspedes temporales.
- *
- * Los huéspedes temporales ya no cuentan en «Residentes actuales»: van en su
- * propio bloque (comparación con la maqueta, 16/10/2026).
+ * La gente de la vivienda en una sola lista, cada uno con su rol en la
+ * etiqueta (25/11/2026, el cliente: «hazlo sencillo»). Antes iba por grupos,
+ * cada grupo con su título y sangría, y una frase de quién puede editar.
+ * Los huéspedes de hoy siguen aparte: no viven aquí.
  */
 export function ResidentesDeLaVivienda({
   deHoy,
   mostrarPermisoDeVisitas,
-  soloLectura = false,
-  onMarcarAnfitrion,
-  onMarcarAdministrador,
   onCambiarPermisoDeVisitas,
   onMenu,
   pendiente = null,
@@ -40,54 +31,39 @@ export function ResidentesDeLaVivienda({
     const [cual, id] = (pendiente ?? "").split(":");
     return id === r.id ? (cual as "anfitrion" | "administrador" | "visitas") : null;
   };
-  return (
-    <>
-      <Text className="text-base font-bold text-gray-900 mt-2">
-        Residentes actuales ({deHoy.filter((r) => r.rol !== "Huesped Temporal").length})
-      </Text>
-      <Text className="text-xs" style={{ color: theme.colors.textSecondary, lineHeight: 18 }}>
-        El propietario o el inquilino líder pueden agregar o editar a las
-        personas de la vivienda.
-      </Text>
+  const orden = (r: ResidenteDeUnidad) => {
+    const i = GRUPOS_JERARQUIA.findIndex((g) => g.roles.includes(r.rol));
+    return i < 0 ? 99 : i;
+  };
+  const viven = deHoy.filter((r) => r.rol !== "Huesped Temporal").sort((a, b) => orden(a) - orden(b));
+  const huespedes = deHoy.filter((r) => r.rol === "Huesped Temporal");
 
-      {GRUPOS_JERARQUIA.map((grupo) => {
-        const items = deHoy.filter((r) => grupo.roles.includes(r.rol));
-        if (items.length === 0) return null;
-        const esHuesped = grupo.roles.includes("Huesped Temporal");
-        return (
-          <View
-            key={grupo.titulo}
-            className="flex-col gap-2.5"
-            style={
-              grupo.indent && !esHuesped
-                ? { paddingLeft: 14, borderLeftWidth: 2, borderLeftColor: theme.colors.borderLight }
-                : {}
-            }
-          >
-            {esHuesped ? (
-              <Text className="text-base font-bold text-gray-900 mt-2">
-                Huéspedes temporales ({items.length})
-              </Text>
-            ) : (
-              <Text className="text-sm font-bold text-gray-900">{grupo.titulo}</Text>
-            )}
-            {items.map((r) => (
-              <TarjetaDeResidente
-                key={r.id}
-                residente={r}
-                mostrarPermisoDeVisitas={mostrarPermisoDeVisitas}
-                soloLectura={soloLectura}
-                onMarcarAnfitrion={() => onMarcarAnfitrion(r)}
-                onMarcarAdministrador={() => onMarcarAdministrador(r)}
-                onCambiarPermisoDeVisitas={() => onCambiarPermisoDeVisitas(r)}
-                onMenu={() => onMenu(r)}
-                pendiente={cualDe(r)}
-                ocupado={pendiente !== null}
-              />
-            ))}
-          </View>
-        );
-      })}
-    </>
+  const tarjeta = (r: ResidenteDeUnidad) => (
+    <TarjetaDeResidente
+      key={r.id}
+      residente={r}
+      mostrarPermisoDeVisitas={mostrarPermisoDeVisitas}
+      onCambiarPermisoDeVisitas={() => onCambiarPermisoDeVisitas(r)}
+      onMenu={() => onMenu(r)}
+      pendiente={cualDe(r)}
+      ocupado={pendiente !== null}
+    />
+  );
+
+  return (
+    <View className="gap-2.5">
+      {viven.length > 0 ? (
+        <>
+          <Text className="text-base font-bold text-gray-900">Viven aquí ({viven.length})</Text>
+          {viven.map(tarjeta)}
+        </>
+      ) : null}
+      {huespedes.length > 0 ? (
+        <>
+          <Text className="text-base font-bold text-gray-900 mt-2">Huéspedes de hoy ({huespedes.length})</Text>
+          {huespedes.map(tarjeta)}
+        </>
+      ) : null}
+    </View>
   );
 }
