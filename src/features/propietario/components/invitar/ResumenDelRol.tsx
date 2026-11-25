@@ -1,6 +1,7 @@
 import { theme } from "@/config";
-import { useMemo } from "react";
-import { Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useCondominioActivo } from "@/shared/hooks";
 import { permisosDeLosRolesDeLaVivienda } from "@/shared/services/permisosDeRol";
@@ -28,13 +29,36 @@ export function ResumenDelRol({ rol }: { rol: RolQueSeCrea | null }) {
     () => (rol ? resumenDelRol(rol, permisosConfigurablesDe(permisos.data ?? [])) : null),
     [rol, permisos.data],
   );
+  /*
+    Plegada (25/11/2026, el cliente: «hazlo sencillo»): eran once líneas que
+    empujaban el resto del formulario hacia abajo. Se abre si se quiere ver.
+  */
+  const [abierta, setAbierta] = useState(false);
   if (!resumen) return null;
 
+  if (!abierta) {
+    return (
+      <Pressable
+        onPress={() => setAbierta(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Ver qué podrá hacer con este rol"
+        className="flex-row items-center gap-1 py-1 active:opacity-70"
+      >
+        <Ionicons name="information-circle-outline" size={18} color={theme.colors.secondary} />
+        <Text className="text-sm font-medium" style={{ color: theme.colors.secondary }}>
+          Ver qué podrá hacer
+        </Text>
+      </Pressable>
+    );
+  }
+
   return (
-    <View
+    <Pressable
+      onPress={() => setAbierta(false)}
+      accessibilityRole="button"
+      accessibilityLabel="Ocultar qué podrá hacer"
       className="gap-2 rounded-xl p-3"
       style={{ backgroundColor: theme.colors.successSoft }}
-      accessibilityLabel="Qué podrá hacer con este rol"
     >
       {resumen.podra.length > 0 ? (
         <View className="gap-1">
@@ -60,6 +84,6 @@ export function ResumenDelRol({ rol }: { rol: RolQueSeCrea | null }) {
           ))}
         </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }

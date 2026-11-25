@@ -246,7 +246,7 @@ const SHARED_SCREENS: SharedScreenDefinition[] = [
   {
     name: "InvitarAUnidad",
     component: PropietarioInvitarScreen,
-    options: { title: "Gestión de usuarios" },
+    options: { title: "Invitar a alguien" },
   },
   {
     name: "CrearRol",

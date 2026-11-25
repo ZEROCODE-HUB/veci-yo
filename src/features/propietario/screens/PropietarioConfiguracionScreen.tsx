@@ -1,11 +1,9 @@
-import { theme } from "@/config";
-import React, { useState, useLayoutEffect } from "react";
-import { View, ScrollView, Pressable } from "react-native";
+import React, { useState } from "react";
+import { View, ScrollView, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore, useUIStore } from "@/stores";
-import { SegunLaCarga } from "@/shared/components";
+import { useAuthStore } from "@/stores";
+import { Button, SegunLaCarga } from "@/shared/components";
 import { usePropietarioConfiguracion } from "../hooks/usePropietarioConfiguracion";
 import { residentesActuales } from "../services/residentesActuales";
 import type { ResidenteDeUnidad } from "../services/residentes.repo";
@@ -14,7 +12,9 @@ import type {
   PropietarioStackParamList,
   SharedStackParamList,
 } from "@/shared/types";
-import { AyudaDelCoadministrador } from "../components/configuracion/AyudaDelCoadministrador";
+import { ContactosPrincipales } from "../components/configuracion/ContactosPrincipales";
+import { ListaDeTrabajadores } from "../components/invitar/ListaDeTrabajadores";
+import { useTrabajadoresDeLaVivienda } from "../hooks/useTrabajadoresDeLaVivienda";
 import { TarjetaDelPropietario } from "../components/configuracion/TarjetaDelPropietario";
 import { ResidentesDeLaVivienda } from "../components/configuracion/ResidentesDeLaVivienda";
 import { MisVehiculos } from "../components/configuracion/MisVehiculos";
@@ -53,9 +53,10 @@ export function PropietarioConfiguracionScreen() {
   */
   /** Darle la app a quien vive aquí sin ella (17/11/2026). */
   const [darAccesoA, setDarAccesoA] = useState<{ id: string; nombre: string } | null>(null);
-  const { addToast } = useUIStore();
   /** Privilegios por persona y renta corta del inquilino líder (18/11/2026). */
   const privilegios = usePrivilegiosDePersonas();
+  /** Los profesionales permanentes de la vivienda, con la gente (25/11/2026). */
+  const trabajadores = useTrabajadoresDeLaVivienda();
   const usuarioIdActual = useAuthStore((s) => s.usuarioId ?? "");
   const {
     cargaDelPropietario,
@@ -75,7 +76,6 @@ export function PropietarioConfiguracionScreen() {
     apruebaHuespedPorHuesped,
     cambiarPermisoDeVisitas,
     rentaCortaEnMarcha,
-    quitarAnfitrionPrimario,
     viviendaEnAlquiler,
     hayInquilinoLider,
   } = usePropietarioConfiguracion();
@@ -96,23 +96,6 @@ export function PropietarioConfiguracionScreen() {
   */
   const deHoy = residentesActuales(residentes);
 
-  /*
-    Las dos casillas de primario **no se pueden desmarcar**, y eso esta bien:
-    la vivienda tiene que tener un anfitrion primario --el libro del huesped
-    dice «contacta al anfitrion primario del departamento»-- y el indice unico
-    de la base no admite dos. No se quita: se le pasa a otra persona.
-
-    Lo que estaba mal era el silencio. Al pulsar una casilla ya marcada el
-    manejador volvia a designar a la misma persona: ni cambiaba nada, ni
-    avisaba de nada. Indistinguible de un boton roto.
-  */
-  const yaEsPrimario = (cual: "anfitrion" | "administrador") =>
-    addToast(
-      cual === "anfitrion"
-        ? "La vivienda necesita un anfitrión primario. Para cambiarlo, marca a otra persona de la lista."
-        : "La vivienda necesita un administrador primario. Para cambiarlo, marca a otra persona de la lista.",
-      "info",
-    );
 
   /*
     `ResidenteDeUnidad` y no `Residente`: su `id` es **el de la membresia** --una
@@ -126,24 +109,7 @@ export function PropietarioConfiguracionScreen() {
   const [showResidentePopup, setShowResidentePopup] = useState(false);
   const [pendienteResidenteValue, setPendienteResidenteValue] = useState(true);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        puedeInvitar ? (
-          <Pressable
-            accessibilityLabel="Invitar a alguien a la vivienda"
-            onPress={() => navigation.navigate("InvitarAUnidad")}
-            accessibilityRole="button"
-            className="w-9 h-9 rounded-xl mr-1 bg-primary items-center justify-center"
-          >
-            {/* Un ícono y no la letra «+», que quedaba baja (21/10/2026). Y el
-                mismo botón que el de correspondencia: este salía cuadrado
-                (Para Claude 124, 28/10/2026). */}
-            <Ionicons name="add" size={24} color={theme.colors.textInverse} />
-          </Pressable>
-        ) : null,
-    });
-  }, [navigation, puedeInvitar]);
+  // El «+» de arriba se quitó (25/11/2026): «Invitar» va junto a la gente de la vivienda.
 
   /*
     La ventana se cierra cuando ya se dio de baja, no antes (13/11/2026): si
@@ -157,17 +123,10 @@ export function PropietarioConfiguracionScreen() {
       .catch(() => undefined);
   };
 
-  // Lo que se está guardando de uno mismo: «anfitrion» o «administrador».
-  const [cualPendiente, idPendiente] = (pendiente ?? "").split(":");
-  const pendienteMio =
-    yo && idPendiente === yo.id && (cualPendiente === "anfitrion" || cualPendiente === "administrador")
-      ? cualPendiente
-      : null;
 
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
-        {esSoloResidente ? null : <AyudaDelCoadministrador />}
 
         {/*
           Aquí había una tarjeta «Tienes una propiedad asignada» con su botón
@@ -200,21 +159,6 @@ export function PropietarioConfiguracionScreen() {
                   setPendienteResidenteValue(!esResidente);
                   setShowResidentePopup(true);
                 }}
-                onMarcarAnfitrion={() =>
-                  propietarioAnfitrionPrimario
-                    ? // Se quita solo si ya no se alquila ni quedan reservas (D-70).
-                      rentaCortaEnMarcha || viviendaEnAlquiler
-                      ? yaEsPrimario("anfitrion")
-                      : yo && quitarAnfitrionPrimario(yo.id)
-                    : yo && setAnfitrionPrimario(yo.id)
-                }
-                onMarcarAdministrador={() =>
-                  propietarioAdministradorPrimario
-                    ? yaEsPrimario("administrador")
-                    : yo && setAdministradorPrimario(yo.id)
-                }
-                pendiente={pendienteMio}
-                ocupado={pendiente !== null}
                 cambiandoResidencia={declarando}
               />
             </SegunLaCarga>
@@ -232,19 +176,6 @@ export function PropietarioConfiguracionScreen() {
             pendiente={pendiente}
             deHoy={deHoy}
             mostrarPermisoDeVisitas={apruebaHuespedPorHuesped && puedeGestionarLaVivienda}
-            soloLectura={esSoloResidente}
-            onMarcarAnfitrion={(r) =>
-              r.esAnfitrionPrimario
-                ? rentaCortaEnMarcha || viviendaEnAlquiler
-                  ? yaEsPrimario("anfitrion")
-                  : quitarAnfitrionPrimario(r.id)
-                : setAnfitrionPrimario(r.id)
-            }
-            onMarcarAdministrador={(r) =>
-              r.esAdministradorPrimario
-                ? yaEsPrimario("administrador")
-                : setAdministradorPrimario(r.id)
-            }
             onCambiarPermisoDeVisitas={(r) =>
               cambiarPermisoDeVisitas(r.id, !r.puedeRegistrarVisitas)
             }
@@ -252,14 +183,66 @@ export function PropietarioConfiguracionScreen() {
           />
         </SegunLaCarga>
 
+        {puedeInvitar ? (
+          <Button variant="primary" onPress={() => navigation.navigate("InvitarAUnidad")}>
+            <Text>+ Invitar a alguien a la vivienda</Text>
+          </Button>
+        ) : null}
+
+        {/*
+          Los dos contactos de la vivienda, en un sitio (25/11/2026): antes eran
+          casillas de «primario» repetidas en cada tarjeta.
+        */}
+        {esSoloResidente ? null : (
+          <ContactosPrincipales
+            personas={[
+              ...(yo ? [{ id: yo.id, nombre: `${usuario?.nombre ?? ""} ${usuario?.apellido ?? ""}`.trim() + " (tú)" }] : []),
+              ...deHoy
+                .filter((r) => r.rol !== "Huesped Temporal" && !r.esMenor && r.id !== yo?.id)
+                .map((r) => ({ id: r.id, nombre: r.nombre })),
+            ]}
+            principalId={
+              propietarioAdministradorPrimario && yo
+                ? yo.id
+                : (deHoy.find((r) => r.esAdministradorPrimario)?.id ?? null)
+            }
+            huespedesId={
+              propietarioAnfitrionPrimario && yo ? yo.id : (deHoy.find((r) => r.esAnfitrionPrimario)?.id ?? null)
+            }
+            conHuespedes={Boolean(rentaCortaPermitida)}
+            onPrincipal={setAdministradorPrimario}
+            onHuespedes={setAnfitrionPrimario}
+          />
+        )}
+
+        {/* Los profesionales permanentes, aquí con la gente (25/11/2026). */}
+        {puedeInvitar ? (
+          <View className="gap-2">
+            <ListaDeTrabajadores
+              trabajadores={trabajadores.trabajadores}
+              situacion={trabajadores.situacion}
+              onDarDeBaja={trabajadores.darDeBaja}
+              dandoDeBajaId={trabajadores.dandoDeBajaId}
+              onCambiarPermisos={trabajadores.cambiarPermisos}
+              guardandoPermisos={trabajadores.guardandoPermisos}
+              onReenviar={trabajadores.reenviarInvitacion}
+              reenviandoId={trabajadores.reenviandoId}
+            />
+            <Button
+              variant="secondary"
+              onPress={() => navigation.navigate("VisitasNuevo", { tipoPreseleccionado: "permanente" })}
+            >
+              <Text>+ Agregar profesional permanente</Text>
+            </Button>
+          </View>
+        ) : null}
+
         <MisVehiculos unidadId={unidadActiva?.unidadId ?? ""} />
 
         <AccionesDeLaVivienda
-          puedeInvitar={puedeInvitar}
           // Sin renta corta en el edificio, no se ofrece configurarla (13/11/2026).
           puedeConfigurarElAlojamiento={puedeConfigurarElAlojamiento && rentaCortaPermitida}
           puedeGestionarLaVivienda={puedeGestionarLaVivienda}
-          onInvitar={() => navigation.navigate("InvitarAUnidad")}
           onFuncionalidades={() => navigation.navigate("HuespedesTemporales")}
           onContratos={() => navigation.navigate("HistorialContrato")}
           onServicios={() => navigation.navigate("AgregarServicio")}

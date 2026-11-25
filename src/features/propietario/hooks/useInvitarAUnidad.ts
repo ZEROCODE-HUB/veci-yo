@@ -159,7 +159,12 @@ export function seAnotaSinApp(form: Pick<FormularioInvitacion, "rol" | "usaApp" 
   return form.rol === "residente" && (form.esMenor || !form.usaApp);
 }
 
-export function useInvitarAUnidad() {
+/**
+ * `alAgregar`: qué hacer cuando ya quedó agregada una persona sin app. La
+ * pantalla vuelve a Configuración, donde se ve en la lista (25/11/2026: la
+ * lista «En la vivienda» de esta pantalla se quitó).
+ */
+export function useInvitarAUnidad(alAgregar?: () => void) {
   const { addToast } = useUIStore();
   const queryClient = useQueryClient();
   const ubicaciones = useUbicacionStore((state) => state.ubicaciones);
@@ -292,6 +297,7 @@ export function useInvitarAUnidad() {
       queryClient.invalidateQueries({ queryKey: ["unidad", "personas"] });
       queryClient.invalidateQueries({ queryKey: RESIDENTES_UNIDAD_KEY });
       addToast("Agregado a la vivienda", "success");
+      alAgregar?.();
     },
     onError: (e: Error) => addToast(e?.message ?? "No se pudo agregar", "error"),
   });

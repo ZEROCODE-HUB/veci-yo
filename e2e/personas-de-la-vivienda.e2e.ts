@@ -61,8 +61,8 @@ test("el propietario anota a un niño que no usará la app", async ({ page }) =>
   if (CAPTURAS) await page.screenshot({ path: `${CAPTURAS}/nino-formulario.png` });
   await page.getByText("Agregar a la vivienda", { exact: true }).click();
 
+  // Vuelve sola a Configuración, donde ya sale en la lista (25/11/2026).
   await expect(page.getByText(`${MARCA} Pérez`).filter({ visible: true }).first()).toBeVisible();
-  // Recién agregado, el formulario vacío no sale con un error en rojo.
   await expect(page.getByText("Falta el nombre de la persona")).toHaveCount(0);
   await expect(page.getByText("Sin app").filter({ visible: true }).first()).toBeVisible();
   if (CAPTURAS) await page.screenshot({ path: `${CAPTURAS}/nino-en-la-lista.png` });
