@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
 import { paisPorDefecto, paisPorCodigo } from "@/shared/constants";
 import { Bandera } from "./Bandera";
 import { SelectorDePais } from "./SelectorDePais";
+import { medirAncla, type Ancla } from "./DesplegablePegado";
 
 interface Props {
   label?: string;
@@ -47,6 +48,14 @@ export function CampoPais({
   codigos,
 }: Props) {
   const [abierto, setAbierto] = useState(false);
+  // La lista de países, pegada al campo (25/11/2026).
+  const campo = useRef<View>(null);
+  const [ancla, setAncla] = useState<Ancla | null>(null);
+  const abrir = () =>
+    medirAncla(campo, (medida) => {
+      setAncla(medida ?? { x: 16, y: 120, ancho: 320, alto: 0 });
+      setAbierto(true);
+    });
   const elegido = paisPorCodigo(value);
 
   return (
@@ -56,7 +65,8 @@ export function CampoPais({
       )}
 
       <Pressable
-        onPress={() => setAbierto(true)}
+        ref={campo}
+        onPress={abrir}
         accessibilityRole="button"
         accessibilityLabel={`País: ${elegido?.nombre ?? "sin elegir"}`}
         className={`flex-row items-center gap-2 rounded-xl border bg-white px-3 py-3 active:opacity-70 ${
@@ -79,6 +89,7 @@ export function CampoPais({
 
       <SelectorDePais
         visible={abierto}
+        ancla={ancla}
         codigo={elegido?.codigo ?? paisPorDefecto()}
         titulo="¿En qué país está?"
         onElegir={onChange}

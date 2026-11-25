@@ -1,16 +1,8 @@
 import { theme } from "@/config";
 import React, { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  FlatList,
-  Modal as RNModal,
-  useWindowDimensions,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, Pressable, FlatList } from "react-native";
 import { EtiquetaDelCampo } from "./EtiquetaDelCampo";
-import { VeloModal } from "./VeloModal";
+import { DesplegablePegado, medirAncla, type Ancla } from "./DesplegablePegado";
 import { Ionicons } from "@expo/vector-icons";
 
 interface SelectOption {
@@ -37,18 +29,10 @@ interface SelectProps {
    * (13/10/2026).
    */
   error?: string;
-  /**
-   * Abrir la lista justo debajo del campo, pegada a él, en vez de la hoja que
-   * sube desde abajo (pedido del cliente, 06/11/2026, en el Directorio de
-   * Propiedades). Si debajo no cabe, se abre encima.
-   */
-  debajo?: boolean;
 }
 
-/** Lo mínimo que tiene que caber debajo para no abrir hacia arriba. */
-const ALTO_MINIMO_DEBAJO = 180;
-/** Lo más que mide la lista pegada al campo. */
-const ALTO_MAXIMO_PEGADA = 320;
+/** El alto de cada opción, para llevar la lista hasta la elegida al abrir. */
+const ALTO_DE_OPCION = 49;
 
 export function Select({
   label,
@@ -59,36 +43,23 @@ export function Select({
   placeholder = "Elegir…",
   textoSinOpciones = "No hay opciones para elegir",
   error,
-  debajo = false,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
-  const insets = useSafeAreaInsets();
   const campo = useRef<View>(null);
-  const [ancla, setAncla] = useState<{ x: number; y: number; ancho: number; alto: number } | null>(null);
-  const { height: altoPantalla } = useWindowDimensions();
+  const [ancla, setAncla] = useState<Ancla | null>(null);
 
+  /*
+    Desde el 25/11/2026 la lista sale **pegada al campo**, en todos los
+    desplegables (pedido del cliente): antes subía una hoja desde abajo. Si el
+    campo no se puede medir --no debería pasar--, se abre igual debajo de la
+    pantalla visible en vez de no abrirse.
+  */
   const abrir = () => {
-    if (!debajo || !campo.current) {
-      setOpen(true);
-      return;
-    }
-    campo.current.measureInWindow((x, y, ancho, alto) => {
-      setAncla({ x, y, ancho, alto });
+    medirAncla(campo, (medida) => {
+      setAncla(medida ?? { x: 16, y: 120, ancho: 320, alto: 0 });
       setOpen(true);
     });
   };
-
-  /* Dónde va la lista pegada: debajo si cabe, si no encima. */
-  const pegada = (() => {
-    if (!debajo || !ancla) return null;
-    const libreDebajo = altoPantalla - insets.bottom - (ancla.y + ancla.alto) - 8;
-    const libreEncima = ancla.y - insets.top - 8;
-    const haciaAbajo = libreDebajo >= ALTO_MINIMO_DEBAJO || libreDebajo >= libreEncima;
-    const alto = Math.min(ALTO_MAXIMO_PEGADA, haciaAbajo ? libreDebajo : libreEncima);
-    return haciaAbajo
-      ? { left: ancla.x, width: ancla.ancho, top: ancla.y + ancla.alto + 4, maxHeight: alto }
-      : { left: ancla.x, width: ancla.ancho, bottom: altoPantalla - ancla.y + 4, maxHeight: alto };
-  })();
 
   const normalized: SelectOption[] = options.map((opt) =>
     typeof opt === "object" && opt !== null && "value" in opt
@@ -98,6 +69,9 @@ export function Select({
 
   const selected = normalized.find((o) => o.value === value);
   const display = selected ? selected.label : placeholder;
+
+  const elegida = normalized.findIndex((o) => o.value === value);
+  const indiceInicial = elegida > 5 ? elegida - 2 : undefined;
 
   const handleSelect = (opt: SelectOption) => {
     onChange(opt.value);
@@ -146,85 +120,61 @@ export function Select({
         <Text className="mt-1 text-xs text-red-600">{error}</Text>
       ) : null}
 
-      <RNModal
-        visible={open}
-        transparent
-        animationType="none"
-        onRequestClose={() => setOpen(false)}
-        statusBarTranslucent
-      >
-        {/* El fondo lo pone `VeloModal`: antes era un velo opaco propio, escrito
-            a mano, que ademas entraba deslizandose con `animationType="slide"`. */}
-        <VeloModal
-          visible={open}
-          onPress={() => setOpen(false)}
-          className={pegada ? "flex-1" : "flex-1 justify-end"}
-        >
-          <View
-            className={
-              pegada
-                ? "absolute bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden"
-                : "bg-white rounded-t-2xl max-h-[60%] overflow-hidden"
-            }
-            /*
-              La app se dibuja detrás de la barra de botones del teléfono: sin
-              este margen, la última opción quedaba debajo y no se podía
-              pulsar (QA 23/10/2026, al elegir a quién llamar).
-            */
-            style={pegada ?? { paddingBottom: insets.bottom }}
-          >
-            <FlatList
-              data={normalized}
-              keyExtractor={(item) => String(item.value)}
-              /*
-                Sin opciones la lista mide cero: la pantalla se oscurecia y no
-                salia nada, que se lee como un desplegable roto. Lo vio el
-                cliente el 12/10/2026 al asignar un estacionamiento un dia sin
-                visitas.
-              */
-              ListEmptyComponent={
-                <Text className="px-4 py-6 text-base text-center text-gray-500">
-                  {textoSinOpciones}
+      <DesplegablePegado visible={open} ancla={ancla} onClose={() => setOpen(false)}>
+        <FlatList
+          data={normalized}
+          keyExtractor={(item) => String(item.value)}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          // Abre en la elegida: con 73 horas no hay que bajar a buscarla.
+          // Solo en listas largas: en una corta se ven todas y saltar no hace falta.
+          initialScrollIndex={indiceInicial}
+          getItemLayout={(_, index) => ({ length: ALTO_DE_OPCION, offset: ALTO_DE_OPCION * index, index })}
+          /*
+            Sin opciones la lista mide cero: la pantalla se oscurecia y no
+            salia nada, que se lee como un desplegable roto. Lo vio el
+            cliente el 12/10/2026 al asignar un estacionamiento un dia sin
+            visitas.
+          */
+          ListEmptyComponent={
+            <Text className="px-4 py-6 text-base text-center text-gray-500">
+              {textoSinOpciones}
+            </Text>
+          }
+          renderItem={({ item }) => {
+            const isSelected = item.value === value;
+            return (
+              <Pressable
+                /*
+                  Cual esta elegida se veia **solo** en el fondo y la
+                  negrita. `aria-selected` aparte de `accessibilityState`
+                  porque react-native-web 0.21 no lo traduce.
+                */
+                accessibilityRole="menuitem"
+                accessibilityState={{ selected: isSelected }}
+                aria-selected={isSelected}
+                onPress={() => handleSelect(item)}
+                className="justify-center px-4 border-b border-gray-100"
+                style={{
+                  height: ALTO_DE_OPCION,
+                  backgroundColor: isSelected ? theme.colors.primaryLight : "transparent",
+                }}
+              >
+                <Text
+                  numberOfLines={2}
+                  className="text-base"
+                  style={{
+                    fontWeight: isSelected ? "600" : "400",
+                    color: isSelected ? theme.colors.text : theme.colors.textSecondary,
+                  }}
+                >
+                  {item.label}
                 </Text>
-              }
-              renderItem={({ item }) => {
-                const isSelected = item.value === value;
-                return (
-                  <Pressable
-                    /*
-                      Cual esta elegida se veia **solo** en el fondo y la
-                      negrita. `aria-selected` aparte de `accessibilityState`
-                      porque react-native-web 0.21 no lo traduce.
-                    */
-                    accessibilityRole="menuitem"
-                    accessibilityState={{ selected: isSelected }}
-                    aria-selected={isSelected}
-                    onPress={() => handleSelect(item)}
-                    className="px-4 py-3.5 border-b border-gray-100"
-                    style={{
-                      backgroundColor: isSelected
-                        ? theme.colors.primaryLight
-                        : "transparent",
-                    }}
-                  >
-                    <Text
-                      className="text-base"
-                      style={{
-                        fontWeight: isSelected ? "600" : "400",
-                        color: isSelected
-                          ? theme.colors.text
-                          : theme.colors.textSecondary,
-                      }}
-                    >
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              }}
-            />
-          </View>
-        </VeloModal>
-      </RNModal>
+              </Pressable>
+            );
+          }}
+        />
+      </DesplegablePegado>
     </View>
   );
 }
