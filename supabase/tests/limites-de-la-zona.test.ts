@@ -159,4 +159,26 @@ describe("los límites de una zona común", () => {
       await conCosto.retirar();
     }
   });
+
+  it("una zona con costo siempre requiere aprobación; sin costo, no (26/11/2026)", async () => {
+    const conCosto = await crearZonaDePrueba(marcela, { costo_reserva: 10, requiere_aprobacion: false });
+    const sinCosto = await crearZonaDePrueba(marcela, { requiere_aprobacion: false });
+    try {
+      const leer = async (id: string) =>
+        (await api(marcela, `/rest/v1/zona_comun?select=requiere_aprobacion&id=eq.${id}`)).datos[0]
+          ?.requiere_aprobacion;
+      expect(await leer(conCosto.id)).toBe(true);
+      // El control: sin costo se queda como se pidió.
+      expect(await leer(sinCosto.id)).toBe(false);
+      // Y no se puede apagar mientras tenga costo.
+      await api(marcela, `/rest/v1/zona_comun?id=eq.${conCosto.id}`, {
+        metodo: "PATCH",
+        cuerpo: { requiere_aprobacion: false },
+      });
+      expect(await leer(conCosto.id)).toBe(true);
+    } finally {
+      await conCosto.retirar();
+      await sinCosto.retirar();
+    }
+  });
 });

@@ -13,6 +13,7 @@ import type {
   SharedStackParamList,
 } from "@/shared/types";
 import { ContactosPrincipales } from "../components/configuracion/ContactosPrincipales";
+import { VerPersona } from "../components/configuracion/VerPersona";
 import { ListaDeTrabajadores } from "../components/invitar/ListaDeTrabajadores";
 import { useTrabajadoresDeLaVivienda } from "../hooks/useTrabajadoresDeLaVivienda";
 import { TarjetaDelPropietario } from "../components/configuracion/TarjetaDelPropietario";
@@ -104,6 +105,8 @@ export function PropietarioConfiguracionScreen() {
   */
   const [menuResidente, setMenuResidente] =
     useState<ResidenteDeUnidad | null>(null);
+  /** A quién se está viendo (25/11/2026: «Editar» pasó a «Ver»). */
+  const [verA, setVerA] = useState<ResidenteDeUnidad | null>(null);
   const [deleteResidente, setDeleteResidente] =
     useState<ResidenteDeUnidad | null>(null);
   const [showResidentePopup, setShowResidentePopup] = useState(false);
@@ -261,7 +264,7 @@ export function PropietarioConfiguracionScreen() {
         puedeDarAcceso={puedeInvitar}
         onDarAcceso={(r) => setDarAccesoA({ id: r.id, nombre: r.nombre })}
         onClose={() => setMenuResidente(null)}
-        onEditar={(r) => navigation.navigate("CrearRol", { editar: r })}
+        onVer={setVerA}
         onPrivilegios={privilegios.abrirPrivilegios}
         usuarioId={usuarioIdActual}
         puedeDarRentaCorta={unidadActiva?.rol === "propietario" && Boolean(rentaCortaPermitida)}
@@ -276,6 +279,7 @@ export function PropietarioConfiguracionScreen() {
         }
       />
 
+      <VerPersona persona={verA} onClose={() => setVerA(null)} />
       <DarAccesoALaApp persona={darAccesoA} onClose={() => setDarAccesoA(null)} />
 
       <DarDeBajaResidente
